@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dhamma Archive — Lưu trữ Nikāya (Pāli)</title>
+  <meta name="description" content="Dự án lưu trữ Kinh Nikāya (Pāli). Gốc cây → nhánh → bài kinh. Hỗ trợ hiển thị Pāli và dịch (mô phỏng)." />
+  <style>
+    :root{
+      --bg:#fbfbfd; --card:#ffffff; --muted:#666; --accent:#2b6cb0;
+      --radius:10px; font-family:system-ui,Segoe UI,Roboto,'Noto Sans',Arial;
+    }
+    body{margin:0;background:var(--bg);color:#111}
+    header{background:linear-gradient(90deg,#0b6ebd22,#0b6ebd11);padding:22px 20px;border-bottom:1px solid #e6eef8}
+    .wrap{max-width:980px;margin:18px auto;padding:0 16px}
+    h1{margin:0;font-size:20px}
+    p.lead{color:var(--muted);margin:6px 0 0;font-size:14px}
+    .controls{display:flex;gap:8px;align-items:center;margin:18px 0 14px}
+    input[type=search]{flex:1;padding:10px;border:1px solid #d6e6fb;border-radius:8px}
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:0 6px 18px rgba(20,40,80,0.06);padding:16px;margin-bottom:14px}
+    .tree ul{list-style:none;padding-left:18px;margin:8px 0}
+    .branch{cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px}
+    .branch:hover{background:#f3f7fb}
+    .branch .title{font-weight:600}
+    .leaf{margin-left:26px;padding:8px;border-left:2px dashed #eef5fc}
+    .sutta{padding:10px;border-radius:8px;background:#fbfdff;margin:8px 0;border:1px solid #eef6fb}
+    .meta{font-size:13px;color:var(--muted)}
+    .pali{font-family:"Noto Serif",serif,Georgia; margin:8px 0;font-size:15px;line-height:1.45}
+    button{background:var(--accent);color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer}
+    button.ghost{background:transparent;color:var(--accent);border:1px solid #cfe3fb}
+    .translation{margin-top:8px;padding:10px;border-radius:8px;background:#fffef6;border:1px solid #fff2cc;color:#4a3b00}
+    .small{font-size:13px;color:var(--muted)}
+    footer{padding:20px;text-align:center;color:var(--muted);font-size:13px}
+    /* collapse icon */
+    .caret{transition:transform .18s ease;display:inline-block;width:14px;text-align:center}
+    .caret.open{transform:rotate(90deg)}
+    /* responsive */
+    @media (max-width:520px){
+      .controls{flex-direction:column;align-items:stretch}
+      button{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Dhamma Archive — Lưu trữ Nikāya (Pāli)</h1>
+      <p class="lead">Kho lưu trữ kinh Pāli, trình bày gốc cây → nhánh → bài kinh. (Bản dịch tiếng Việt: mô phỏng / có thể tích hợp AI.)</p>
+    </div>
+  </header>
+
+  <main class="wrap" role="main">
+    <section class="card">
+      <div class="controls" aria-label="Tìm kiếm và hành động">
+        <input id="search" type="search" placeholder="Tìm sutta (ví dụ: DN 1, MN 26, Satipatthana)..." />
+        <button id="btnExpand" class="ghost">Mở/Đóng tất cả</button>
+      </div>
+
+      <div class="tree" id="tree">
+        <!-- Example: Digha Nikaya -->
+        <ul>
+          <li>
+            <div class="branch" data-open="false" tabindex="0" role="button" aria-expanded="false">
+              <span class="caret">▶</span>
+              <span class="title">Dīgha Nikāya (Trường bộ)</span>
+              <span class="small" style="margin-left:auto">Số sutta: ví dụ 34</span>
+            </div>
+            <ul class="branch-children" hidden>
+              <li class="leaf">
+                <div class="sutta" data-keywords="dn1 sutta1">
+                  <div class="meta"><strong>DN 1 — Brahmajāla Sutta</strong></div>
+                  <div class="pali">Evaṃ me sutaṃ — Ekākāle bhagavā... (đoạn Pāli ví dụ)</div>
+                  <button class="translate" data-pali="Evaṃ me sutaṃ — Ekākāle bhagavā...">Dịch sang Tiếng Việt</button>
+                  <div class="translation" hidden aria-live="polite"></div>
+                </div>
+              </li>
+              <!-- add more suttas here -->
+            </ul>
+          </li>
+
+          <!-- Majjhima Nikāya -->
+          <li>
+            <div class="branch" data-open="false" tabindex="0" role="button" aria-expanded="false">
+              <span class="caret">▶</span>
+              <span class="title">Majjhima Nikāya (Trung bộ)</span>
+              <span class="small" style="margin-left:auto">Số sutta: ví dụ 152</span>
+            </div>
+            <ul class="branch-children" hidden>
+              <li class="leaf">
+                <div class="sutta" data-keywords="mn26 middle length">
+                  <div class="meta"><strong>MN 26 — Ariyapariyesana Sutta</strong></div>
+                  <div class="pali">Koṭṭhitaṃ mayhaṃ... (đoạn Pāli ví dụ)</div>
+                  <button class="translate" data-pali="Koṭṭhitaṃ mayhaṃ...">Dịch sang Tiếng Việt</button>
+                  <div class="translation" hidden></div>
+                </div>
+              </li>
+            </ul>
+          </li>
+
+          <!-- Saṃyutta Nikāya -->
+          <li>
+            <div class="branch" data-open="false" tabindex="0" role="button" aria-expanded="false">
+              <span class="caret">▶</span>
+              <span class="title">Saṃyutta Nikāya (Tương ưng)</span>
+              <span class="small" style="margin-left:auto">Số sutta: nhiều</span>
+            </div>
+            <ul class="branch-children" hidden>
+              <li class="leaf">
+                <div class="sutta" data-keywords="sn12 sutta12 satipatthana">
+                  <div class="meta"><strong>SN 47.10 — Satipaṭṭhāna Sutta</strong></div>
+                  <div class="pali">Citte ca ārammaṇe... (đoạn Pāli ví dụ)</div>
+                  <button class="translate" data-pali="Citte ca ārammaṇe...">Dịch sang Tiếng Việt</button>
+                  <div class="translation" hidden></div>
+                </div>
+              </li>
+            </ul>
+          </li>
+
+          <!-- Aṅguttara Nikāya -->
+          <li>
+            <div class="branch" data-open="false" tabindex="0" role="button" aria-expanded="false">
+              <span class="caret">▶</span>
+              <span class="title">Aṅguttara Nikāya (Tăng Chi)</span>
+              <span class="small" style="margin-left:auto">Số sutta: nhiều</span>
+            </div>
+            <ul class="branch-children" hidden>
+              <li class="leaf">
+                <div class="sutta" data-keywords="an1 sutta1">
+                  <div class="meta"><strong>AN 1.1 — Pubbavideha Sutta</strong></div>
+                  <div class="pali">Svākkhāto bhagavatā dhammo... (đoạn Pāli ví dụ)</div>
+                  <button class="translate" data-pali="Svākkhāto bhagavatā dhammo...">Dịch sang Tiếng Việt</button>
+                  <div class="translation" hidden></div>
+                </div>
+              </li>
+            </ul>
+          </li>
+
+          <!-- Khuddaka Nikāya -->
+          <li>
+            <div class="branch" data-open="false" tabindex="0" role="button" aria-expanded="false">
+              <span class="caret">▶</span>
+              <span class="title">Khuddaka Nikāya (Tiểu bộ)</span>
+              <span class="small" style="margin-left:auto">Các phần: Dhammapada, Udāna...</span>
+            </div>
+            <ul class="branch-children" hidden>
+              <li class="leaf">
+                <div class="sutta" data-keywords="dhammapada verse">
+                  <div class="meta"><strong>Dhammapada — Verse 1</strong></div>
+                  <div class="pali">Manopubbaṅgamā dhammā... (câu Pāli ví dụ)</div>
+                  <button class="translate" data-pali="Manopubbaṅgamā dhammā...">Dịch sang Tiếng Việt</button>
+                  <div class="translation" hidden></div>
+                </div>
+              </li>
+            </ul>
+          </li>
+
+        </ul>
+      </div>
+    </section>
+
+    <section class="card small">
+      <strong>Ghi chú:</strong>
+      <ul>
+        <li>Pāli gốc thuộc <em>public domain</em> — bạn có thể đăng (nếu là bản gốc).</li>
+        <li>Phần "Dịch sang Tiếng Việt" hiện là <strong>mô phỏng</strong>. Dễ dàng thay bằng tích hợp OpenAI API hoặc dịch tự động khác (mình có thể hướng dẫn tích hợp nếu bạn cần).</li>
+        <li>Thêm suttas: nhân bản thẻ <code>.sutta</code> và sửa tiêu đề + đoạn Pāli.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    © Dhamma Archive — Mẫu đơn giản. Liên hệ để tích hợp API dịch / làm site động.
+  </footer>
+
+  <script>
+    // Collapsible branches
+    document.querySelectorAll('.branch').forEach(b => {
+      b.addEventListener('click', () => {
+        const open = b.getAttribute('data-open') === 'true';
+        const child = b.nextElementSibling;
+        const caret = b.querySelector('.caret');
+        if (!child) return;
+        if (open) {
+          child.hidden = true;
+          b.setAttribute('data-open','false');
+          b.setAttribute('aria-expanded','false');
+          caret.classList.remove('open');
+        } else {
+          child.hidden = false;
+          b.setAttribute('data-open','true');
+          b.setAttribute('aria-expanded','true');
+          caret.classList.add('open');
+        }
+      });
+      // keyboard accessibility
+      b.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); b.click(); }
+      });
+    });
+
+    // Expand/Collapse all
+    const btnExpand = document.getElementById('btnExpand');
+    btnExpand.addEventListener('click', () => {
+      const anyClosed = [...document.querySelectorAll('.branch-children')].some(ch => ch.hidden);
+      document.querySelectorAll('.branch-children').forEach(ch => ch.hidden = !anyClosed);
+      document.querySelectorAll('.branch').forEach(b => {
+        b.setAttribute('data-open', (!anyClosed).toString());
+        b.setAttribute('aria-expanded', (!anyClosed).toString());
+        const caret = b.querySelector('.caret');
+        if (!anyClosed) caret.classList.remove('open'); else caret.classList.add('open');
+      });
+    });
+
+    // Simple search (filter suttas by keywords/title)
+    const search = document.getElementById('search');
+    search.addEventListener('input', (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      document.querySelectorAll('.sutta').forEach(s => {
+        const text = (s.querySelector('.meta').innerText + ' ' + s.dataset.keywords).toLowerCase();
+        s.style.display = (!q || text.includes(q)) ? '' : 'none';
+      });
+      // if user searched, expand matching branches
+      if (q) {
+        document.querySelectorAll('.branch-children').forEach(ch => {
+          const hasVisible = [...ch.querySelectorAll('.sutta')].some(s => s.style.display !== 'none');
+          ch.hidden = !hasVisible;
+          const branch = ch.previousElementSibling;
+          if (branch) {
+            branch.setAttribute('data-open', (!ch.hidden).toString());
+            branch.setAttribute('aria-expanded', (!ch.hidden).toString());
+            const caret = branch.querySelector('.caret');
+            if (!ch.hidden) caret.classList.add('open'); else caret.classList.remove('open');
+          }
+        });
+      } else {
+        // collapse all when search cleared
+        document.querySelectorAll('.branch-children').forEach(ch => ch.hidden = true);
+        document.querySelectorAll('.branch').forEach(b => {
+          b.setAttribute('data-open','false');
+          b.setAttribute('aria-expanded','false');
+          const caret = b.querySelector('.caret'); caret.classList.remove('open');
+        });
+      }
+    });
+
+    // Translate buttons (mock)
+    // This is a safe demo: it simulates translation locally.
+    // To integrate real AI (OpenAI), replace the mockTranslate function with actual fetch to your backend or the OpenAI API.
+    function mockTranslate(pali){
+      // VERY simple illustrative mapping; replace by real model result.
+      return "【Bản dịch mô phỏng】 " + pali
+        .replace('…','...')
+        .replace('Evaṃ me sutaṃ','Được nghe như vầy')
+        .replace('Manopubbaṅgamā dhammā','Tâm là nguyên nhân của các pháp')
+        .slice(0,800);
+    }
+
+    document.querySelectorAll('.translate').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const wrapper = btn.parentElement;
+        const target = wrapper.querySelector('.translation');
+        const pali = btn.getAttribute('data-pali') || wrapper.querySelector('.pali')?.innerText || '';
+        // show loading state
+        btn.disabled = true;
+        const prev = btn.innerText;
+        btn.innerText = 'Đang dịch...';
+        try {
+          // Simulate latency
+          await new Promise(r=>setTimeout(r,500));
+          // Use mockTranslate here. To use real translation:
+          // - Option A: call your server endpoint that proxies to OpenAI (recommended for key security)
+          // - Option B: call OpenAI directly from server/client (client keys not safe)
+          const translation = mockTranslate(pali);
+          target.innerText = translation;
+          target.hidden = false;
+        } catch (err){
+          target.innerText = 'Lỗi khi dịch. Vui lòng thử lại.';
+          target.hidden = false;
+        } finally {
+          btn.disabled = false;
+          btn.innerText = prev;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
