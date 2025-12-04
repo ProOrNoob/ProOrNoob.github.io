@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MN 131 – Bhaddekaratta Sutta</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --muted:#64748b;
+      --accent:#2563eb;
+    }
+    *{box-sizing:border-box}
+
+    /* ✅ CHỖ NÀY: cho html, body cao = 100% để ăn theo chiều cao iframe */
+    html,body{
+      margin:0;
+      padding:0;
+      height:100%;
+      font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;
+      background:var(--bg);
+      color:#0f172a;
+    }
+
+    /* ✅ page-wrapper fill 100% iframe + flex để chia layout */
+    .page-wrapper{
+      height:100%;
+      display:flex;
+      justify-content:center;
+      align-items:stretch;
+      padding:0; /* nếu muốn có viền trên dưới thì tăng padding ở đây */
+    }
+
+    /* ✅ sutra-card chiếm full chiều cao, chia header + thân */
+    .sutra-card{
+      background:var(--card);
+      border-radius:5px;
+      border:1px solid #e6edf7;
+      padding:5px;
+      max-width:none;
+      width:100%;
+      margin:0 auto;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .sutra-header{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      gap:0.5rem;
+      margin-bottom:0.35rem;
+      flex:0 0 auto;
+    }
+
+    .sutra-title{
+      font-size:1rem;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      color:var(--accent);
+      margin:0;
+    }
+
+    .controls .btn{
+      min-width:90px;
+      height:32px;
+      padding:0 .6rem;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:13px;
+      border-radius:8px;
+      white-space:nowrap;
+    }
+
+    /* ✅ sutra-grid chiếm toàn bộ phần còn lại, scroll bên trong
+       KHÔNG dùng 100vh nữa */
+    .sutra-grid{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      flex:1 1 auto;
+      overflow:auto;
+    }
+
+    .sutra-row{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:10px;
+      padding:10px;
+      border-radius:8px;
+    }
+    .sutra-row:nth-child(odd){
+      background:rgba(37,99,235,0.03);
+    }
+
+    .sutra-col{
+      min-height:1px;
+      padding:6px;
+      border-radius:6px;
+    }
+
+    .pali{font-family:"Noto Serif",serif;font-size:15px;line-height:1.6}
+    .eng{font-family:Georgia,serif;font-size:14px;line-height:1.6}
+    .vie{font-family:system-ui;font-size:14px;line-height:1.6}
+    .col-head{font-weight:600;color:var(--muted);font-size:13px;margin-bottom:4px}
+
+    .hide-pali .pali-col{display:none;}
+    .hide-eng  .eng-col {display:none;}
+    .hide-vie  .vie-col {display:none;}
+
+    .stack .sutra-row{grid-template-columns:1fr;}
+
+    /* overlay color */
+    .overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,0.45);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:2000;
+    }
+    .overlay.show{display:flex;}
+    .dialog{
+      background:var(--card);
+      border-radius:12px;
+      padding:14px 18px;
+      max-width:640px;
+      width:90%;
+      box-shadow:0 18px 45px rgba(15,23,42,0.35);
+    }
+    .dialog-close{
+      border:none;
+      background:transparent;
+      font-size:20px;
+      line-height:1;
+      cursor:pointer;
+      color:#64748b;
+      padding-left:8px;
+    }
+    .dialog-close:hover{color:#0f172a;}
+
+    .tab-btn.active{
+      background-color:var(--accent);
+      color:#fff !important;
+    }
+
+    .dialog .btn{
+      min-width:110px;
+      text-align:center;
+    }
+
+    @media(max-width:768px){
+      .sutra-row{grid-template-columns:1fr;}
+      .controls .btn{min-width:80px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="sutra-card">
+      <!-- HEADER TRONG TRANG KINH -->
+      <div class="sutra-header">
+        <div>
+          <h1 id="sutraTitleLocal" class="sutra-title">
+            MN 131 – BHADDEKARATTA SUTTA
+          </h1>
+          <div id="sutraSubtitle" class="text-muted small">
+            The Discourse on a Single Excellent Night
+          </div>
+        </div>
+
+        <div class="controls d-flex flex-wrap align-items-center gap-2">
+          <div class="btn-group btn-group-sm" role="group" aria-label="Languages">
+            <button type="button" class="btn btn-outline-secondary active" id="btnPali">Pāli</button>
+            <button type="button" class="btn btn-outline-secondary active" id="btnEng">English</button>
+            <button type="button" class="btn btn-outline-secondary active" id="btnVie">Vietnamese</button>
+          </div>
+          <button id="btnLayout" class="btn btn-outline-secondary btn-sm" type="button">
+            Row
+          </button>
+          <button id="btnColor" class="btn btn-outline-secondary btn-sm" type="button">
+            🎨 Color
+          </button>
+        </div>
+      </div>
+
+      <!-- NỘI DUNG KINH -->
+      <div id="sutraGrid" class="sutra-grid">
+        <!-- Row 1 -->
+        <div class="sutra-row" data-idx="1">
+          <div class="sutra-col pali-col">
+            <div class="col-head">Pāli</div>
+            <div class="pali">
+              Evaṁ me sutaṁ: Ekaṁ samayaṁ bhagavā sāvatthiyaṁ vihārati jetavane anāthapiṇḍikassa ārāme.
+            </div>
+          </div>
+          <div class="sutra-col eng-col">
+            <div class="col-head">English</div>
+            <div class="eng">
+              Thus have I heard: At one time the Blessed One was dwelling at Sāvatthī, in Jeta's Grove, Anāthapiṇḍika's Park.
+            </div>
+          </div>
+          <div class="sutra-col vie-col">
+            <div class="col-head">Tiếng Việt</div>
+            <div class="vie">
+              Nghe như vầy: Có một thời, Thế Tôn trú tại Xá-vệ, trong rừng Kỳ-đà, tại khu vườn của Anāthapiṇḍika.
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="sutra-row" data-idx="2">
+          <div class="sutra-col pali-col">
+            <div class="pali">
+              Tatra kho bhagavā bhikkhū āmantesi: “Bhikkhavo”ti. “Bhaddante”ti te bhikkhū bhagavato paccassosuṁ.
+            </div>
+          </div>
+          <div class="sutra-col eng-col">
+            <div class="eng">
+              There the Blessed One addressed the bhikkhus: “Bhikkhus!” “Venerable sir,” the bhikkhus replied to the Blessed One.
+            </div>
+          </div>
+          <div class="sutra-col vie-col">
+            <div class="vie">
+              Ở đó Thế Tôn nói với các tỳ-kheo: “Này các tỳ-kheo.” “Bạch trưởng lão,” các tỳ-kheo trả lời Đức Phật.
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3 -->
+        <div class="sutra-row" data-idx="3">
+          <div class="sutra-col pali-col">
+            <div class="pali">
+              Atītaṁ nānvāgameyya, nappaṭikaṅkhe anāgataṁ; yadatītaṁ pahīnaṁ taṁ, appattañca anāgataṁ.
+            </div>
+          </div>
+          <div class="sutra-col eng-col">
+            <div class="eng">
+              Let the past not be clung to; the future not expected; whatever is past has been left behind, and the future is not yet come.
+            </div>
+          </div>
+          <div class="sutra-col vie-col">
+            <div class="vie">
+              Đừng bám víu vào quá khứ, đừng mong chờ tương lai; điều đã qua đã bỏ, điều tương lai chưa đến.
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 4 -->
+        <div class="sutra-row" data-idx="4">
+          <div class="sutra-col pali-col">
+            <div class="pali">
+              Idamavoca bhagavā. Attamanā te bhikkhū bhagavato bhāsitaṁ abhinandunti. Bhaddekarattasuttaṁ niṭṭhitaṁ.
+            </div>
+          </div>
+          <div class="sutra-col eng-col">
+            <div class="eng">
+              Thus the Blessed One spoke. The bhikkhus were glad and praised what had been said by the Blessed One. The Bhaddekaratta Sutta is concluded.
+            </div>
+          </div>
+          <div class="sutra-col vie-col">
+            <div class="vie">
+              Đức Phật thuyết xong. Các tỳ-kheo hoan hỷ và tán thán lời Phật dạy. Kinh Bhaddekaratta kết thúc.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p id="hintText" class="text-muted small mt-2 mb-0">
+        Use Pāli / English / Vietnamese buttons to toggle columns; "Row" / "Col" switches layout; "Color" customizes text/background colors per language (saved in localStorage).
+      </p>
+    </div>
+  </div>
+
+  <!-- COLOR OVERLAY -->
+  <div id="colorOverlay" class="overlay" aria-hidden="true">
+    <div class="dialog" role="dialog" aria-modal="true">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 id="colorTitle" class="mb-0">🎨 Color settings</h2>
+        <div class="d-flex align-items-center gap-2">
+          <div class="btn-group btn-group-sm" role="tablist">
+            <button type="button" class="btn btn-outline-secondary tab-btn active" id="tabPali">
+              Pāli
+            </button>
+            <button type="button" class="btn btn-outline-secondary tab-btn" id="tabEng">
+              English
+            </button>
+            <button type="button" class="btn btn-outline-secondary tab-btn" id="tabVie">
+              Vietnamese
+            </button>
+          </div>
+          <button type="button" class="dialog-close" id="colorClose">×</button>
+        </div>
+      </div>
+
+      <!-- Pāli -->
+      <div id="colorContentPali">
+        <p class="mb-2"><strong>Pāli</strong> – chỉnh màu cho cột Pāli.</p>
+        <div class="mb-2 d-flex justify-content-between align-items-center">
+          <span>Màu chữ</span>
+          <input id="paliColor" type="color" title="Màu chữ Pāli" value="#0f172a">
+        </div>
+        <div class="mb-2 d-flex justify-content-between align-items-center">
+          <span>Màu nền</span>
+          <input id="paliBg" type="color" title="Màu nền Pāli" value="#ffffff">
+        </div>
+        <div class="text-end mt-2">
+          <button class="btn btn-outline-secondary btn-sm" type="button" id="resetPali">Reset Pāli</button>
+        </div>
+      </div>
+
+      <!-- English -->
+      <div id="colorContentEng" class="d-none">
+        <p class="mb-2"><strong>English</strong> – color settings for the English column.</p>
+        <div class="mb-2 d-flex justify-content-between align-items-center">
+          <span>Text color</span>
+          <input id="engColor" type="color" title="English text color" value="#0f172a">
+        </div>
+        <div class="mb-2 d-flex justify-content-between align-items-center">
+          <span>Background</span>
+          <input id="engBg" type="color" title="English background color" value="#ffffff">
+        </div>
+        <div class="text-end mt-2">
+          <button class="btn btn-outline-secondary btn-sm" type="button" id="resetEng">Reset English</button>
+        </div>
+      </div>
+
+      <!-- Vietnamese -->
+      <div id="colorContentVie" class="d-none">
+        <p class="mb-2"><strong>Tiếng Việt</strong> – chỉnh màu cho cột tiếng Việt.</p>
+        <div class="mb-2 d-flex justify-content-between align-items-center">
+          <span>Màu chữ</span>
+          <input id="vieColor" type="color" title="Màu chữ Tiếng Việt" value="#0f172a">
+        </div>
+        <div class="mb-2 d-flex justify-content-between align-items-center">
+          <span>Màu nền</span>
+          <input id="vieBg" type="color" title="Màu nền Tiếng Việt" value="#ffffff">
+        </div>
+        <div class="text-end mt-2">
+          <button class="btn btn-outline-secondary btn-sm" type="button" id="resetVie">Reset Tiếng Việt</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const grid        = document.getElementById('sutraGrid');
+      const card        = document.querySelector('.sutra-card');
+      const btnPali     = document.getElementById('btnPali');
+      const btnEng      = document.getElementById('btnEng');
+      const btnVie      = document.getElementById('btnVie');
+      const btnLayout   = document.getElementById('btnLayout');
+      const btnColor    = document.getElementById('btnColor');
+
+      const paliCols    = document.querySelectorAll('.pali-col');
+      const engCols     = document.querySelectorAll('.eng-col');
+      const vieCols     = document.querySelectorAll('.vie-col');
+
+      const colorOverlay   = document.getElementById('colorOverlay');
+      const colorClose     = document.getElementById('colorClose');
+      const tabPali        = document.getElementById('tabPali');
+      const tabEng         = document.getElementById('tabEng');
+      const tabVie         = document.getElementById('tabVie');
+      const colorContentPali = document.getElementById('colorContentPali');
+      const colorContentEng  = document.getElementById('colorContentEng');
+      const colorContentVie  = document.getElementById('colorContentVie');
+
+      const paliBgInput    = document.getElementById('paliBg');
+      const paliColorInput = document.getElementById('paliColor');
+      const engBgInput     = document.getElementById('engBg');
+      const engColorInput  = document.getElementById('engColor');
+      const vieBgInput     = document.getElementById('vieBg');
+      const vieColorInput  = document.getElementById('vieColor');
+
+      const resetPaliBtn = document.getElementById('resetPali');
+      const resetEngBtn  = document.getElementById('resetEng');
+      const resetVieBtn  = document.getElementById('resetVie');
+
+      const hintText   = document.getElementById('hintText');
+      const subTitle   = document.getElementById('sutraSubtitle');
+
+      let showPali = true;
+      let showEng  = true;
+      let showVie  = true;
+
+      function applyUiLang(){
+        let lang = 'vi';
+        try{
+          const v = localStorage.getItem('nikaya_lang');
+          if(v === 'en' || v === 'vi') lang = v;
+        }catch(e){}
+
+        if(lang === 'en'){
+          btnPali.textContent = 'Pāli';
+          btnEng.textContent  = 'English';
+          btnVie.textContent  = 'Vietnamese';
+          btnLayout.textContent = card.classList.contains('stack') ? 'Col' : 'Row';
+          btnColor.textContent  = '🎨 Color';
+          hintText.textContent =
+            'Use Pāli / English / Vietnamese buttons to toggle columns; "Row" / "Col" switches between multi-column and stacked layout; "Color" customizes text/background colors per language (saved in localStorage).';
+          subTitle.textContent = 'The Discourse on a Single Excellent Night';
+        }else{
+          btnPali.textContent = 'Pāli';
+          btnEng.textContent  = 'English';
+          btnVie.textContent  = 'Tiếng Việt';
+          btnLayout.textContent = card.classList.contains('stack') ? 'Col' : 'Row';
+          btnColor.textContent  = '🎨 Màu';
+          hintText.textContent =
+            'Dùng các nút Pāli / English / Tiếng Việt để ẩn/hiện cột; "Row" chuyển giữa nhiều cột và xếp chồng "Col"; "Màu" để chỉnh màu chữ/nền riêng cho từng ngôn ngữ (lưu bằng localStorage).';
+          subTitle.textContent = 'Kinh Nhất Dạ Hiền Giả';
+        }
+      }
+
+      function adjustRowColumns(){
+        const rows = grid.querySelectorAll('.sutra-row');
+        rows.forEach(row=>{
+          if(card.classList.contains('stack')){
+            row.style.gridTemplateColumns = '1fr';
+            return;
+          }
+          const cols = Array.from(row.querySelectorAll('.sutra-col'));
+          const visible = cols.filter(col=>{
+            if(col.classList.contains('pali-col') && !showPali) return false;
+            if(col.classList.contains('eng-col')  && !showEng)  return false;
+            if(col.classList.contains('vie-col')  && !showVie)  return false;
+            return true;
+          });
+          const n = Math.max(1, visible.length);
+          row.style.gridTemplateColumns = `repeat(${n},1fr)`;
+        });
+      }
+
+      function updateVisibility(){
+        grid.classList.toggle('hide-pali', !showPali);
+        grid.classList.toggle('hide-eng',  !showEng);
+        grid.classList.toggle('hide-vie',  !showVie);
+        adjustRowColumns();
+      }
+
+      btnPali.addEventListener('click',()=>{
+        showPali = !showPali;
+        btnPali.classList.toggle('active', showPali);
+        updateVisibility();
+      });
+      btnEng.addEventListener('click',()=>{
+        showEng = !showEng;
+        btnEng.classList.toggle('active', showEng);
+        updateVisibility();
+      });
+      btnVie.addEventListener('click',()=>{
+        showVie = !showVie;
+        btnVie.classList.toggle('active', showVie);
+        updateVisibility();
+      });
+
+      btnLayout.addEventListener('click',()=>{
+        card.classList.toggle('stack');
+        const isStack = card.classList.contains('stack');
+        btnLayout.textContent = isStack ? 'Col' : 'Row';
+        applyUiLang();
+        adjustRowColumns();
+      });
+
+      function setColorTab(lang){
+        const isPali = lang === 'pali';
+        const isEng  = lang === 'eng';
+        const isVie  = lang === 'vie';
+
+        tabPali.classList.toggle('active', isPali);
+        tabEng.classList.toggle('active',  isEng);
+        tabVie.classList.toggle('active',  isVie);
+
+        colorContentPali.classList.toggle('d-none', !isPali);
+        colorContentEng.classList.toggle('d-none',  !isEng);
+        colorContentVie.classList.toggle('d-none',  !isVie);
+      }
+      function openColor(){
+        colorOverlay.classList.add('show');
+        colorOverlay.setAttribute('aria-hidden','false');
+      }
+      function closeColor(){
+        colorOverlay.classList.remove('show');
+        colorOverlay.setAttribute('aria-hidden','true');
+      }
+      btnColor.addEventListener('click',(e)=>{ e.stopPropagation(); openColor(); });
+      colorClose.addEventListener('click',(e)=>{ e.stopPropagation(); closeColor(); });
+      colorOverlay.addEventListener('click',(e)=>{ if(e.target===colorOverlay) closeColor(); });
+
+      tabPali.addEventListener('click',(e)=>{ e.stopPropagation(); setColorTab('pali'); });
+      tabEng.addEventListener('click',(e)=>{ e.stopPropagation(); setColorTab('eng'); });
+      tabVie.addEventListener('click',(e)=>{ e.stopPropagation(); setColorTab('vie'); });
+
+      function loadColors(){
+        let saved = {};
+        try{
+          saved = JSON.parse(localStorage.getItem('bh_colors') || '{}');
+        }catch(e){ saved = {}; }
+
+        paliCols.forEach(c=>{c.style.background='#ffffff';c.style.color='#0f172a';});
+        engCols.forEach(c=>{c.style.background='#ffffff';c.style.color='#0f172a';});
+        vieCols.forEach(c=>{c.style.background='#ffffff';c.style.color='#0f172a';});
+
+        paliBgInput.value    = saved.paliBg    || '#ffffff';
+        paliColorInput.value = saved.paliColor || '#0f172a';
+        engBgInput.value     = saved.engBg     || '#ffffff';
+        engColorInput.value  = saved.engColor  || '#0f172a';
+        vieBgInput.value     = saved.vieBg     || '#ffffff';
+        vieColorInput.value  = saved.vieColor  || '#0f172a';
+
+        if(saved.paliBg)    paliCols.forEach(c=>c.style.background=saved.paliBg);
+        if(saved.paliColor) paliCols.forEach(c=>c.style.color=saved.paliColor);
+        if(saved.engBg)     engCols.forEach(c=>c.style.background=saved.engBg);
+        if(saved.engColor)  engCols.forEach(c=>c.style.color=saved.engColor);
+        if(saved.vieBg)     vieCols.forEach(c=>c.style.background=saved.vieBg);
+        if(saved.vieColor)  vieCols.forEach(c=>c.style.color=saved.vieColor);
+      }
+
+      function saveColors(){
+        const obj = {
+          paliBg: paliBgInput.value || '#ffffff',
+          paliColor: paliColorInput.value || '#0f172a',
+          engBg: engBgInput.value || '#ffffff',
+          engColor: engColorInput.value || '#0f172a',
+          vieBg: vieBgInput.value || '#ffffff',
+          vieColor: vieColorInput.value || '#0f172a'
+        };
+        try{
+          localStorage.setItem('bh_colors', JSON.stringify(obj));
+        }catch(e){}
+      }
+
+      paliBgInput.addEventListener('input', e=>{
+        paliCols.forEach(c=>c.style.background=e.target.value);
+        saveColors();
+      });
+      paliColorInput.addEventListener('input', e=>{
+        paliCols.forEach(c=>c.style.color=e.target.value);
+        saveColors();
+      });
+
+      engBgInput.addEventListener('input', e=>{
+        engCols.forEach(c=>c.style.background=e.target.value);
+        saveColors();
+      });
+      engColorInput.addEventListener('input', e=>{
+        engCols.forEach(c=>c.style.color=e.target.value);
+        saveColors();
+      });
+
+      vieBgInput.addEventListener('input', e=>{
+        vieCols.forEach(c=>c.style.background=e.target.value);
+        saveColors();
+      });
+      vieColorInput.addEventListener('input', e=>{
+        vieCols.forEach(c=>c.style.color=e.target.value);
+        saveColors();
+      });
+
+      resetPaliBtn.addEventListener('click',()=>{
+        paliCols.forEach(c=>{c.style.background='#ffffff';c.style.color='#0f172a';});
+        paliBgInput.value    = '#ffffff';
+        paliColorInput.value = '#0f172a';
+        saveColors();
+      });
+      resetEngBtn.addEventListener('click',()=>{
+        engCols.forEach(c=>{c.style.background='#ffffff';c.style.color='#0f172a';});
+        engBgInput.value     = '#ffffff';
+        engColorInput.value  = '#0f172a';
+        saveColors();
+      });
+      resetVieBtn.addEventListener('click',()=>{
+        vieCols.forEach(c=>{c.style.background='#ffffff';c.style.color='#0f172a';});
+        vieBgInput.value     = '#ffffff';
+        vieColorInput.value  = '#0f172a';
+        saveColors();
+      });
+
+      setColorTab('pali');
+      loadColors();
+      updateVisibility();
+      applyUiLang();
+    })();
+  </script>
+</body>
+</html>
