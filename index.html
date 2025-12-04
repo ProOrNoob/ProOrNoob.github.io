@@ -3,9 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Bhaddekaratta — Pāli / English / Tiếng Việt (Bootstrap)</title>
-
-  <!-- Bootstrap CSS -->
+  <title>Nikāya Archive — Index</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
@@ -16,100 +14,126 @@
       --accent:#2563eb;
     }
     *{box-sizing:border-box}
-
-    /* CHỐT: body + html full viewport, không scroll ngoài */
     html,body{
       height:100%;
       margin:0;
       padding:0;
-      overflow:hidden;
       font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;
       background:var(--bg);
       color:#0f172a;
-    }
-
-    /* hiệu ứng trượt khi quay lại danh mục */
-    body{
-      transform:translateX(0);
-      transition:transform .25s ease;
-    }
-    body.page-slide-out{
-      transform:translateX(-100%);
-    }
-
-    header{
-      position:sticky;
-      top:0;
-      z-index:1040;
-      background:linear-gradient(180deg, rgba(245,247,251,0.95), rgba(245,247,251,0.85));
-      backdrop-filter:blur(4px);
-      border-bottom:1px solid rgba(15,23,42,0.06);
+      overflow:hidden;
     }
 
     .page-wrapper{
-      height:100dvh; /* chuẩn cho iOS/iPad */
+      height:100%;
       display:flex;
       flex-direction:column;
-      overflow:hidden;
+    }
+
+    header{
+      flex:0 0 auto;
+      background:linear-gradient(180deg, rgba(245,247,251,0.95), rgba(245,247,251,0.85));
+      border-bottom:1px solid rgba(15,23,42,0.06);
+    }
+
+    /* Tiêu đề: in hoa + màu accent */
+    header h1{
+      text-transform:uppercase;
+      letter-spacing:.03em;
+      color:var(--accent);
+      margin:0;
     }
 
     .main-container{
       flex:1 1 auto;
-      padding-top:0.5rem;
-      padding-bottom:0.5rem;
+      padding:0.5rem 0;
+      overflow:hidden;
     }
-
-    .sutra-card{
-      background:var(--card);
-      border-radius:12px;
-      border:1px solid #e6edf7;
-      padding:14px;
-      display:flex;
-      flex-direction:column;
-    }
-
-    .sutra-grid{display:flex;flex-direction:column;gap:10px;}
-
-    .sutra-row{
-      display:grid;
-      grid-template-columns:1fr 1fr 1fr;
-      gap:12px;
-      padding:12px;
-      border-radius:8px;
-    }
-    .sutra-row:nth-child(odd){
-      background:rgba(37,99,235,0.03);
-    }
-
-    .sutra-col{
-      min-height:1px;
-      padding:8px;
-      border-radius:6px;
-    }
-
-    .pali{font-family:"Noto Serif",serif;font-size:15px;line-height:1.6}
-    .eng{font-family:Georgia,serif;font-size:14px;line-height:1.6}
-    .vie{font-family:system-ui;font-size:14px;line-height:1.6}
-    .col-head{font-weight:600;color:var(--muted);font-size:13px;margin-bottom:6px}
-
-    /* hide states */
-    .hide-pali .pali-col{display:none;}
-    .hide-eng  .eng-col {display:none;}
-    .hide-vie  .vie-col {display:none;}
-
-    /* layout stack */
-    .stack .sutra-row{grid-template-columns:1fr;}
 
     footer{
+      flex:0 0 auto;
       border-top:1px solid rgba(15,23,42,0.06);
       background:var(--bg);
       font-size:13px;
       color:var(--muted);
     }
 
-    /* unify button sizes */
-    .controls .btn,
-    header .btn{
+    .sidebar-wrapper{
+      height:100%;
+    }
+
+    /* SIDEBAR: nền trắng, bo góc giống iframe */
+    .sidebar{
+      height:100%;
+      max-height:100%;
+      border-right:1px solid #e5e7eb;
+      background:var(--card);
+      padding:0.5rem 0.75rem;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+      font-size:13px;
+      border-radius:12px;
+    }
+    .sidebar-section{margin-bottom:0.5rem;}
+    .sidebar-toggle{
+      width:100%;
+      border:none;
+      background:transparent;
+      padding:4px 6px;
+      text-align:left;
+      font-weight:600;
+      font-size:13px;
+      color:#1e293b;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      cursor:pointer;
+      border-radius:6px;
+    }
+    .sidebar-toggle:hover{background:rgba(37,99,235,0.06);}
+    .sidebar-toggle .chevron{font-size:11px;opacity:0.7;}
+    .sidebar-list{margin-top:2px;padding-left:4px;}
+    .sidebar-list.collapsed{display:none;}
+
+    .sutta-link{
+      display:block;
+      padding:3px 6px;
+      border-radius:6px;
+      text-decoration:none;
+      color:#475569;
+      font-size:13px;
+      white-space:normal;
+      word-break:break-word;
+      line-height:1.4;
+      transition:background-color .15s ease,color .15s ease;
+    }
+    .sutta-link:hover{
+      background:rgba(37,99,235,0.08);
+      color:#1d4ed8;
+    }
+    /* Màu chọn bài kinh: cùng accent như nút */
+    .sutta-link.active{
+      background:var(--accent);
+      color:#ffffff;
+    }
+
+    /* CONTENT + iframe */
+    .content-wrapper{
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      padding-left:0.75rem;
+    }
+    #sutraFrame{
+      flex:1 1 auto;
+      width:100%;
+      border-radius:12px;
+      border:1px solid #e5e7eb;
+      background:var(--card);
+    }
+
+    /* Nút header */
+    .btn-header{
       min-width:96px;
       height:36px;
       padding:0 .75rem;
@@ -119,17 +143,42 @@
       font-size:14px;
       border-radius:8px;
       white-space:nowrap;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      color:#475569;
+    }
+    .btn-header:hover{
+      background:#e9eef5;
+      border-color:#cbd5e1;
+      color:#334155;
     }
 
-    /* vùng scroll duy nhất bên trong card */
-    #sutraCardScroll{
-      flex:1;
-      overflow-y:auto;
-      overscroll-behavior:contain;
-      -webkit-overflow-scrolling:touch;
+    /* Lá cờ SVG trong nút ngôn ngữ */
+    .btn-lang{
+      min-width:52px;
+      padding:0 .5rem;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .flag-icon{
+      width:22px;
+      height:16px;
+      display:block;
+      border-radius:2px;
+      filter:grayscale(1) brightness(.9); /* xám khi chưa chọn */
+      transition:.15s ease;
+    }
+    .btn-lang-active{
+      background:var(--accent) !important;
+      border-color:var(--accent) !important;
+      color:#fff !important;
+    }
+    .btn-lang-active .flag-icon{
+      filter:none; /* về màu gốc khi được chọn */
     }
 
-    /* overlay dùng chung cho Help & Color */
+    /* HELP overlay */
     .overlay{
       position:fixed;
       inset:0;
@@ -139,9 +188,7 @@
       justify-content:center;
       z-index:2000;
     }
-    .overlay.show{
-      display:flex;
-    }
+    .overlay.show{display:flex;}
     .dialog{
       background:var(--card);
       border-radius:12px;
@@ -149,14 +196,6 @@
       max-width:640px;
       width:90%;
       box-shadow:0 18px 45px rgba(15,23,42,0.35);
-    }
-    .dialog h2{
-      font-size:18px;
-      margin:0 0 8px 0;
-    }
-    .dialog p,
-    .dialog li{
-      font-size:14px;
     }
     .dialog-close{
       border:none;
@@ -167,33 +206,10 @@
       color:#64748b;
       padding-left:8px;
     }
-    .dialog-close:hover{
-      color:#0f172a;
-    }
+    .dialog-close:hover{color:#0f172a;}
 
-    .tab-btn.active{
-      background-color:var(--accent);
-      color:#fff !important;
-    }
-
-    /* tiêu đề bài kinh dạng nút, không click được */
-    .sutta-title{
-      cursor:default;
-      font-weight:600;
-      background:var(--card);
-      border-color:rgba(15,23,42,0.15);
-      color:#0f172a;
-      pointer-events:none;
-      box-shadow:0 2px 8px rgba(15,23,42,0.08);
-    }
-
-    @media (max-width: 768px){
-      .sutra-row{
-        grid-template-columns:1fr;
-      }
-      .controls .btn, header .btn{
-        min-width:80px;
-      }
+    @media (max-width:768px){
+      .content-wrapper{padding-left:0;}
     }
   </style>
 </head>
@@ -213,46 +229,72 @@
     <header class="py-2">
       <div class="container d-flex align-items-center justify-content-between gap-2">
         <div class="d-flex align-items-center gap-2">
-          <button class="btn btn-outline-secondary btn-sm" type="button" id="btnBack">
-            ← Danh mục
+          <button class="btn btn-outline-secondary btn-sm btn-header" type="button" id="btnSidebarToggle">
+            <span class="me-1">☰</span>
+            <span data-text-vi="Mục lục" data-text-en="Index">Mục lục</span>
           </button>
-
-          <!-- Nhóm bài trước / tiêu đề / bài sau -->
-          <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-outline-secondary btn-sm" type="button" id="btnPrevSutta">
-              ‹ Bài trước
-            </button>
-
-            <div id="suttaTitle" class="btn btn-outline-secondary btn-sm sutta-title">
-              Bhaddekaratta
-            </div>
-
-            <button class="btn btn-outline-secondary btn-sm" type="button" id="btnNextSutta">
-              Bài sau ›
-            </button>
-          </div>
+          <h1 id="sutraTitle" class="h5 mb-0">NIKĀYA ARCHIVE</h1>
         </div>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-outline-secondary btn-sm btn-header" type="button" id="btnPrev">
+            <span>⟨</span>
+            <span class="ms-1" data-text-vi="Kinh trước" data-text-en="Previous">Kinh trước</span>
+          </button>
+          <button class="btn btn-outline-secondary btn-sm btn-header" type="button" id="btnNext">
+            <span data-text-vi="Kinh sau" data-text-en="Next">Kinh sau</span>
+            <span class="ms-1">⟩</span>
+          </button>
+          <button class="btn btn-outline-secondary btn-sm btn-header" type="button" id="btnHelp">
+            <span data-text-vi="Hướng dẫn" data-text-en="Help">Hướng dẫn</span>
+          </button>
 
-        <div class="controls d-flex flex-wrap align-items-center gap-2">
-          <!-- Ngôn ngữ: chỉ ẩn / hiện -->
-          <div class="btn-group btn-group-sm" role="group" aria-label="Ngôn ngữ">
-            <button type="button" class="btn btn-outline-secondary active" id="btnPali">Pāli</button>
-            <button type="button" class="btn btn-outline-secondary active" id="btnEng">Tiếng Anh</button>
-            <button type="button" class="btn btn-outline-secondary active" id="btnVie">Tiếng Việt</button>
-          </div>
+          <!-- Nút ngôn ngữ: lá cờ SVG -->
+          <button class="btn btn-outline-secondary btn-sm btn-header btn-lang"
+                  type="button"
+                  id="btnLangVi"
+                  title="Tiếng Việt">
+            <svg class="flag-icon" viewBox="0 0 4 3" aria-hidden="true">
+              <!-- nền đỏ -->
+              <rect width="4" height="3" fill="#da251d"></rect>
+              <!-- sao vàng -->
+              <polygon fill="#ffde00"
+                points="2,0.45 2.25,1.3 3.15,1.3 2.4,1.85 2.65,2.7 2,2.2 1.35,2.7 1.6,1.85 0.85,1.3 1.75,1.3">
+              </polygon>
+            </svg>
+          </button>
 
-          <!-- Actions -->
-          <button id="btnLayout" class="btn btn-outline-secondary btn-sm" type="button">
-            Row
-          </button>
-          <button id="btnFull" class="btn btn-outline-secondary btn-sm" type="button">
-            ⤢ Toàn màn
-          </button>
-          <button id="btnColor" class="btn btn-outline-secondary btn-sm" type="button">
-            🎨 Màu
-          </button>
-          <button id="btnHelp" class="btn btn-outline-secondary btn-sm" type="button">
-            Help
+          <button class="btn btn-outline-secondary btn-sm btn-header btn-lang"
+                  type="button"
+                  id="btnLangEn"
+                  title="English">
+            <svg class="flag-icon" viewBox="0 0 4 3" aria-hidden="true">
+              <!-- nền xanh -->
+              <rect width="4" height="3" fill="#012169"></rect>
+
+              <!-- thập trắng chéo -->
+              <polygon fill="#ffffff"
+                points="0,0 0.5,0 4,2.25 4,3 3.5,3 0,0.75"></polygon>
+              <polygon fill="#ffffff"
+                points="4,0 3.5,0 0,2.25 0,3 0.5,3 4,0.75"></polygon>
+
+              <!-- thập đỏ chéo -->
+              <polygon fill="#c8102e"
+                points="0,0 0.25,0 4,2 4,2.25"></polygon>
+              <polygon fill="#c8102e"
+                points="4,0 3.75,0 0,2 0,2.25"></polygon>
+              <polygon fill="#c8102e"
+                points="0,3 0.25,3 4,1 4,0.75"></polygon>
+              <polygon fill="#c8102e"
+                points="4,3 3.75,3 0,1 0,0.75"></polygon>
+
+              <!-- thập trắng dọc/ngang -->
+              <rect x="1.5" width="1" height="3" fill="#ffffff"></rect>
+              <rect y="1" width="4" height="1" fill="#ffffff"></rect>
+
+              <!-- thập đỏ dọc/ngang -->
+              <rect x="1.75" width="0.5" height="3" fill="#c8102e"></rect>
+              <rect y="1.25" width="4" height="0.5" fill="#c8102e"></rect>
+            </svg>
           </button>
         </div>
       </div>
@@ -260,101 +302,73 @@
 
     <!-- MAIN -->
     <main class="main-container">
-      <div id="mainContainer" class="container">
-        <div class="sutra-card" id="sutraCard">
-
-          <div id="sutraCardScroll">
-            <div id="sutraGrid" class="sutra-grid">
-
-              <!-- Row 1 -->
-              <div class="sutra-row" data-idx="1" id="row-1">
-                <div class="sutra-col pali-col">
-                  <div class="col-head">Bhaddekaratta (Pāli)</div>
-                  <div class="pali">
-                    Evaṁ me sutaṁ: Ekaṁ samayaṁ bhagavā sāvatthiyaṁ vihārati jetavane anāthapiṇḍikassa ārāme.
-                  </div>
-                </div>
-                <div class="sutra-col eng-col">
-                  <div class="col-head">Bhaddekaratta (English)</div>
-                  <div class="eng">
-                    Thus have I heard: At one time the Blessed One was dwelling at Sāvatthī, in Jeta's Grove, Anāthapiṇḍika's Park.
-                  </div>
-                </div>
-                <div class="sutra-col vie-col">
-                  <div class="col-head">Kinh Nhất Dạ Hiền Giả</div>
-                  <div class="vie">
-                    Nghe như vầy: Có một thời, Thế Tôn trú tại Xá-vệ, trong rừng Kỳ-đà, tại khu vườn của Anāthapiṇḍika.
-                  </div>
-                </div>
-              </div>
-
-              <!-- Row 2 -->
-              <div class="sutra-row" data-idx="2" id="row-2">
-                <div class="sutra-col pali-col">
-                  <div class="pali">
-                    Tatra kho bhagavā bhikkhū āmantesi: “Bhikkhavo”ti. “Bhaddante”ti te bhikkhū bhagavato paccassosuṁ.
-                  </div>
-                </div>
-                <div class="sutra-col eng-col">
-                  <div class="eng">
-                    There the Blessed One addressed the bhikkhus: "Bhikkhus!" "Venerable sir," the bhikkhus replied to the Blessed One.
-                  </div>
-                </div>
-                <div class="sutra-col vie-col">
-                  <div class="vie">
-                    Ở đó Thế Tôn nói với các tỳ-kheo: “Này các tỳ-kheo.” “Bạch trưởng lão,” các tỳ-kheo trả lời Đức Phật.
-                  </div>
+      <div class="container h-100">
+        <div class="row h-100">
+          <!-- SIDEBAR -->
+          <div class="col-12 col-md-4 col-lg-3 sidebar-wrapper" id="sidebarWrapper">
+            <aside class="sidebar" id="sidebar">
+              <!-- Trường Bộ Kinh -->
+              <div class="sidebar-section">
+                <button class="sidebar-toggle" type="button" data-target="listDN">
+                  <span data-text-vi="Trường Bộ Kinh (Dīgha)" data-text-en="Dīgha Nikāya (Long Discourses)">
+                    Trường Bộ Kinh (Dīgha)
+                  </span>
+                  <span class="chevron">▸</span>
+                </button>
+                <div id="listDN" class="sidebar-list collapsed">
+                  <a href="dn01.html"
+                     class="sutta-link"
+                     data-title-pali="DN 1 – Brahmajāla Sutta"
+                     data-title-vi="DN 1 – Brahmajāla Sutta — Kinh Phạm Võng">
+                    DN 1 – Brahmajāla Sutta — Kinh Phạm Võng
+                  </a>
+                  <a href="dn02.html"
+                     class="sutta-link"
+                     data-title-pali="DN 2 – Sāmaññaphala Sutta"
+                     data-title-vi="DN 2 – Sāmaññaphala Sutta — Kinh Quả Báu Sa-môn Hạnh">
+                    DN 2 – Sāmaññaphala Sutta — Kinh Quả Báu Sa-môn Hạnh
+                  </a>
                 </div>
               </div>
 
-              <!-- Row 3 -->
-              <div class="sutra-row" data-idx="3" id="row-3">
-                <div class="sutra-col pali-col">
-                  <div class="pali">
-                    Atītaṁ nānvāgameyya, nappaṭikaṅkhe anāgataṁ; yadatītaṁ pahīnaṁ taṁ, appattañca anāgataṁ.
-                  </div>
-                </div>
-                <div class="sutra-col eng-col">
-                  <div class="eng">
-                    Let the past not be clung to; the future not expected; whatever is past has been left behind, and the future is not yet come.
-                  </div>
-                </div>
-                <div class="sutra-col vie-col">
-                  <div class="vie">
-                    Đừng bám víu vào quá khứ, đừng mong chờ tương lai; điều đã qua đã bỏ, điều tương lai chưa đến.
-                  </div>
-                </div>
-              </div>
-
-              <!-- Row 4 -->
-              <div class="sutra-row" data-idx="4" id="row-4">
-                <div class="sutra-col pali-col">
-                  <div class="pali">
-                    Idamavoca bhagavā. Attamanā te bhikkhū bhagavato bhāsitaṁ abhinandunti. Bhaddekarattasuttaṁ niṭṭhitaṁ.
-                  </div>
-                </div>
-                <div class="sutra-col eng-col">
-                  <div class="eng">
-                    Thus the Blessed One spoke. The bhikkhus were glad and praised what had been said by the Blessed One. The Bhaddekaratta Sutta is concluded.
-                  </div>
-                </div>
-                <div class="sutra-col vie-col">
-                  <div class="vie">
-                    Đức Phật thuyết xong. Các tỳ-kheo hoan hỷ và tán thán lời Phật dạy. Kinh Bhaddekaratta kết thúc.
-                  </div>
+              <!-- Trung Bộ Kinh -->
+              <div class="sidebar-section">
+                <button class="sidebar-toggle" type="button" data-target="listMN">
+                  <span data-text-vi="Trung Bộ Kinh (Majjhima)" data-text-en="Majjhima Nikāya (Middle-Length)">
+                    Trung Bộ Kinh (Majjhima)
+                  </span>
+                  <span class="chevron">▾</span>
+                </button>
+                <div id="listMN" class="sidebar-list">
+                  <a href="mn001.html"
+                     class="sutta-link"
+                     data-title-pali="MN 1 – Mūlapariyāya Sutta"
+                     data-title-vi="MN 1 – Mūlapariyāya Sutta — Kinh Căn Bản Pháp Môn">
+                    MN 1 – Mūlapariyāya Sutta — Kinh Căn Bản Pháp Môn
+                  </a>
+                  <a href="mn131-bhaddekaratta.html"
+                     class="sutta-link"
+                     data-title-pali="MN 131 – Bhaddekaratta Sutta"
+                     data-title-vi="MN 131 – Bhaddekaratta Sutta — Kinh Nhất Dạ Hiền Giả">
+                    MN 131 – Bhaddekaratta Sutta — Kinh Nhất Dạ Hiền Giả
+                  </a>
+                  <a href="mn132.html"
+                     class="sutta-link"
+                     data-title-pali="MN 132 – Ānandabhaddekaratta Sutta"
+                     data-title-vi="MN 132 – Ānandabhaddekaratta Sutta — Kinh Nhất Dạ Hiền Giả do Tôn giả A Nan Thuyết">
+                    MN 132 – Ānandabhaddekaratta Sutta — Kinh Nhất Dạ Hiền Giả do Tôn giả A Nan Thuyết
+                  </a>
                 </div>
               </div>
 
-            </div>
+              <!-- thêm các bộ khác nếu cần -->
+            </aside>
           </div>
 
-          <p class="text-muted small mt-2 mb-0">
-            Gợi ý: dùng 3 nút Pāli / Tiếng Anh / Tiếng Việt để ẩn/hiện từng cột. 
-            Nút "Row" chuyển giữa nhiều cột và xếp chồng (Col). 
-            Nút "⤢ Toàn màn" bật/tắt chế độ full-width. 
-            Nút "🎨 Màu" mở bảng chỉnh màu chữ &amp; màu nền cho từng ngôn ngữ. 
-            Nút "Help" xem hướng dẫn chi tiết.
-          </p>
+          <!-- CONTENT (IFRAME) -->
+          <div class="col-12 col-md-8 col-lg-9 content-wrapper" id="contentWrapper">
+            <iframe id="sutraFrame" src="" title="Sutta content"></iframe>
+          </div>
         </div>
       </div>
     </main>
@@ -362,301 +376,290 @@
     <!-- FOOTER -->
     <footer class="py-2">
       <div class="container text-center">
-       Namo Tassa Bhagavato Arahato Sammāsambuddhassa
+        Namo Tassa Bhagavato Arahato Sammāsambuddhassa
       </div>
     </footer>
   </div>
 
   <!-- HELP OVERLAY -->
   <div id="helpOverlay" class="overlay" aria-hidden="true">
-    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="dialog" role="dialog" aria-modal="true">
       <div class="d-flex justify-content-between align-items-center mb-2">
-        <h2 id="helpTitle" class="mb-0">Help / Hướng dẫn</h2>
-        <div class="d-flex align-items-center gap-2">
-          <div class="btn-group btn-group-sm" role="tablist">
-            <button type="button" class="btn btn-outline-secondary active" id="helpTabVi">
-              Tiếng Việt
-            </button>
-            <button type="button" class="btn btn-outline-secondary" id="helpTabEn">
-              English
-            </button>
-          </div>
-          <button type="button" class="dialog-close" id="helpClose" aria-label="Đóng">×</button>
-        </div>
+        <h2 class="mb-0"
+            data-text-vi="Hướng dẫn Nikāya Archive"
+            data-text-en="Nikāya Archive Guide">
+          Hướng dẫn Nikāya Archive
+        </h2>
+        <button type="button" class="dialog-close" id="helpClose">×</button>
       </div>
 
-      <!-- Nội dung Tiếng Việt -->
       <div id="helpContentVi">
-        <p>Một số gợi ý thao tác nhanh trên trang Bhaddekaratta:</p>
+        <p>Một vài gợi ý sử dụng:</p>
         <ul>
-          <li>Sử dụng ba nút <strong>Pāli / Tiếng Anh / Tiếng Việt</strong> để bật/tắt hiển thị từng cột ngôn ngữ.</li>
-          <li>Nút <strong>Row / Col</strong> chuyển đổi giữa dạng nhiều cột (Row) và xếp chồng theo hàng (Col).</li>
-          <li>Nút <strong>⤢ Toàn màn</strong> bật/tắt chế độ hiển thị toàn chiều ngang trình duyệt.</li>
-          <li>Nút <strong>🎨 Màu</strong> mở bảng tùy chỉnh màu chữ và màu nền riêng cho Pāli, English, Tiếng Việt (mỗi tab một ngôn ngữ, có nút Reset màu).</li>
-          <li>Nút <strong>← Danh mục</strong> quay lại trang danh sách kinh với hiệu ứng trượt nhẹ.</li>
+          <li>Dùng nút <strong>☰ Mục lục</strong> để ẩn/hiện thanh bên trái chứa danh sách Nikāya và các bài kinh.</li>
+          <li>Khi chọn một bài kinh bên trái, nội dung sẽ được tải trong khung bên phải.</li>
+          <li>Nút <strong>⟨ Kinh trước</strong> và <strong>Kinh sau ⟩</strong> chuyển qua lại giữa các bài kinh theo thứ tự trong mục lục.</li>
+          <li>Nút lá cờ <strong>🇻🇳 / 🇬🇧</strong> đổi ngôn ngữ giao diện (mục lục, nút điều hướng, phần hướng dẫn, v.v.).</li>
+          <li>Các nút Pāli / English / Tiếng Việt, Row/Col, Màu… nằm trong từng trang kinh (HTML con) và chỉ ảnh hưởng bài kinh đó.</li>
         </ul>
-        <p class="text-muted mb-0">Bấm bên ngoài khung này hoặc nút ✕ để đóng phần hướng dẫn.</p>
+        <p class="text-muted mb-0">Bấm ra ngoài khung hoặc nút ✕ để đóng phần hướng dẫn.</p>
       </div>
 
-      <!-- Nội dung English -->
       <div id="helpContentEn" class="d-none">
-        <p>Some quick tips for using the Bhaddekaratta page:</p>
+        <p>Some quick tips:</p>
         <ul>
-          <li>Use the three buttons <strong>Pāli / English / Vietnamese</strong> to show/hide each language column.</li>
-          <li>The <strong>Row / Col</strong> button switches between multi-column view (Row) and stacked rows (Col).</li>
-          <li>The <strong>Full screen</strong> button toggles a full-width layout across the browser window.</li>
-          <li>The <strong>🎨 Màu</strong> button opens the color settings panel, where you can change text &amp; background colors for each language separately and reset them.</li>
-          <li>The <strong>← Index</strong> button returns to the index page with a slide animation.</li>
+          <li>Use the <strong>☰ Index</strong> button to show/hide the left sidebar with Nikāya collections and suttas.</li>
+          <li>When you select a sutta on the left, its content is loaded in the right iframe.</li>
+          <li>The <strong>⟨ Previous</strong> and <strong>Next ⟩</strong> buttons move between suttas in the current sidebar order.</li>
+          <li>The flag buttons <strong>🇻🇳 / 🇬🇧</strong> switch the interface language (sidebar headings, navigation buttons, this help text, etc.).</li>
+          <li>Per-sutta controls (Pāli / English / Vietnamese, Row/Col, Color…) live inside each sutta HTML page and affect only that page.</li>
         </ul>
         <p class="text-muted mb-0">Click outside this dialog or press ✕ to close the help overlay.</p>
       </div>
     </div>
   </div>
 
-  <!-- COLOR OVERLAY -->
-  <div id="colorOverlay" class="overlay" aria-hidden="true">
-    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="colorTitle">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <h2 id="colorTitle" class="mb-0">🎨 Tùy chỉnh màu</h2>
-        <div class="d-flex align-items-center gap-2">
-          <div class="btn-group btn-group-sm" role="tablist">
-            <button type="button" class="btn btn-outline-secondary tab-btn active" id="tabPali">
-              Pāli
-            </button>
-            <button type="button" class="btn btn-outline-secondary tab-btn" id="tabEng">
-              English
-            </button>
-            <button type="button" class="btn btn-outline-secondary tab-btn" id="tabVie">
-              Tiếng Việt
-            </button>
-          </div>
-          <button type="button" class="dialog-close" id="colorClose" aria-label="Đóng">×</button>
-        </div>
-      </div>
-
-      <!-- Pāli color settings -->
-      <div id="colorContentPali">
-        <p class="mb-2"><strong>Pāli</strong> – chỉnh màu cho cột Pāli.</p>
-        <div class="mb-2 d-flex justify-content-between align-items-center">
-          <span>Màu chữ</span>
-          <input id="paliColor" type="color" title="Màu chữ Pāli">
-        </div>
-        <div class="mb-2 d-flex justify-content-between align-items-center">
-          <span>Màu nền</span>
-          <input id="paliBg" type="color" title="Màu nền Pāli">
-        </div>
-        <div class="text-end mt-2">
-          <button class="btn btn-outline-secondary btn-sm" type="button" id="resetPali">Reset Pāli</button>
-        </div>
-      </div>
-
-      <!-- English color settings -->
-      <div id="colorContentEng" class="d-none">
-        <p class="mb-2"><strong>English</strong> – color settings for the English column.</p>
-        <div class="mb-2 d-flex justify-content-between align-items-center">
-          <span>Text color</span>
-          <input id="engColor" type="color" title="English text color">
-        </div>
-        <div class="mb-2 d-flex justify-content-between align-items-center">
-          <span>Background</span>
-          <input id="engBg" type="color" title="English background color">
-        </div>
-        <div class="text-end mt-2">
-          <button class="btn btn-outline-secondary btn-sm" type="button" id="resetEng">Reset English</button>
-        </div>
-      </div>
-
-      <!-- Vietnamese color settings -->
-      <div id="colorContentVie" class="d-none">
-        <p class="mb-2"><strong>Tiếng Việt</strong> – chỉnh màu cho cột tiếng Việt.</p>
-        <div class="mb-2 d-flex justify-content-between align-items-center">
-          <span>Màu chữ</span>
-          <input id="vieColor" type="color" title="Màu chữ Tiếng Việt">
-        </div>
-        <div class="mb-2 d-flex justify-content-between align-items-center">
-          <span>Màu nền</span>
-          <input id="vieBg" type="color" title="Màu nền Tiếng Việt">
-        </div>
-        <div class="text-end mt-2">
-          <button class="btn btn-outline-secondary btn-sm" type="button" id="resetVie">Reset Tiếng Việt</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
   <script>
     (function(){
-      const grid = document.getElementById('sutraGrid');
-      const card = document.getElementById('sutraCard');
-      const scrollBox = document.getElementById('sutraCardScroll');
-      const mainContainer = document.getElementById('mainContainer');
+      const sidebarWrapper   = document.getElementById('sidebarWrapper');
+      const contentWrapper   = document.getElementById('contentWrapper');
+      const btnSidebarToggle = document.getElementById('btnSidebarToggle');
+      const sidebar          = document.getElementById('sidebar');
+      const sutraFrame       = document.getElementById('sutraFrame');
+      const btnPrev          = document.getElementById('btnPrev');
+      const btnNext          = document.getElementById('btnNext');
+      const btnHelp          = document.getElementById('btnHelp');
+      const btnLangVi        = document.getElementById('btnLangVi');
+      const btnLangEn        = document.getElementById('btnLangEn');
+      const helpOverlay      = document.getElementById('helpOverlay');
+      const helpClose        = document.getElementById('helpClose');
+      const helpContentVi    = document.getElementById('helpContentVi');
+      const helpContentEn    = document.getElementById('helpContentEn');
+      const headerTitle      = document.getElementById('sutraTitle');
 
-      const btnBack   = document.getElementById('btnBack');
-      const btnPali   = document.getElementById('btnPali');
-      const btnEng    = document.getElementById('btnEng');
-      const btnVie    = document.getElementById('btnVie');
-      const btnLayout = document.getElementById('btnLayout');
-      const btnFull   = document.getElementById('btnFull');
-      const btnColor  = document.getElementById('btnColor');
-      const btnHelp   = document.getElementById('btnHelp');
-      const btnPrevSutta = document.getElementById('btnPrevSutta');
-      const btnNextSutta = document.getElementById('btnNextSutta');
+      const LINK_KEY          = 'nikaya_last_sutta';
+      const SIDEBAR_STATE_KEY = 'nikaya_sidebar_state';
+      const LANG_KEY          = 'nikaya_ui_lang';
+      const LANG_SIMPLE_KEY   = 'nikaya_lang'; // cho iframe
 
-      // TODO: sửa 2 đường dẫn này cho đúng file kinh trước / sau của bạn
-      const PREV_SUTTA_URL = '#'; // ví dụ: 'mn130.html'
-      const NEXT_SUTTA_URL = '#'; // ví dụ: 'mn132.html'
+      const links     = document.querySelectorAll('.sutta-link');
+      const langElems = document.querySelectorAll('[data-text-vi]');
 
-      let showPali = true;
-      let showEng  = true;
-      let showVie  = true;
+      let currentHref = '';
+      let currentLang = 'vi';
 
-      const paliCols = document.querySelectorAll('.pali-col');
-      const engCols  = document.querySelectorAll('.eng-col');
-      const vieCols  = document.querySelectorAll('.vie-col');
-
-      const paliBgInput    = document.getElementById('paliBg');
-      const paliColorInput = document.getElementById('paliColor');
-      const engBgInput     = document.getElementById('engBg');
-      const engColorInput  = document.getElementById('engColor');
-      const vieBgInput     = document.getElementById('vieBg');
-      const vieColorInput  = document.getElementById('vieColor');
-
-      const resetPaliBtn = document.getElementById('resetPali');
-      const resetEngBtn  = document.getElementById('resetEng');
-      const resetVieBtn  = document.getElementById('resetVie');
-
-      const helpOverlay    = document.getElementById('helpOverlay');
-      const helpClose      = document.getElementById('helpClose');
-      const helpTabVi      = document.getElementById('helpTabVi');
-      const helpTabEn      = document.getElementById('helpTabEn');
-      const helpContentVi  = document.getElementById('helpContentVi');
-      const helpContentEn  = document.getElementById('helpContentEn');
-
-      const colorOverlay   = document.getElementById('colorOverlay');
-      const colorClose     = document.getElementById('colorClose');
-      const tabPali        = document.getElementById('tabPali');
-      const tabEng         = document.getElementById('tabEng');
-      const tabVie         = document.getElementById('tabVie');
-      const colorContentPali = document.getElementById('colorContentPali');
-      const colorContentEng  = document.getElementById('colorContentEng');
-      const colorContentVie  = document.getElementById('colorContentVie');
-
-      // helper chuyển "rgb(r,g,b)" -> "#rrggbb"
-      function rgbToHex(rgb){
-        if(!rgb || rgb === 'transparent') return '';
-        const m = rgb.match(/\d+/g);
-        if(!m) return '';
-        return '#' + m.map(x => (+x).toString(16).padStart(2,'0')).join('');
+      /* ====== cập nhật tiêu đề header theo bài kinh ====== */
+      function updateHeaderTitle(){
+        const defaultTitle = 'NIKĀYA ARCHIVE';
+        if(!currentHref || currentHref === 'bg.html'){
+          headerTitle.textContent = defaultTitle;
+          return;
+        }
+        let matched = null;
+        links.forEach(a=>{
+          if(a.getAttribute('href') === currentHref){
+            matched = a;
+          }
+        });
+        if(!matched){
+          headerTitle.textContent = defaultTitle;
+          return;
+        }
+        const pali = matched.dataset.titlePali || matched.textContent.trim();
+        const vi   = matched.dataset.titleVi   || pali;
+        const t    = (currentLang === 'vi') ? vi : pali;
+        headerTitle.textContent = t.toUpperCase();
       }
 
-      // lấy màu mặc định từ CSS
-      const bodyStyle  = getComputedStyle(document.body);
-      const rootStyle  = getComputedStyle(document.documentElement);
-      const defaultTextHex = rgbToHex(bodyStyle.color) || '#0f172a';
-      const defaultBgHex   = (rootStyle.getPropertyValue('--card').trim() || '#ffffff');
+      /* ====== đổi ngôn ngữ giao diện ====== */
+      function setLang(lang){
+        currentLang = (lang === 'en') ? 'en' : 'vi';
+        try{
+          localStorage.setItem(LANG_KEY, currentLang);
+          localStorage.setItem(LANG_SIMPLE_KEY, currentLang); // iframe đọc
+        }catch(e){}
 
-      // Back with slide animation
-      btnBack.addEventListener('click',(e)=>{
-        e.preventDefault();
-        document.body.classList.add('page-slide-out');
-        setTimeout(()=>{ window.location.href = '../index.html'; }, 260);
-      });
+        // đổi text cho phần có data-text-vi / data-text-en
+        langElems.forEach(el=>{
+          const vi = el.getAttribute('data-text-vi') || '';
+          const en = el.getAttribute('data-text-en') || '';
+          el.textContent = currentLang === 'vi' ? vi : (en || vi);
+        });
 
-      // điều hướng bài trước / sau (nếu đã cấu hình URL)
-      btnPrevSutta.addEventListener('click', ()=>{
-        if(PREV_SUTTA_URL && PREV_SUTTA_URL !== '#'){
-          window.location.href = PREV_SUTTA_URL;
+        // đổi label hiển thị trong mục lục
+        links.forEach(a=>{
+          const pali = a.dataset.titlePali || a.textContent.trim();
+          const vi   = a.dataset.titleVi   || pali;
+          a.textContent = currentLang === 'vi' ? vi : pali;
+        });
+
+        // trạng thái nút cờ
+        btnLangVi.classList.toggle('btn-lang-active', currentLang === 'vi');
+        btnLangEn.classList.toggle('btn-lang-active', currentLang === 'en');
+
+        // help content
+        const isVi = currentLang === 'vi';
+        helpContentVi.classList.toggle('d-none', !isVi);
+        helpContentEn.classList.toggle('d-none', isVi);
+
+        updateHeaderTitle();
+      }
+
+      (function initLang(){
+        let saved = 'vi';
+        try{
+          const v = localStorage.getItem(LANG_KEY);
+          if(v === 'en' || v === 'vi') saved = v;
+        }catch(e){}
+        setLang(saved);
+      })();
+
+      btnLangVi.addEventListener('click',()=> setLang('vi'));
+      btnLangEn.addEventListener('click',()=> setLang('en'));
+
+      /* ====== sidebar ẩn/hiện + dãn content ====== */
+      function updateContentWidth(){
+        if(!contentWrapper) return;
+        if(sidebarWrapper && sidebarWrapper.classList.contains('d-none')){
+          contentWrapper.classList.remove('col-md-8','col-lg-9');
+          contentWrapper.classList.add('col-md-12','col-lg-12');
+        }else{
+          contentWrapper.classList.remove('col-md-12','col-lg-12');
+          contentWrapper.classList.add('col-md-8','col-lg-9');
         }
-      });
-      btnNextSutta.addEventListener('click', ()=>{
-        if(NEXT_SUTTA_URL && NEXT_SUTTA_URL !== '#'){
-          window.location.href = NEXT_SUTTA_URL;
-        }
-      });
+      }
 
-      function adjustRowColumns(){
-        const rows = grid.querySelectorAll('.sutra-row');
-        rows.forEach(row=>{
-          if(card.classList.contains('stack')){
-            row.style.gridTemplateColumns = '1fr';
-            return;
-          }
-          const cols = Array.from(row.querySelectorAll('.sutra-col'));
-          const visible = cols.filter(col=>{
-            if(col.classList.contains('pali-col') && !showPali) return false;
-            if(col.classList.contains('eng-col')  && !showEng)  return false;
-            if(col.classList.contains('vie-col')  && !showVie)  return false;
-            return true;
-          });
-          const n = Math.max(1, visible.length);
-          row.style.gridTemplateColumns = `repeat(${n},1fr)`;
+      if(btnSidebarToggle && sidebarWrapper){
+        btnSidebarToggle.addEventListener('click',()=>{
+          sidebarWrapper.classList.toggle('d-none');
+          updateContentWidth();
         });
       }
 
-      function updateVisibility(){
-        grid.classList.toggle('hide-pali', !showPali);
-        grid.classList.toggle('hide-eng',  !showEng);
-        grid.classList.toggle('hide-vie',  !showVie);
-        adjustRowColumns();
+      /* ====== lưu / khôi phục trạng thái sidebar (mở / scroll) ====== */
+      function saveSidebarState(){
+        if(!sidebar) return;
+        const lists = document.querySelectorAll('.sidebar-list');
+        const open = [];
+        lists.forEach(list=>{
+          if(!list.classList.contains('collapsed') && list.id){
+            open.push(list.id);
+          }
+        });
+        const state = {
+          open,
+          scrollTop: sidebar.scrollTop || 0
+        };
+        try{
+          localStorage.setItem(SIDEBAR_STATE_KEY, JSON.stringify(state));
+        }catch(e){}
       }
 
-      btnPali.addEventListener('click', ()=>{
-        showPali = !showPali;
-        btnPali.classList.toggle('active', showPali);
-        updateVisibility();
+      function restoreSidebarState(){
+        if(!sidebar) return;
+        let state = {};
+        try{
+          state = JSON.parse(localStorage.getItem(SIDEBAR_STATE_KEY) || '{}');
+        }catch(e){ state = {}; }
+
+        const lists = document.querySelectorAll('.sidebar-list');
+        if(Array.isArray(state.open)){
+          lists.forEach(list=>{
+            if(state.open.includes(list.id)){
+              list.classList.remove('collapsed');
+            }else{
+              list.classList.add('collapsed');
+            }
+          });
+        }
+        if(typeof state.scrollTop === 'number'){
+          sidebar.scrollTop = state.scrollTop;
+        }
+
+        // cập nhật chevron
+        const toggles = document.querySelectorAll('.sidebar-toggle');
+        toggles.forEach(btn=>{
+          const targetId = btn.getAttribute('data-target');
+          const list = document.getElementById(targetId);
+          const chev = btn.querySelector('.chevron');
+          if(list && chev){
+            chev.textContent = list.classList.contains('collapsed') ? '▸' : '▾';
+          }
+        });
+      }
+
+      restoreSidebarState();
+
+      const toggles = document.querySelectorAll('.sidebar-toggle');
+      toggles.forEach(btn=>{
+        const targetId = btn.getAttribute('data-target');
+        const list = document.getElementById(targetId);
+        const chev = btn.querySelector('.chevron');
+        btn.addEventListener('click',()=>{
+          if(!list || !chev) return;
+          const collapsed = list.classList.toggle('collapsed');
+          chev.textContent = collapsed ? '▸' : '▾';
+          saveSidebarState();
+        });
       });
-      btnEng.addEventListener('click', ()=>{
-        showEng = !showEng;
-        btnEng.classList.toggle('active', showEng);
-        updateVisibility();
+
+      /* ====== chọn bài kinh -> iframe + active ====== */
+      function setActiveLink(href){
+        links.forEach(a=>{
+          a.classList.toggle('active', a.getAttribute('href') === href);
+        });
+      }
+
+      function loadSutta(href){
+        if(!href) return;
+        sutraFrame.src = href;
+        currentHref = href;
+        setActiveLink(href);
+        saveSidebarState();
+        try{
+          localStorage.setItem(LINK_KEY, href);
+        }catch(e){}
+        updateHeaderTitle();
+      }
+
+      links.forEach(a=>{
+        a.addEventListener('click',(e)=>{
+          e.preventDefault();
+          const href = a.getAttribute('href');
+          if(!href) return;
+          loadSutta(href);
+        });
       });
-      btnVie.addEventListener('click', ()=>{
-        showVie = !showVie;
-        btnVie.classList.toggle('active', showVie);
-        updateVisibility();
-      });
 
-      function toggleLayout(){
-        card.classList.toggle('stack');
-        const isStack = card.classList.contains('stack');
-        btnLayout.innerText = isStack ? 'Col' : 'Row';
-        adjustRowColumns();
+      /* ====== khôi phục bài kinh cuối, mặc định bg.html ====== */
+      let last = '';
+      try{
+        last = localStorage.getItem(LINK_KEY) || '';
+      }catch(e){}
+      if(!last){
+        last = 'bg.html';
       }
-      btnLayout.addEventListener('click', toggleLayout);
+      loadSutta(last);
 
-      function toggleFull(){
-        mainContainer.classList.toggle('container-fluid');
-        mainContainer.classList.toggle('container');
-        const isFull = mainContainer.classList.contains('container-fluid');
-        btnFull.innerText = isFull ? '⤡ Thu nhỏ' : '⤢ Toàn màn';
-        updateCardHeight();
-      }
-      btnFull.addEventListener('click', toggleFull);
-
-      function updateCardHeight(){
-        const headerH = document.querySelector('header').offsetHeight || 0;
-        const footerH = document.querySelector('footer').offsetHeight || 0;
-        const vh = window.innerHeight;
-        const max = vh - headerH - footerH - 24;
-        scrollBox.style.height = max + 'px';
-      }
-
-      // HELP overlay
-      function setHelpLang(lang){
-        const isVi = (lang === 'vi');
-        helpContentVi.classList.toggle('d-none', !isVi);
-        helpContentEn.classList.toggle('d-none', isVi);
-        if(isVi){
-          helpTabVi.classList.add('active');
-          helpTabEn.classList.remove('active');
-        }else{
-          helpTabEn.classList.add('active');
-          helpTabVi.classList.remove('active');
+      /* ====== Kinh trước / sau ====== */
+      function goToOffset(offset){
+        const hrefs = Array.from(links).map(a=>a.getAttribute('href'));
+        if(!hrefs.length) return;
+        let idx = hrefs.indexOf(currentHref);
+        if(idx === -1) idx = 0;
+        let targetIdx = idx + offset;
+        if(targetIdx < 0) targetIdx = 0;
+        if(targetIdx >= hrefs.length) targetIdx = hrefs.length - 1;
+        const nextHref = hrefs[targetIdx];
+        if(nextHref && nextHref !== currentHref){
+          loadSutta(nextHref);
         }
       }
+
+      btnPrev.addEventListener('click',()=> goToOffset(-1));
+      btnNext.addEventListener('click',()=> goToOffset(1));
+
+      /* ====== Help overlay ====== */
       function openHelp(){
         helpOverlay.classList.add('show');
         helpOverlay.setAttribute('aria-hidden','false');
@@ -665,161 +668,20 @@
         helpOverlay.classList.remove('show');
         helpOverlay.setAttribute('aria-hidden','true');
       }
-      btnHelp.addEventListener('click',(e)=>{ e.stopPropagation(); openHelp(); });
-      helpClose.addEventListener('click',(e)=>{ e.stopPropagation(); closeHelp(); });
-      helpOverlay.addEventListener('click',(e)=>{ if(e.target===helpOverlay) closeHelp(); });
-      helpTabVi.addEventListener('click',(e)=>{ e.stopPropagation(); setHelpLang('vi'); });
-      helpTabEn.addEventListener('click',(e)=>{ e.stopPropagation(); setHelpLang('en'); });
-
-      // COLOR overlay
-      function setColorTab(lang){
-        const isPali = lang==='pali';
-        const isEng  = lang==='eng';
-        const isVie  = lang==='vie';
-
-        tabPali.classList.toggle('active', isPali);
-        tabEng.classList.toggle('active',  isEng);
-        tabVie.classList.toggle('active',  isVie);
-
-        colorContentPali.classList.toggle('d-none', !isPali);
-        colorContentEng.classList.toggle('d-none',  !isEng);
-        colorContentVie.classList.toggle('d-none',  !isVie);
-      }
-      function openColor(){
-        colorOverlay.classList.add('show');
-        colorOverlay.setAttribute('aria-hidden','false');
-      }
-      function closeColor(){
-        colorOverlay.classList.remove('show');
-        colorOverlay.setAttribute('aria-hidden','true');
-      }
-      btnColor.addEventListener('click',(e)=>{ e.stopPropagation(); openColor(); });
-      colorClose.addEventListener('click',(e)=>{ e.stopPropagation(); closeColor(); });
-      colorOverlay.addEventListener('click',(e)=>{ if(e.target===colorOverlay) closeColor(); });
-
-      tabPali.addEventListener('click',(e)=>{ e.stopPropagation(); setColorTab('pali'); });
-      tabEng.addEventListener('click',(e)=>{ e.stopPropagation(); setColorTab('eng'); });
-      tabVie.addEventListener('click',(e)=>{ e.stopPropagation(); setColorTab('vie'); });
-
-      // COLORS load/save
-      function loadColors(){
-        let saved = {};
-        try{
-          saved = JSON.parse(localStorage.getItem('bh_colors') || '{}');
-        }catch(e){ saved = {}; }
-
-        // đưa cột về đúng CSS mặc định (không inline)
-        paliCols.forEach(c=>{c.style.background='';c.style.color='';});
-        engCols.forEach(c=>{c.style.background='';c.style.color='';});
-        vieCols.forEach(c=>{c.style.background='';c.style.color='';});
-
-        // set default cho color picker = màu CSS
-        paliColorInput.value = defaultTextHex;
-        engColorInput.value  = defaultTextHex;
-        vieColorInput.value  = defaultTextHex;
-
-        paliBgInput.value = defaultBgHex;
-        engBgInput.value  = defaultBgHex;
-        vieBgInput.value  = defaultBgHex;
-
-        // override nếu có màu đã lưu
-        if(saved.paliBg){
-          paliBgInput.value = saved.paliBg;
-          paliCols.forEach(c=>c.style.background=saved.paliBg);
-        }
-        if(saved.paliColor){
-          paliColorInput.value = saved.paliColor;
-          paliCols.forEach(c=>c.style.color=saved.paliColor);
-        }
-
-        if(saved.engBg){
-          engBgInput.value = saved.engBg;
-          engCols.forEach(c=>c.style.background=saved.engBg);
-        }
-        if(saved.engColor){
-          engColorInput.value = saved.engColor;
-          engCols.forEach(c=>c.style.color=saved.engColor);
-        }
-
-        if(saved.vieBg){
-          vieBgInput.value = saved.vieBg;
-          vieCols.forEach(c=>c.style.background=saved.vieBg);
-        }
-        if(saved.vieColor){
-          vieColorInput.value = saved.vieColor;
-          vieCols.forEach(c=>c.style.color=saved.vieColor);
-        }
-      }
-
-      function saveColors(){
-        const obj = {
-          paliBg: paliBgInput.value || '',
-          paliColor: paliColorInput.value || '',
-          engBg: engBgInput.value || '',
-          engColor: engColorInput.value || '',
-          vieBg: vieBgInput.value || '',
-          vieColor: vieColorInput.value || ''
-        };
-        try{
-          localStorage.setItem('bh_colors', JSON.stringify(obj));
-        }catch(e){}
-      }
-
-      // event đổi màu
-      paliBgInput.addEventListener('input', e=>{
-        paliCols.forEach(c=>c.style.background=e.target.value);
-        saveColors();
+      btnHelp.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        openHelp();
       });
-      paliColorInput.addEventListener('input', e=>{
-        paliCols.forEach(c=>c.style.color=e.target.value);
-        saveColors();
+      helpClose.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        closeHelp();
+      });
+      helpOverlay.addEventListener('click',(e)=>{
+        if(e.target === helpOverlay) closeHelp();
       });
 
-      engBgInput.addEventListener('input', e=>{
-        engCols.forEach(c=>c.style.background=e.target.value);
-        saveColors();
-      });
-      engColorInput.addEventListener('input', e=>{
-        engCols.forEach(c=>c.style.color=e.target.value);
-        saveColors();
-      });
-
-      vieBgInput.addEventListener('input', e=>{
-        vieCols.forEach(c=>c.style.background=e.target.value);
-        saveColors();
-      });
-      vieColorInput.addEventListener('input', e=>{
-        vieCols.forEach(c=>c.style.color=e.target.value);
-        saveColors();
-      });
-
-      // reset về màu CSS mặc định (và cập nhật picker)
-      resetPaliBtn.addEventListener('click', ()=>{
-        paliCols.forEach(c=>{c.style.background='';c.style.color='';});
-        paliBgInput.value    = defaultBgHex;
-        paliColorInput.value = defaultTextHex;
-        saveColors();
-      });
-      resetEngBtn.addEventListener('click', ()=>{
-        engCols.forEach(c=>{c.style.background='';c.style.color='';});
-        engBgInput.value    = defaultBgHex;
-        engColorInput.value = defaultTextHex;
-        saveColors();
-      });
-      resetVieBtn.addEventListener('click', ()=>{
-        vieCols.forEach(c=>{c.style.background='';c.style.color='';});
-        vieBgInput.value    = defaultBgHex;
-        vieColorInput.value = defaultTextHex;
-        saveColors();
-      });
-
-      // init
-      setHelpLang('vi');
-      setColorTab('pali');
-      loadColors();
-      updateVisibility();
-      updateCardHeight();
-      window.addEventListener('resize', updateCardHeight);
+      window.addEventListener('beforeunload', saveSidebarState);
+      updateContentWidth();
     })();
   </script>
 </body>
