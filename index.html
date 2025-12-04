@@ -21,7 +21,7 @@
       font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;
       background:var(--bg);
       color:#0f172a;
-      overflow:hidden;
+      overflow:hidden; /* giữ kiểu “app” không scrollbar ngoài */
     }
 
     .page-wrapper{
@@ -47,7 +47,7 @@
     .main-container{
       flex:1 1 auto;
       padding:0.5rem 0;
-      overflow:hidden;
+      overflow:hidden; /* 🔧 không cho tràn ngang/đọc ngoài main */
     }
 
     footer{
@@ -56,6 +56,17 @@
       background:var(--bg);
       font-size:13px;
       color:var(--muted);
+    }
+
+    /* 🔧 container + row full height, không tràn ngang */
+    .main-container > .container{
+      height:100%;
+      padding-left:0.5rem;
+      padding-right:0.5rem;
+    }
+    .main-container .row{
+      height:100%;
+      overflow:hidden; /* chặn scroll ngang do negative margin của .row */
     }
 
     .sidebar-wrapper{
@@ -123,13 +134,16 @@
       display:flex;
       flex-direction:column;
       padding-left:0.75rem;
+      min-width:0;        /* 🔧 cho phép co ngang, tránh tràn làm xuất hiện scroll */
     }
     #sutraFrame{
       flex:1 1 auto;
       width:100%;
+      height:100%;
       border-radius:12px;
       border:1px solid #e5e7eb;
       background:var(--card);
+      display:block;      /* 🔧 tránh khoảng trắng inline gây tràn nhẹ */
     }
 
     /* Nút header */
@@ -209,7 +223,7 @@
     .dialog-close:hover{color:#0f172a;}
 
     @media (max-width:768px){
-      .content-wrapper{padding-left:0;}
+      .content-wrapper{padding-left:0;} /* khi mobile, content full chiều ngang */
     }
   </style>
 </head>
@@ -219,7 +233,6 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-JYT2R1TWMR');
 </script>
 <body>
@@ -254,9 +267,7 @@
                   id="btnLangVi"
                   title="Tiếng Việt">
             <svg class="flag-icon" viewBox="0 0 4 3" aria-hidden="true">
-              <!-- nền đỏ -->
               <rect width="4" height="3" fill="#da251d"></rect>
-              <!-- sao vàng -->
               <polygon fill="#ffde00"
                 points="2,0.45 2.25,1.3 3.15,1.3 2.4,1.85 2.65,2.7 2,2.2 1.35,2.7 1.6,1.85 0.85,1.3 1.75,1.3">
               </polygon>
@@ -268,16 +279,11 @@
                   id="btnLangEn"
                   title="English">
             <svg class="flag-icon" viewBox="0 0 4 3" aria-hidden="true">
-              <!-- nền xanh -->
               <rect width="4" height="3" fill="#012169"></rect>
-
-              <!-- thập trắng chéo -->
               <polygon fill="#ffffff"
                 points="0,0 0.5,0 4,2.25 4,3 3.5,3 0,0.75"></polygon>
               <polygon fill="#ffffff"
                 points="4,0 3.5,0 0,2.25 0,3 0.5,3 4,0.75"></polygon>
-
-              <!-- thập đỏ chéo -->
               <polygon fill="#c8102e"
                 points="0,0 0.25,0 4,2 4,2.25"></polygon>
               <polygon fill="#c8102e"
@@ -286,12 +292,8 @@
                 points="0,3 0.25,3 4,1 4,0.75"></polygon>
               <polygon fill="#c8102e"
                 points="4,3 3.75,3 0,1 0,0.75"></polygon>
-
-              <!-- thập trắng dọc/ngang -->
               <rect x="1.5" width="1" height="3" fill="#ffffff"></rect>
               <rect y="1" width="4" height="1" fill="#ffffff"></rect>
-
-              <!-- thập đỏ dọc/ngang -->
               <rect x="1.75" width="0.5" height="3" fill="#c8102e"></rect>
               <rect y="1.25" width="4" height="0.5" fill="#c8102e"></rect>
             </svg>
@@ -448,38 +450,32 @@
       let currentHref = '';
       let currentLang = 'vi';
 
-      /* ====== cập nhật tiêu đề header theo bài kinh ====== */
       function updateHeaderTitle(){
-       
+        // có thể thêm logic lấy tên từ .sutta-link active nếu cần
       }
 
-      /* ====== đổi ngôn ngữ giao diện ====== */
       function setLang(lang){
         currentLang = (lang === 'en') ? 'en' : 'vi';
         try{
           localStorage.setItem(LANG_KEY, currentLang);
-          localStorage.setItem(LANG_SIMPLE_KEY, currentLang); // iframe đọc
+          localStorage.setItem(LANG_SIMPLE_KEY, currentLang);
         }catch(e){}
 
-        // đổi text cho phần có data-text-vi / data-text-en
         langElems.forEach(el=>{
           const vi = el.getAttribute('data-text-vi') || '';
           const en = el.getAttribute('data-text-en') || '';
           el.textContent = currentLang === 'vi' ? vi : (en || vi);
         });
 
-        // đổi label hiển thị trong mục lục
         links.forEach(a=>{
           const pali = a.dataset.titlePali || a.textContent.trim();
           const vi   = a.dataset.titleVi   || pali;
           a.textContent = currentLang === 'vi' ? vi : pali;
         });
 
-        // trạng thái nút cờ
         btnLangVi.classList.toggle('btn-lang-active', currentLang === 'vi');
         btnLangEn.classList.toggle('btn-lang-active', currentLang === 'en');
 
-        // help content
         const isVi = currentLang === 'vi';
         helpContentVi.classList.toggle('d-none', !isVi);
         helpContentEn.classList.toggle('d-none', isVi);
@@ -499,7 +495,6 @@
       btnLangVi.addEventListener('click',()=> setLang('vi'));
       btnLangEn.addEventListener('click',()=> setLang('en'));
 
-      /* ====== sidebar ẩn/hiện + dãn content ====== */
       function updateContentWidth(){
         if(!contentWrapper) return;
         if(sidebarWrapper && sidebarWrapper.classList.contains('d-none')){
@@ -518,7 +513,6 @@
         });
       }
 
-      /* ====== lưu / khôi phục trạng thái sidebar (mở / scroll) ====== */
       function saveSidebarState(){
         if(!sidebar) return;
         const lists = document.querySelectorAll('.sidebar-list');
@@ -558,7 +552,6 @@
           sidebar.scrollTop = state.scrollTop;
         }
 
-        // cập nhật chevron
         const toggles = document.querySelectorAll('.sidebar-toggle');
         toggles.forEach(btn=>{
           const targetId = btn.getAttribute('data-target');
@@ -585,7 +578,6 @@
         });
       });
 
-      /* ====== chọn bài kinh -> iframe + active ====== */
       function setActiveLink(href){
         links.forEach(a=>{
           a.classList.toggle('active', a.getAttribute('href') === href);
@@ -613,7 +605,6 @@
         });
       });
 
-      /* ====== khôi phục bài kinh cuối, mặc định bg.html ====== */
       let last = '';
       try{
         last = localStorage.getItem(LINK_KEY) || '';
@@ -623,7 +614,6 @@
       }
       loadSutta(last);
 
-      /* ====== Kinh trước / sau ====== */
       function goToOffset(offset){
         const hrefs = Array.from(links).map(a=>a.getAttribute('href'));
         if(!hrefs.length) return;
@@ -641,7 +631,6 @@
       btnPrev.addEventListener('click',()=> goToOffset(-1));
       btnNext.addEventListener('click',()=> goToOffset(1));
 
-      /* ====== Help overlay ====== */
       function openHelp(){
         helpOverlay.classList.add('show');
         helpOverlay.setAttribute('aria-hidden','false');
