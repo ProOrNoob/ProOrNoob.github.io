@@ -17,13 +17,15 @@
     }
     *{box-sizing:border-box}
 
+    /* CHỐT: body + html full viewport, không scroll ngoài */
     html,body{
+      height:100%;
+      margin:0;
+      padding:0;
+      overflow:hidden;
       font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;
       background:var(--bg);
       color:#0f172a;
-      margin:0;
-      padding:0;
-      overflow-x:hidden;
     }
 
     /* hiệu ứng trượt khi quay lại danh mục */
@@ -45,9 +47,10 @@
     }
 
     .page-wrapper{
-      min-height:100vh;
+      height:100dvh; /* chuẩn cho iOS/iPad */
       display:flex;
       flex-direction:column;
+      overflow:hidden;
     }
 
     .main-container{
@@ -61,6 +64,8 @@
       border-radius:12px;
       border:1px solid #e6edf7;
       padding:14px;
+      display:flex;
+      flex-direction:column;
     }
 
     .sutra-grid{display:flex;flex-direction:column;gap:10px;}
@@ -116,10 +121,12 @@
       white-space:nowrap;
     }
 
-    /* inner scroll */
+    /* vùng scroll duy nhất bên trong card */
     #sutraCardScroll{
-      max-height:calc(100vh - 170px);
-      overflow:auto;
+      flex:1;
+      overflow-y:auto;
+      overscroll-behavior:contain;
+      -webkit-overflow-scrolling:touch;
     }
 
     /* overlay dùng chung cho Help & Color */
@@ -169,6 +176,17 @@
       color:#fff !important;
     }
 
+    /* tiêu đề bài kinh dạng nút, không click được */
+    .sutta-title{
+      cursor:default;
+      font-weight:600;
+      background:var(--card);
+      border-color:rgba(15,23,42,0.15);
+      color:#0f172a;
+      pointer-events:none;
+      box-shadow:0 2px 8px rgba(15,23,42,0.08);
+    }
+
     @media (max-width: 768px){
       .sutra-row{
         grid-template-columns:1fr;
@@ -177,17 +195,8 @@
         min-width:80px;
       }
     }
-    .sutta-title{
-      cursor:default;
-      font-weight:600;
-      background:var(--card);
-      border-color:rgba(15,23,42,0.15);
-      color:#0f172a;
-      pointer-events:none; /* không cho bấm như nút */
-    }
   </style>
 </head>
-
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-JYT2R1TWMR"></script>
 <script>
@@ -203,18 +212,17 @@
     <!-- HEADER -->
     <header class="py-2">
       <div class="container d-flex align-items-center justify-content-between gap-2">
-       <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2">
           <button class="btn btn-outline-secondary btn-sm" type="button" id="btnBack">
             ← Danh mục
           </button>
 
-          <!-- Nhóm tiêu đề + nút bài trước / bài sau -->
+          <!-- Nhóm bài trước / tiêu đề / bài sau -->
           <div class="d-flex align-items-center gap-2">
             <button class="btn btn-outline-secondary btn-sm" type="button" id="btnPrevSutta">
               ‹ Bài trước
             </button>
 
-            <h1 class="visually-hidden">Bhaddekaratta</h1>
             <div id="suttaTitle" class="btn btn-outline-secondary btn-sm sutta-title">
               Bhaddekaratta
             </div>
@@ -224,6 +232,7 @@
             </button>
           </div>
         </div>
+
         <div class="controls d-flex flex-wrap align-items-center gap-2">
           <!-- Ngôn ngữ: chỉ ẩn / hiện -->
           <div class="btn-group btn-group-sm" role="group" aria-label="Ngôn ngữ">
@@ -339,13 +348,13 @@
             </div>
           </div>
 
-          <!-- <p class="text-muted small mt-2 mb-0">
+          <p class="text-muted small mt-2 mb-0">
             Gợi ý: dùng 3 nút Pāli / Tiếng Anh / Tiếng Việt để ẩn/hiện từng cột. 
             Nút "Row" chuyển giữa nhiều cột và xếp chồng (Col). 
             Nút "⤢ Toàn màn" bật/tắt chế độ full-width. 
             Nút "🎨 Màu" mở bảng chỉnh màu chữ &amp; màu nền cho từng ngôn ngữ. 
             Nút "Help" xem hướng dẫn chi tiết.
-          </p> -->
+          </p>
         </div>
       </div>
     </main>
@@ -353,7 +362,7 @@
     <!-- FOOTER -->
     <footer class="py-2">
       <div class="container text-center">
-        Namo Tassa Bhagavato Arahato Sammāsambuddhassa.
+        © 2025 Bhaddekaratta — All rights reserved.
       </div>
     </footer>
   </div>
@@ -493,6 +502,12 @@
       const btnFull   = document.getElementById('btnFull');
       const btnColor  = document.getElementById('btnColor');
       const btnHelp   = document.getElementById('btnHelp');
+      const btnPrevSutta = document.getElementById('btnPrevSutta');
+      const btnNextSutta = document.getElementById('btnNextSutta');
+
+      // TODO: sửa 2 đường dẫn này cho đúng file kinh trước / sau của bạn
+      const PREV_SUTTA_URL = '#'; // ví dụ: 'mn130.html'
+      const NEXT_SUTTA_URL = '#'; // ví dụ: 'mn132.html'
 
       let showPali = true;
       let showEng  = true;
@@ -529,20 +544,6 @@
       const colorContentEng  = document.getElementById('colorContentEng');
       const colorContentVie  = document.getElementById('colorContentVie');
 
-      const btnPrevSutta = document.getElementById('btnPrevSutta');
-      const btnNextSutta = document.getElementById('btnNextSutta');
-
-      // ... sau đoạn khai báo các const khác
-
-      btnPrevSutta.addEventListener('click', ()=>{
-        // đổi đường dẫn cho đúng file kinh trước
-        window.location.href = 'ten-file-kinh-truoc.html';
-      });
-
-      btnNextSutta.addEventListener('click', ()=>{
-        // đổi đường dẫn cho đúng file kinh sau
-        window.location.href = 'ten-file-kinh-sau.html';
-      });
       // helper chuyển "rgb(r,g,b)" -> "#rrggbb"
       function rgbToHex(rgb){
         if(!rgb || rgb === 'transparent') return '';
@@ -562,6 +563,18 @@
         e.preventDefault();
         document.body.classList.add('page-slide-out');
         setTimeout(()=>{ window.location.href = '../index.html'; }, 260);
+      });
+
+      // điều hướng bài trước / sau (nếu đã cấu hình URL)
+      btnPrevSutta.addEventListener('click', ()=>{
+        if(PREV_SUTTA_URL && PREV_SUTTA_URL !== '#'){
+          window.location.href = PREV_SUTTA_URL;
+        }
+      });
+      btnNextSutta.addEventListener('click', ()=>{
+        if(NEXT_SUTTA_URL && NEXT_SUTTA_URL !== '#'){
+          window.location.href = NEXT_SUTTA_URL;
+        }
       });
 
       function adjustRowColumns(){
@@ -626,8 +639,9 @@
       function updateCardHeight(){
         const headerH = document.querySelector('header').offsetHeight || 0;
         const footerH = document.querySelector('footer').offsetHeight || 0;
-        const max = window.innerHeight - headerH - footerH - 24;
-        scrollBox.style.maxHeight = max + 'px';
+        const vh = window.innerHeight;
+        const max = vh - headerH - footerH - 24;
+        scrollBox.style.height = max + 'px';
       }
 
       // HELP overlay
