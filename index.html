@@ -233,7 +233,7 @@
             <span class="me-1">☰</span>
             <span data-text-vi="Mục lục" data-text-en="Index">Mục lục</span>
           </button>
-          <h1 id="sutraTitle" class="h5 mb-0">NIKĀYA ARCHIVE</h1>
+          <h1 id="sutraTitle" class="h5 mb-0">NIKĀYA</h1>
         </div>
         <div class="d-flex align-items-center gap-2">
           <button class="btn btn-outline-secondary btn-sm btn-header" type="button" id="btnPrev">
@@ -450,25 +450,7 @@
 
       /* ====== cập nhật tiêu đề header theo bài kinh ====== */
       function updateHeaderTitle(){
-        const defaultTitle = 'NIKĀYA ARCHIVE';
-        if(!currentHref || currentHref === 'bg.html'){
-          headerTitle.textContent = defaultTitle;
-          return;
-        }
-        let matched = null;
-        links.forEach(a=>{
-          if(a.getAttribute('href') === currentHref){
-            matched = a;
-          }
-        });
-        if(!matched){
-          headerTitle.textContent = defaultTitle;
-          return;
-        }
-        const pali = matched.dataset.titlePali || matched.textContent.trim();
-        const vi   = matched.dataset.titleVi   || pali;
-        const t    = (currentLang === 'vi') ? vi : pali;
-        headerTitle.textContent = t.toUpperCase();
+       
       }
 
       /* ====== đổi ngôn ngữ giao diện ====== */
