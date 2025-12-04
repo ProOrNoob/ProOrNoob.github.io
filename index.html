@@ -3,312 +3,809 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Bhaddekaratta — Pāli / English / Tiếng Việt (Grid view) — Modified</title>
+  <title>Bhaddekaratta — Pāli / English / Tiếng Việt (Bootstrap)</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
   <style>
-    :root{--bg:#f5f7fb;--card:#ffffff;--muted:#64748b;--accent:#2563eb}
+    :root{
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --muted:#64748b;
+      --accent:#2563eb;
+    }
     *{box-sizing:border-box}
-    body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:#0f172a;margin:0;padding:0;height:100vh;overflow:hidden}
 
-    /* container: default fixed max-width, but can toggle to full-width */
-    .page{min-height:100vh;display:flex;flex-direction:column}
-    header{position:sticky;top:0;z-index:1100;background:linear-gradient(180deg, rgba(245,247,251,0.95), rgba(245,247,251,0.7));backdrop-filter:blur(4px);border-bottom:1px solid rgba(0,0,0,0.04)}
-    .wrap{max-width:980px;margin:0 auto;width:100%;transition:max-width .2s ease,padding .2s ease;padding:20px}
-    .wrap.full{max-width:none;padding:12px 28px}
-
-    .header-inner{display:flex;align-items:center;gap:12px;padding:10px 0}
-    .title-area{display:flex;align-items:center;gap:12px}
-    .back-btn{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid #e6eef8;background:var(--card);cursor:pointer;text-decoration:none;color:inherit;font-weight:600}
-    h1{font-size:18px;margin:0;line-height:1}
-
-    .controls{margin-left:auto;display:flex;gap:12px;align-items:center}
-    .control-group{display:flex;gap:8px;align-items:center;padding:6px;border-radius:10px;background:transparent}
-    .color-controls .chip{padding:6px 8px;font-size:13px}
-    .toggle-controls .chip{padding:6px 10px}
-    .action-controls{display:flex;gap:8px}
-    .back-btn{padding:8px 12px}
-    .control-group.color-controls{position:relative}
-    .dropdown-panel{position:absolute;right:0;top:calc(100% + 8px);background:var(--card);border:1px solid rgba(0,0,0,0.06);padding:10px;border-radius:8px;box-shadow:0 8px 24px rgba(2,6,23,0.06);display:none;z-index:1200}
-    .dropdown-panel.open{display:block}
-    .dropdown-panel .chip{display:flex;align-items:center;margin-bottom:6px}    
-
-    .chips{display:flex;gap:8px}
-    label.chip{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;background:var(--card);border-radius:10px;border:1px solid #e6eef8}
-    input[type=checkbox]{width:18px;height:18px}
-    button.btn{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;background:var(--card);border-radius:10px;border:1px solid #e6eef8;cursor:pointer}
-
-    main{flex:1;display:flex}
-    .content{flex:1}
-
-    .card{background:var(--card);border-radius:12px;padding:14px;border:1px solid #e6edf7;margin:0 auto 18px;position:relative;width:100%}
-    .grid{display:grid;grid-template-columns:1fr;gap:10px}
-    /* default: 3 columns per row (Pali / Eng / Vie) */
-    .row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:start;padding:12px;border-radius:8px}
-    .row:nth-child(odd){background:rgba(37,99,235,0.03)}
-    .col{min-height:1px;padding:8px;border-radius:6px}
-
-    .pali{font-family:'Noto Serif',serif;font-size:15px;line-height:1.6}
-    .eng{font-family:Georgia,serif;font-size:14px;line-height:1.6}
-    .vie{font-family:system-ui;font-size:14px;line-height:1.6}
-    .head{font-weight:600;color:var(--muted);font-size:13px;margin-bottom:6px}
-
-    /* hidden states (we'll still keep elements but hide them) */
-    .hide-eng .col.eng{display:none}
-    .hide-vie .col.vie{display:none}
-
-    /* layout modes */
-    .stack .row{grid-template-columns:1fr}
-
-    /* scroll-to-top button positioned near scrollbar (mid-right) */
-    .btn-scroll-top{position:absolute;right:8px;top:50%;bottom:auto;transform:translateY(-50%);display:none;align-items:center;justify-content:center;width:40px;height:40px;border-radius:999px;background:var(--card);box-shadow:0 6px 18px rgba(2,6,23,0.08);border:1px solid rgba(0,0,0,0.06);cursor:pointer}
-    .btn-scroll-top.visible{display:flex}
-
-    .site-footer{position:fixed;bottom:0;left:0;width:100%;background:var(--bg);}
-    .footer{padding:12px 0;color:var(--muted);font-size:13px;border-top:1px solid rgba(0,0,0,0.04);text-align:center}
-
-    /* responsive */
-    @media (max-width:820px){
-      .wrap{padding:12px}
-      .row{grid-template-columns:1fr}
-      .head{display:block}
-      .btn-scroll-top{right:10px;top:auto;bottom:10px;transform:none}
+    html,body{
+      font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;
+      background:var(--bg);
+      color:#0f172a;
+      margin:0;
+      padding:0;
+      overflow-x:hidden;
     }
 
-    .small{font-size:13px;color:var(--muted);margin-top:10px}
-    .footer{padding:12px 0;color:var(--muted);font-size:13px;border-top:1px solid rgba(0,0,0,0.04);text-align:center}
+    /* hiệu ứng trượt khi quay lại danh mục */
+    body{
+      transform:translateX(0);
+      transition:transform .25s ease;
+    }
+    body.page-slide-out{
+      transform:translateX(-100%);
+    }
+
+    header{
+      position:sticky;
+      top:0;
+      z-index:1040;
+      background:linear-gradient(180deg, rgba(245,247,251,0.95), rgba(245,247,251,0.85));
+      backdrop-filter:blur(4px);
+      border-bottom:1px solid rgba(15,23,42,0.06);
+    }
+
+    .page-wrapper{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .main-container{
+      flex:1 1 auto;
+      padding-top:0.5rem;
+      padding-bottom:0.5rem;
+    }
+
+    .sutra-card{
+      background:var(--card);
+      border-radius:12px;
+      border:1px solid #e6edf7;
+      padding:14px;
+    }
+
+    .sutra-grid{display:flex;flex-direction:column;gap:10px;}
+
+    .sutra-row{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:12px;
+      padding:12px;
+      border-radius:8px;
+    }
+    .sutra-row:nth-child(odd){
+      background:rgba(37,99,235,0.03);
+    }
+
+    .sutra-col{
+      min-height:1px;
+      padding:8px;
+      border-radius:6px;
+    }
+
+    .pali{font-family:"Noto Serif",serif;font-size:15px;line-height:1.6}
+    .eng{font-family:Georgia,serif;font-size:14px;line-height:1.6}
+    .vie{font-family:system-ui;font-size:14px;line-height:1.6}
+    .col-head{font-weight:600;color:var(--muted);font-size:13px;margin-bottom:6px}
+
+    /* hide states */
+    .hide-pali .pali-col{display:none;}
+    .hide-eng  .eng-col {display:none;}
+    .hide-vie  .vie-col {display:none;}
+
+    /* layout stack */
+    .stack .sutra-row{grid-template-columns:1fr;}
+
+    footer{
+      border-top:1px solid rgba(15,23,42,0.06);
+      background:var(--bg);
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    /* unify button sizes */
+    .controls .btn,
+    header .btn{
+      min-width:96px;
+      height:36px;
+      padding:0 .75rem;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:14px;
+      border-radius:8px;
+      white-space:nowrap;
+    }
+
+    /* inner scroll */
+    #sutraCardScroll{
+      max-height:calc(100vh - 170px);
+      overflow:auto;
+    }
+
+    /* overlay dùng chung cho Help & Color */
+    .overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,0.45);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:2000;
+    }
+    .overlay.show{
+      display:flex;
+    }
+    .dialog{
+      background:var(--card);
+      border-radius:12px;
+      padding:16px 20px;
+      max-width:640px;
+      width:90%;
+      box-shadow:0 18px 45px rgba(15,23,42,0.35);
+    }
+    .dialog h2{
+      font-size:18px;
+      margin:0 0 8px 0;
+    }
+    .dialog p,
+    .dialog li{
+      font-size:14px;
+    }
+    .dialog-close{
+      border:none;
+      background:transparent;
+      font-size:20px;
+      line-height:1;
+      cursor:pointer;
+      color:#64748b;
+      padding-left:8px;
+    }
+    .dialog-close:hover{
+      color:#0f172a;
+    }
+
+    .tab-btn.active{
+      background-color:var(--accent);
+      color:#fff !important;
+    }
+
+    @media (max-width: 768px){
+      .sutra-row{
+        grid-template-columns:1fr;
+      }
+      .controls .btn, header .btn{
+        min-width:80px;
+      }
+    }
+    .sutta-title{
+      cursor:default;
+      font-weight:600;
+      background:var(--card);
+      border-color:rgba(15,23,42,0.15);
+      color:#0f172a;
+      pointer-events:none; /* không cho bấm như nút */
+    }
   </style>
 </head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-JYT2R1TWMR"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-JYT2R1TWMR');
+</script>
 <body>
-  <div class="page">
-    <header>
-      <div class="wrap" id="wrapHeader">
-        <div class="header-inner">
-          <div class="title-area">
-            <a href="../index.html" class="back-btn" id="backBtn">← Danh mục</a>
-            <div>
-              <h1>Bhaddekaratta</h1>
+  <div class="page-wrapper">
+
+    <!-- HEADER -->
+    <header class="py-2">
+      <div class="container d-flex align-items-center justify-content-between gap-2">
+       <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-outline-secondary btn-sm" type="button" id="btnBack">
+            ← Danh mục
+          </button>
+
+          <!-- Nhóm tiêu đề + nút bài trước / bài sau -->
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm" type="button" id="btnPrevSutta">
+              ‹ Bài trước
+            </button>
+
+            <h1 class="visually-hidden">Bhaddekaratta</h1>
+            <div id="suttaTitle" class="btn btn-outline-secondary btn-sm sutta-title">
+              Bhaddekaratta
             </div>
+
+            <button class="btn btn-outline-secondary btn-sm" type="button" id="btnNextSutta">
+              Bài sau ›
+            </button>
+          </div>
+        </div>
+        <div class="controls d-flex flex-wrap align-items-center gap-2">
+          <!-- Ngôn ngữ: chỉ ẩn / hiện -->
+          <div class="btn-group btn-group-sm" role="group" aria-label="Ngôn ngữ">
+            <button type="button" class="btn btn-outline-secondary active" id="btnPali">Pāli</button>
+            <button type="button" class="btn btn-outline-secondary active" id="btnEng">Tiếng Anh</button>
+            <button type="button" class="btn btn-outline-secondary active" id="btnVie">Tiếng Việt</button>
           </div>
 
-          <div class="controls" role="toolbar" aria-label="Controls">
-            <div class="control-group color-controls" aria-label="Color settings">
-              <div class="dropdown">
-                <button id="colorToggle" class="btn" aria-haspopup="true" aria-expanded="false" title="Tùy chỉnh màu">🎨 Màu</button>
-                <div id="colorPanel" class="dropdown-panel" role="menu" aria-hidden="true">
-                  <label class="chip"><input id="engBg" type="color" title="Background English"/> Màu nền English</label>
-                  <label class="chip"><input id="engColor" type="color" title="Text English"/> Màu chữ English</label>
-                  <label class="chip"><input id="vieBg" type="color" title="Background Vietnamese"/> Màu nền Tiếng Việt</label>
-                  <label class="chip"><input id="vieColor" type="color" title="Text Vietnamese"/> Màu chữ Tiếng Việt</label>
-                  <div style="height:8px"></div>
-                  <button id="resetColor" class="btn">Reset màu</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="control-group toggle-controls" aria-label="Toggle languages">
-              <label class="chip"><input id="chkEng" type="checkbox" checked/> English</label>
-              <label class="chip"><input id="chkVie" type="checkbox" checked/> Tiếng Việt</label>
-            </div>
-
-            <div class="control-group action-controls" aria-label="Actions">
-              <button id="btnLayout" class="btn" title="Chuyển layout">🔳 Chia / Xếp</button>
-              <button id="btnFull" class="btn" title="Toàn màn">⤢ Toàn màn</button>
-            </div>
-          </div>
+          <!-- Actions -->
+          <button id="btnLayout" class="btn btn-outline-secondary btn-sm" type="button">
+            Row
+          </button>
+          <button id="btnFull" class="btn btn-outline-secondary btn-sm" type="button">
+            ⤢ Toàn màn
+          </button>
+          <button id="btnColor" class="btn btn-outline-secondary btn-sm" type="button">
+            🎨 Màu
+          </button>
+          <button id="btnHelp" class="btn btn-outline-secondary btn-sm" type="button">
+            Help
+          </button>
         </div>
       </div>
     </header>
 
-    <main>
-      <div class="content">
-        <div class="wrap" id="wrapContent">
-          <div class="card" id="card">
-            <div class="grid" id="grid">
+    <!-- MAIN -->
+    <main class="main-container">
+      <div id="mainContainer" class="container">
+        <div class="sutra-card" id="sutraCard">
+
+          <div id="sutraCardScroll">
+            <div id="sutraGrid" class="sutra-grid">
 
               <!-- Row 1 -->
-              <div class="row" data-idx="1">
-                <div class="col pali" data-lang="pali"><div class="head">Pāli</div><div class="pali">Evaṁ me sutaṁ: Ekaṁ samayaṁ bhagavā sāvatthiyaṁ vihārati jetavane anāthapiṇḍikassa ārāme.</div></div>
-                <div class="col eng" data-lang="eng"><div class="head">English</div><div class="eng">Thus have I heard: At one time the Blessed One was dwelling at Sāvatthī, in Jeta's Grove, Anāthapiṇḍika's Park.</div></div>
-                <div class="col vie" data-lang="vie"><div class="head">Tiếng Việt</div><div class="vie">Nghe như vầy: Có một thời, Thế Tôn trú tại Xá-vệ, trong rừng Kỳ-đà, tại khu vườn của Anāthapiṇḍika.</div></div>
+              <div class="sutra-row" data-idx="1" id="row-1">
+                <div class="sutra-col pali-col">
+                  <div class="col-head">Bhaddekaratta (Pāli)</div>
+                  <div class="pali">
+                    Evaṁ me sutaṁ: Ekaṁ samayaṁ bhagavā sāvatthiyaṁ vihārati jetavane anāthapiṇḍikassa ārāme.
+                  </div>
+                </div>
+                <div class="sutra-col eng-col">
+                  <div class="col-head">Bhaddekaratta (English)</div>
+                  <div class="eng">
+                    Thus have I heard: At one time the Blessed One was dwelling at Sāvatthī, in Jeta's Grove, Anāthapiṇḍika's Park.
+                  </div>
+                </div>
+                <div class="sutra-col vie-col">
+                  <div class="col-head">Kinh Nhất Dạ Hiền Giả</div>
+                  <div class="vie">
+                    Nghe như vầy: Có một thời, Thế Tôn trú tại Xá-vệ, trong rừng Kỳ-đà, tại khu vườn của Anāthapiṇḍika.
+                  </div>
+                </div>
               </div>
 
               <!-- Row 2 -->
-              <div class="row" data-idx="2">
-                <div class="col pali" data-lang="pali"><div class="pali">Tatra kho bhagavā bhikkhū āmantesi: “Bhikkhavo”ti. “Bhaddante”ti te bhikkhū bhagavato paccassosuṁ.</div></div>
-                <div class="col eng" data-lang="eng"><div class="eng">There the Blessed One addressed the bhikkhus: "Bhikkhus!" "Venerable sir," the bhikkhus replied to the Blessed One.</div></div>
-                <div class="col vie" data-lang="vie"><div class="vie">Ở đó Thế Tôn nói với các tỳ-kheo: “Này các tỳ-kheo.” “Bạch trưởng lão,” các tỳ-kheo trả lời Đức Phật.</div></div>
+              <div class="sutra-row" data-idx="2" id="row-2">
+                <div class="sutra-col pali-col">
+                  <div class="pali">
+                    Tatra kho bhagavā bhikkhū āmantesi: “Bhikkhavo”ti. “Bhaddante”ti te bhikkhū bhagavato paccassosuṁ.
+                  </div>
+                </div>
+                <div class="sutra-col eng-col">
+                  <div class="eng">
+                    There the Blessed One addressed the bhikkhus: "Bhikkhus!" "Venerable sir," the bhikkhus replied to the Blessed One.
+                  </div>
+                </div>
+                <div class="sutra-col vie-col">
+                  <div class="vie">
+                    Ở đó Thế Tôn nói với các tỳ-kheo: “Này các tỳ-kheo.” “Bạch trưởng lão,” các tỳ-kheo trả lời Đức Phật.
+                  </div>
+                </div>
               </div>
 
               <!-- Row 3 -->
-              <div class="row" data-idx="3">
-                <div class="col pali" data-lang="pali"><div class="pali">Atītaṁ nānvāgameyya, nappaṭikaṅkhe anāgataṁ; yadatītaṁ pahīnaṁ taṁ, appattañca anāgataṁ.</div></div>
-                <div class="col eng" data-lang="eng"><div class="eng">Let the past not be clung to; the future not expected; whatever is past has been left behind, and the future is not yet come.</div></div>
-                <div class="col vie" data-lang="vie"><div class="vie">Đừng bám víu vào quá khứ, đừng mong chờ tương lai; điều đã qua đã bỏ, điều tương lai chưa đến.</div></div>
+              <div class="sutra-row" data-idx="3" id="row-3">
+                <div class="sutra-col pali-col">
+                  <div class="pali">
+                    Atītaṁ nānvāgameyya, nappaṭikaṅkhe anāgataṁ; yadatītaṁ pahīnaṁ taṁ, appattañca anāgataṁ.
+                  </div>
+                </div>
+                <div class="sutra-col eng-col">
+                  <div class="eng">
+                    Let the past not be clung to; the future not expected; whatever is past has been left behind, and the future is not yet come.
+                  </div>
+                </div>
+                <div class="sutra-col vie-col">
+                  <div class="vie">
+                    Đừng bám víu vào quá khứ, đừng mong chờ tương lai; điều đã qua đã bỏ, điều tương lai chưa đến.
+                  </div>
+                </div>
               </div>
 
               <!-- Row 4 -->
-              <div class="row" data-idx="4">
-                <div class="col pali" data-lang="pali"><div class="pali">Idamavoca bhagavā. Attamanā te bhikkhū bhagavato bhāsitaṁ abhinandunti. Bhaddekarattasuttaṁ niṭṭhitaṁ.</div></div>
-                <div class="col eng" data-lang="eng"><div class="eng">Thus the Blessed One spoke. The bhikkhus were glad and praised what had been said by the Blessed One. The Bhaddekaratta Sutta is concluded.</div></div>
-                <div class="col vie" data-lang="vie"><div class="vie">Đức Phật thuyết xong. Các tỳ-kheo hoan hỷ và tán thán lời Phật dạy. Kinh Bhaddekaratta kết thúc.</div></div>
+              <div class="sutra-row" data-idx="4" id="row-4">
+                <div class="sutra-col pali-col">
+                  <div class="pali">
+                    Idamavoca bhagavā. Attamanā te bhikkhū bhagavato bhāsitaṁ abhinandunti. Bhaddekarattasuttaṁ niṭṭhitaṁ.
+                  </div>
+                </div>
+                <div class="sutra-col eng-col">
+                  <div class="eng">
+                    Thus the Blessed One spoke. The bhikkhus were glad and praised what had been said by the Blessed One. The Bhaddekaratta Sutta is concluded.
+                  </div>
+                </div>
+                <div class="sutra-col vie-col">
+                  <div class="vie">
+                    Đức Phật thuyết xong. Các tỳ-kheo hoan hỷ và tán thán lời Phật dạy. Kinh Bhaddekaratta kết thúc.
+                  </div>
+                </div>
               </div>
 
             </div>
-
-            
-
-            
-            Gợi ý: bấm "Chia / Xếp" để chuyển giữa chế độ 3 cột và xếp chồng. Khi bạn ẩn 1 cột, layout tự chuyển sang 2 cột; ẩn 2 cột sẽ làm 1 cột full-width. Nút "Toàn màn" chuyển container giữa chế độ fixed-width và full-width. Phím tắt: 2 (toggle English), 3 (toggle Việt), L (layout), F (fullscreen container).</div>
           </div>
+
+          <!-- <p class="text-muted small mt-2 mb-0">
+            Gợi ý: dùng 3 nút Pāli / Tiếng Anh / Tiếng Việt để ẩn/hiện từng cột. 
+            Nút "Row" chuyển giữa nhiều cột và xếp chồng (Col). 
+            Nút "⤢ Toàn màn" bật/tắt chế độ full-width. 
+            Nút "🎨 Màu" mở bảng chỉnh màu chữ &amp; màu nền cho từng ngôn ngữ. 
+            Nút "Help" xem hướng dẫn chi tiết.
+          </p> -->
         </div>
       </div>
     </main>
 
-    <footer class="site-footer">
-      <div class="wrap">
-        <div class="footer">© 2025 Bhaddekaratta — All rights reserved.</div>
-      </div>
-    </footer>
-
-    
-
-    <footer>
-      <div class="wrap">
-        <div class="footer" aria-hidden="false">© 2025 Bhaddekaratta — All rights reserved.</div>
+    <!-- FOOTER -->
+    <footer class="py-2">
+      <div class="container text-center">
+        Namo Tassa Bhagavato Arahato Sammāsambuddhassa.
       </div>
     </footer>
   </div>
 
+  <!-- HELP OVERLAY -->
+  <div id="helpOverlay" class="overlay" aria-hidden="true">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 id="helpTitle" class="mb-0">Help / Hướng dẫn</h2>
+        <div class="d-flex align-items-center gap-2">
+          <div class="btn-group btn-group-sm" role="tablist">
+            <button type="button" class="btn btn-outline-secondary active" id="helpTabVi">
+              Tiếng Việt
+            </button>
+            <button type="button" class="btn btn-outline-secondary" id="helpTabEn">
+              English
+            </button>
+          </div>
+          <button type="button" class="dialog-close" id="helpClose" aria-label="Đóng">×</button>
+        </div>
+      </div>
+
+      <!-- Nội dung Tiếng Việt -->
+      <div id="helpContentVi">
+        <p>Một số gợi ý thao tác nhanh trên trang Bhaddekaratta:</p>
+        <ul>
+          <li>Sử dụng ba nút <strong>Pāli / Tiếng Anh / Tiếng Việt</strong> để bật/tắt hiển thị từng cột ngôn ngữ.</li>
+          <li>Nút <strong>Row / Col</strong> chuyển đổi giữa dạng nhiều cột (Row) và xếp chồng theo hàng (Col).</li>
+          <li>Nút <strong>⤢ Toàn màn</strong> bật/tắt chế độ hiển thị toàn chiều ngang trình duyệt.</li>
+          <li>Nút <strong>🎨 Màu</strong> mở bảng tùy chỉnh màu chữ và màu nền riêng cho Pāli, English, Tiếng Việt (mỗi tab một ngôn ngữ, có nút Reset màu).</li>
+          <li>Nút <strong>← Danh mục</strong> quay lại trang danh sách kinh với hiệu ứng trượt nhẹ.</li>
+        </ul>
+        <p class="text-muted mb-0">Bấm bên ngoài khung này hoặc nút ✕ để đóng phần hướng dẫn.</p>
+      </div>
+
+      <!-- Nội dung English -->
+      <div id="helpContentEn" class="d-none">
+        <p>Some quick tips for using the Bhaddekaratta page:</p>
+        <ul>
+          <li>Use the three buttons <strong>Pāli / English / Vietnamese</strong> to show/hide each language column.</li>
+          <li>The <strong>Row / Col</strong> button switches between multi-column view (Row) and stacked rows (Col).</li>
+          <li>The <strong>Full screen</strong> button toggles a full-width layout across the browser window.</li>
+          <li>The <strong>🎨 Màu</strong> button opens the color settings panel, where you can change text &amp; background colors for each language separately and reset them.</li>
+          <li>The <strong>← Index</strong> button returns to the index page with a slide animation.</li>
+        </ul>
+        <p class="text-muted mb-0">Click outside this dialog or press ✕ to close the help overlay.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- COLOR OVERLAY -->
+  <div id="colorOverlay" class="overlay" aria-hidden="true">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="colorTitle">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 id="colorTitle" class="mb-0">🎨 Tùy chỉnh màu</h2>
+        <div class="d-flex align-items-center gap-2">
+          <div class="btn-group btn-group-sm" role="tablist">
+            <button type="button" class="btn btn-outline-secondary tab-btn active" id="tabPali">
+              Pāli
+            </button>
+            <button type="button" class="btn btn-outline-secondary tab-btn" id="tabEng">
+              English
+            </button>
+            <button type="button" class="btn btn-outline-secondary tab-btn" id="tabVie">
+              Tiếng Việt
+            </button>
+          </div>
+          <button type="button" class="dialog-close" id="colorClose" aria-label="Đóng">×</button>
+        </div>
+      </div>
+
+      <!-- Pāli color settings -->
+      <div id="colorContentPali">
+        <p class="mb-2"><strong>Pāli</strong> – chỉnh màu cho cột Pāli.</p>
+        <div class="mb-2 d-flex justify-content-between align-items-center">
+          <span>Màu chữ</span>
+          <input id="paliColor" type="color" title="Màu chữ Pāli">
+        </div>
+        <div class="mb-2 d-flex justify-content-between align-items-center">
+          <span>Màu nền</span>
+          <input id="paliBg" type="color" title="Màu nền Pāli">
+        </div>
+        <div class="text-end mt-2">
+          <button class="btn btn-outline-secondary btn-sm" type="button" id="resetPali">Reset Pāli</button>
+        </div>
+      </div>
+
+      <!-- English color settings -->
+      <div id="colorContentEng" class="d-none">
+        <p class="mb-2"><strong>English</strong> – color settings for the English column.</p>
+        <div class="mb-2 d-flex justify-content-between align-items-center">
+          <span>Text color</span>
+          <input id="engColor" type="color" title="English text color">
+        </div>
+        <div class="mb-2 d-flex justify-content-between align-items-center">
+          <span>Background</span>
+          <input id="engBg" type="color" title="English background color">
+        </div>
+        <div class="text-end mt-2">
+          <button class="btn btn-outline-secondary btn-sm" type="button" id="resetEng">Reset English</button>
+        </div>
+      </div>
+
+      <!-- Vietnamese color settings -->
+      <div id="colorContentVie" class="d-none">
+        <p class="mb-2"><strong>Tiếng Việt</strong> – chỉnh màu cho cột tiếng Việt.</p>
+        <div class="mb-2 d-flex justify-content-between align-items-center">
+          <span>Màu chữ</span>
+          <input id="vieColor" type="color" title="Màu chữ Tiếng Việt">
+        </div>
+        <div class="mb-2 d-flex justify-content-between align-items-center">
+          <span>Màu nền</span>
+          <input id="vieBg" type="color" title="Màu nền Tiếng Việt">
+        </div>
+        <div class="text-end mt-2">
+          <button class="btn btn-outline-secondary btn-sm" type="button" id="resetVie">Reset Tiếng Việt</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
   <script>
     (function(){
-      const wrap = document.getElementById('wrapContent');
-      const wrapHeader = document.getElementById('wrapHeader');
-      const grid = document.getElementById('grid');
-      const card = document.getElementById('card');
-      const chkEng = document.getElementById('chkEng');
-      const chkVie = document.getElementById('chkVie');
+      const grid = document.getElementById('sutraGrid');
+      const card = document.getElementById('sutraCard');
+      const scrollBox = document.getElementById('sutraCardScroll');
+      const mainContainer = document.getElementById('mainContainer');
+
+      const btnBack   = document.getElementById('btnBack');
+      const btnPali   = document.getElementById('btnPali');
+      const btnEng    = document.getElementById('btnEng');
+      const btnVie    = document.getElementById('btnVie');
       const btnLayout = document.getElementById('btnLayout');
-      const btnFull = document.getElementById('btnFull');
-      // helper: update each .row grid-template-columns based on visible columns
+      const btnFull   = document.getElementById('btnFull');
+      const btnColor  = document.getElementById('btnColor');
+      const btnHelp   = document.getElementById('btnHelp');
+
+      let showPali = true;
+      let showEng  = true;
+      let showVie  = true;
+
+      const paliCols = document.querySelectorAll('.pali-col');
+      const engCols  = document.querySelectorAll('.eng-col');
+      const vieCols  = document.querySelectorAll('.vie-col');
+
+      const paliBgInput    = document.getElementById('paliBg');
+      const paliColorInput = document.getElementById('paliColor');
+      const engBgInput     = document.getElementById('engBg');
+      const engColorInput  = document.getElementById('engColor');
+      const vieBgInput     = document.getElementById('vieBg');
+      const vieColorInput  = document.getElementById('vieColor');
+
+      const resetPaliBtn = document.getElementById('resetPali');
+      const resetEngBtn  = document.getElementById('resetEng');
+      const resetVieBtn  = document.getElementById('resetVie');
+
+      const helpOverlay    = document.getElementById('helpOverlay');
+      const helpClose      = document.getElementById('helpClose');
+      const helpTabVi      = document.getElementById('helpTabVi');
+      const helpTabEn      = document.getElementById('helpTabEn');
+      const helpContentVi  = document.getElementById('helpContentVi');
+      const helpContentEn  = document.getElementById('helpContentEn');
+
+      const colorOverlay   = document.getElementById('colorOverlay');
+      const colorClose     = document.getElementById('colorClose');
+      const tabPali        = document.getElementById('tabPali');
+      const tabEng         = document.getElementById('tabEng');
+      const tabVie         = document.getElementById('tabVie');
+      const colorContentPali = document.getElementById('colorContentPali');
+      const colorContentEng  = document.getElementById('colorContentEng');
+      const colorContentVie  = document.getElementById('colorContentVie');
+
+      const btnPrevSutta = document.getElementById('btnPrevSutta');
+      const btnNextSutta = document.getElementById('btnNextSutta');
+
+      // ... sau đoạn khai báo các const khác
+
+      btnPrevSutta.addEventListener('click', ()=>{
+        // đổi đường dẫn cho đúng file kinh trước
+        window.location.href = 'ten-file-kinh-truoc.html';
+      });
+
+      btnNextSutta.addEventListener('click', ()=>{
+        // đổi đường dẫn cho đúng file kinh sau
+        window.location.href = 'ten-file-kinh-sau.html';
+      });
+      // helper chuyển "rgb(r,g,b)" -> "#rrggbb"
+      function rgbToHex(rgb){
+        if(!rgb || rgb === 'transparent') return '';
+        const m = rgb.match(/\d+/g);
+        if(!m) return '';
+        return '#' + m.map(x => (+x).toString(16).padStart(2,'0')).join('');
+      }
+
+      // lấy màu mặc định từ CSS
+      const bodyStyle  = getComputedStyle(document.body);
+      const rootStyle  = getComputedStyle(document.documentElement);
+      const defaultTextHex = rgbToHex(bodyStyle.color) || '#0f172a';
+      const defaultBgHex   = (rootStyle.getPropertyValue('--card').trim() || '#ffffff');
+
+      // Back with slide animation
+      btnBack.addEventListener('click',(e)=>{
+        e.preventDefault();
+        document.body.classList.add('page-slide-out');
+        setTimeout(()=>{ window.location.href = '../index.html'; }, 260);
+      });
+
       function adjustRowColumns(){
-        const rows = grid.querySelectorAll('.row');
+        const rows = grid.querySelectorAll('.sutra-row');
         rows.forEach(row=>{
           if(card.classList.contains('stack')){
             row.style.gridTemplateColumns = '1fr';
             return;
           }
-          // count visible column elements inside the row
-          const cols = Array.from(row.querySelectorAll('.col'));
-          const visibleCols = cols.filter(col => {
-            if(col.classList.contains('eng') && !chkEng.checked) return false;
-            if(col.classList.contains('vie') && !chkVie.checked) return false;
+          const cols = Array.from(row.querySelectorAll('.sutra-col'));
+          const visible = cols.filter(col=>{
+            if(col.classList.contains('pali-col') && !showPali) return false;
+            if(col.classList.contains('eng-col')  && !showEng)  return false;
+            if(col.classList.contains('vie-col')  && !showVie)  return false;
             return true;
           });
-          const n = Math.max(1, visibleCols.length);
-          row.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+          const n = Math.max(1, visible.length);
+          row.style.gridTemplateColumns = `repeat(${n},1fr)`;
         });
       }
 
       function updateVisibility(){
-        grid.classList.toggle('hide-eng', !chkEng.checked);
-        grid.classList.toggle('hide-vie', !chkVie.checked);
+        grid.classList.toggle('hide-pali', !showPali);
+        grid.classList.toggle('hide-eng',  !showEng);
+        grid.classList.toggle('hide-vie',  !showVie);
         adjustRowColumns();
-        updateCardHeight();
       }
+
+      btnPali.addEventListener('click', ()=>{
+        showPali = !showPali;
+        btnPali.classList.toggle('active', showPali);
+        updateVisibility();
+      });
+      btnEng.addEventListener('click', ()=>{
+        showEng = !showEng;
+        btnEng.classList.toggle('active', showEng);
+        updateVisibility();
+      });
+      btnVie.addEventListener('click', ()=>{
+        showVie = !showVie;
+        btnVie.classList.toggle('active', showVie);
+        updateVisibility();
+      });
 
       function toggleLayout(){
         card.classList.toggle('stack');
         const isStack = card.classList.contains('stack');
-        btnLayout.textContent = isStack ? '⬛ Xếp chồng' : '🔳 Chia / Xếp';
+        btnLayout.innerText = isStack ? 'Col' : 'Row';
         adjustRowColumns();
-        updateCardHeight();
       }
+      btnLayout.addEventListener('click', toggleLayout);
 
       function toggleFull(){
-        wrap.classList.toggle('full');
-        const isFull = wrap.classList.contains('full');
-        btnFull.textContent = isFull ? '⤡ Thu nhỏ' : '⤢ Toàn màn';
-        // also ensure header wrap matches
-        wrapHeader.classList.toggle('full', isFull);
+        mainContainer.classList.toggle('container-fluid');
+        mainContainer.classList.toggle('container');
+        const isFull = mainContainer.classList.contains('container-fluid');
+        btnFull.innerText = isFull ? '⤡ Thu nhỏ' : '⤢ Toàn màn';
+        updateCardHeight();
       }
-
-      // Keep header visible & make .card scrollable if content taller than viewport
-      function updateCardHeight(){
-        const headerHeight = document.querySelector('header').offsetHeight || 0;
-        const footerEl = document.querySelector('.site-footer');
-        const footerHeight = footerEl ? footerEl.offsetHeight : 0;
-        // leave some padding (24px)
-        const max = window.innerHeight - headerHeight - footerHeight - 40;
-        card.style.maxHeight = max + 'px';
-        card.style.overflow = 'auto';
-      }
-      // (scroll-to-top removed) });
-
-      chkEng.addEventListener('change', updateVisibility);
-      chkVie.addEventListener('change', updateVisibility);
-      btnLayout.addEventListener('click', toggleLayout);
       btnFull.addEventListener('click', toggleFull);
 
-      window.addEventListener('keydown', (e)=>{
-        if(document.activeElement && (document.activeElement.tagName==='INPUT' || document.activeElement.tagName==='TEXTAREA')) return;
-        if(e.key === '2'){ chkEng.checked = !chkEng.checked; updateVisibility(); }
-        if(e.key === '3'){ chkVie.checked = !chkVie.checked; updateVisibility(); }
-        if(e.key === 'l' || e.key === 'L'){ toggleLayout(); }
-        if(e.key === 'f' || e.key === 'F'){ toggleFull(); }
-        if(e.key === '0'){ chkEng.checked=true; chkVie.checked=true; updateVisibility(); card.classList.remove('stack'); btnLayout.textContent='🔳 Chia / Xếp'; wrap.classList.remove('full'); btnFull.textContent='⤢ Toàn màn'; wrapHeader.classList.remove('full'); }
-      });
-
-      // color handlers
-      const engCols = document.querySelectorAll('.col.eng');
-      const vieCols = document.querySelectorAll('.col.vie');
-      const engBgInput = document.getElementById('engBg');
-      const engColorInput = document.getElementById('engColor');
-      const vieBgInput = document.getElementById('vieBg');
-      const vieColorInput = document.getElementById('vieColor');
-
-      // load saved colors from localStorage
-      const saved = JSON.parse(localStorage.getItem('bh_colors') || '{}');
-      if(saved.engBg) engBgInput.value = saved.engBg;
-      if(saved.engColor) engColorInput.value = saved.engColor;
-      if(saved.vieBg) vieBgInput.value = saved.vieBg;
-      if(saved.vieColor) vieColorInput.value = saved.vieColor;
-
-      function applySaved(){
-        if(engBgInput.value) engCols.forEach(c=> c.style.background=engBgInput.value);
-        if(engColorInput.value) engCols.forEach(c=> c.style.color=engColorInput.value);
-        if(vieBgInput.value) vieCols.forEach(c=> c.style.background=vieBgInput.value);
-        if(vieColorInput.value) vieCols.forEach(c=> c.style.color=vieColorInput.value);
+      function updateCardHeight(){
+        const headerH = document.querySelector('header').offsetHeight || 0;
+        const footerH = document.querySelector('footer').offsetHeight || 0;
+        const max = window.innerHeight - headerH - footerH - 24;
+        scrollBox.style.maxHeight = max + 'px';
       }
-      applySaved();
+
+      // HELP overlay
+      function setHelpLang(lang){
+        const isVi = (lang === 'vi');
+        helpContentVi.classList.toggle('d-none', !isVi);
+        helpContentEn.classList.toggle('d-none', isVi);
+        if(isVi){
+          helpTabVi.classList.add('active');
+          helpTabEn.classList.remove('active');
+        }else{
+          helpTabEn.classList.add('active');
+          helpTabVi.classList.remove('active');
+        }
+      }
+      function openHelp(){
+        helpOverlay.classList.add('show');
+        helpOverlay.setAttribute('aria-hidden','false');
+      }
+      function closeHelp(){
+        helpOverlay.classList.remove('show');
+        helpOverlay.setAttribute('aria-hidden','true');
+      }
+      btnHelp.addEventListener('click',(e)=>{ e.stopPropagation(); openHelp(); });
+      helpClose.addEventListener('click',(e)=>{ e.stopPropagation(); closeHelp(); });
+      helpOverlay.addEventListener('click',(e)=>{ if(e.target===helpOverlay) closeHelp(); });
+      helpTabVi.addEventListener('click',(e)=>{ e.stopPropagation(); setHelpLang('vi'); });
+      helpTabEn.addEventListener('click',(e)=>{ e.stopPropagation(); setHelpLang('en'); });
+
+      // COLOR overlay
+      function setColorTab(lang){
+        const isPali = lang==='pali';
+        const isEng  = lang==='eng';
+        const isVie  = lang==='vie';
+
+        tabPali.classList.toggle('active', isPali);
+        tabEng.classList.toggle('active',  isEng);
+        tabVie.classList.toggle('active',  isVie);
+
+        colorContentPali.classList.toggle('d-none', !isPali);
+        colorContentEng.classList.toggle('d-none',  !isEng);
+        colorContentVie.classList.toggle('d-none',  !isVie);
+      }
+      function openColor(){
+        colorOverlay.classList.add('show');
+        colorOverlay.setAttribute('aria-hidden','false');
+      }
+      function closeColor(){
+        colorOverlay.classList.remove('show');
+        colorOverlay.setAttribute('aria-hidden','true');
+      }
+      btnColor.addEventListener('click',(e)=>{ e.stopPropagation(); openColor(); });
+      colorClose.addEventListener('click',(e)=>{ e.stopPropagation(); closeColor(); });
+      colorOverlay.addEventListener('click',(e)=>{ if(e.target===colorOverlay) closeColor(); });
+
+      tabPali.addEventListener('click',(e)=>{ e.stopPropagation(); setColorTab('pali'); });
+      tabEng.addEventListener('click',(e)=>{ e.stopPropagation(); setColorTab('eng'); });
+      tabVie.addEventListener('click',(e)=>{ e.stopPropagation(); setColorTab('vie'); });
+
+      // COLORS load/save
+      function loadColors(){
+        let saved = {};
+        try{
+          saved = JSON.parse(localStorage.getItem('bh_colors') || '{}');
+        }catch(e){ saved = {}; }
+
+        // đưa cột về đúng CSS mặc định (không inline)
+        paliCols.forEach(c=>{c.style.background='';c.style.color='';});
+        engCols.forEach(c=>{c.style.background='';c.style.color='';});
+        vieCols.forEach(c=>{c.style.background='';c.style.color='';});
+
+        // set default cho color picker = màu CSS
+        paliColorInput.value = defaultTextHex;
+        engColorInput.value  = defaultTextHex;
+        vieColorInput.value  = defaultTextHex;
+
+        paliBgInput.value = defaultBgHex;
+        engBgInput.value  = defaultBgHex;
+        vieBgInput.value  = defaultBgHex;
+
+        // override nếu có màu đã lưu
+        if(saved.paliBg){
+          paliBgInput.value = saved.paliBg;
+          paliCols.forEach(c=>c.style.background=saved.paliBg);
+        }
+        if(saved.paliColor){
+          paliColorInput.value = saved.paliColor;
+          paliCols.forEach(c=>c.style.color=saved.paliColor);
+        }
+
+        if(saved.engBg){
+          engBgInput.value = saved.engBg;
+          engCols.forEach(c=>c.style.background=saved.engBg);
+        }
+        if(saved.engColor){
+          engColorInput.value = saved.engColor;
+          engCols.forEach(c=>c.style.color=saved.engColor);
+        }
+
+        if(saved.vieBg){
+          vieBgInput.value = saved.vieBg;
+          vieCols.forEach(c=>c.style.background=saved.vieBg);
+        }
+        if(saved.vieColor){
+          vieColorInput.value = saved.vieColor;
+          vieCols.forEach(c=>c.style.color=saved.vieColor);
+        }
+      }
 
       function saveColors(){
-        const obj = {engBg: engBgInput.value || '', engColor: engColorInput.value || '', vieBg: vieBgInput.value || '', vieColor: vieColorInput.value || ''};
-        localStorage.setItem('bh_colors', JSON.stringify(obj));
+        const obj = {
+          paliBg: paliBgInput.value || '',
+          paliColor: paliColorInput.value || '',
+          engBg: engBgInput.value || '',
+          engColor: engColorInput.value || '',
+          vieBg: vieBgInput.value || '',
+          vieColor: vieColorInput.value || ''
+        };
+        try{
+          localStorage.setItem('bh_colors', JSON.stringify(obj));
+        }catch(e){}
       }
 
-      engBgInput.addEventListener('input', e=> { engCols.forEach(c=> c.style.background=e.target.value); saveColors(); });
-      engColorInput.addEventListener('input', e=> { engCols.forEach(c=> c.style.color=e.target.value); saveColors(); });
-      vieBgInput.addEventListener('input', e=> { vieCols.forEach(c=> c.style.background=e.target.value); saveColors(); });
-      vieColorInput.addEventListener('input', e=> { vieCols.forEach(c=> c.style.color=e.target.value); saveColors(); });
-
-      document.getElementById('resetColor').addEventListener('click', ()=>{
-        [...engCols,...vieCols].forEach(c=>{c.style.background='';c.style.color='';});
-        engBgInput.value=''; engColorInput.value=''; vieBgInput.value=''; vieColorInput.value='';
-        localStorage.removeItem('bh_colors');
+      // event đổi màu
+      paliBgInput.addEventListener('input', e=>{
+        paliCols.forEach(c=>c.style.background=e.target.value);
+        saveColors();
+      });
+      paliColorInput.addEventListener('input', e=>{
+        paliCols.forEach(c=>c.style.color=e.target.value);
+        saveColors();
       });
 
-      // dropdown behaviour for color panel
-      const colorToggle = document.getElementById('colorToggle');
-      const colorPanel = document.getElementById('colorPanel');
-      colorToggle.addEventListener('click', (ev)=>{ ev.stopPropagation(); const open = colorPanel.classList.toggle('open'); colorToggle.setAttribute('aria-expanded', open); colorPanel.setAttribute('aria-hidden', !open); });
-      // close when clicking outside
-      document.addEventListener('click', ()=>{ colorPanel.classList.remove('open'); colorToggle.setAttribute('aria-expanded', false); colorPanel.setAttribute('aria-hidden', true); });
-      colorPanel.addEventListener('click', e=> e.stopPropagation());
+      engBgInput.addEventListener('input', e=>{
+        engCols.forEach(c=>c.style.background=e.target.value);
+        saveColors();
+      });
+      engColorInput.addEventListener('input', e=>{
+        engCols.forEach(c=>c.style.color=e.target.value);
+        saveColors();
+      });
 
-      // initial
+      vieBgInput.addEventListener('input', e=>{
+        vieCols.forEach(c=>c.style.background=e.target.value);
+        saveColors();
+      });
+      vieColorInput.addEventListener('input', e=>{
+        vieCols.forEach(c=>c.style.color=e.target.value);
+        saveColors();
+      });
+
+      // reset về màu CSS mặc định (và cập nhật picker)
+      resetPaliBtn.addEventListener('click', ()=>{
+        paliCols.forEach(c=>{c.style.background='';c.style.color='';});
+        paliBgInput.value    = defaultBgHex;
+        paliColorInput.value = defaultTextHex;
+        saveColors();
+      });
+      resetEngBtn.addEventListener('click', ()=>{
+        engCols.forEach(c=>{c.style.background='';c.style.color='';});
+        engBgInput.value    = defaultBgHex;
+        engColorInput.value = defaultTextHex;
+        saveColors();
+      });
+      resetVieBtn.addEventListener('click', ()=>{
+        vieCols.forEach(c=>{c.style.background='';c.style.color='';});
+        vieBgInput.value    = defaultBgHex;
+        vieColorInput.value = defaultTextHex;
+        saveColors();
+      });
+
+      // init
+      setHelpLang('vi');
+      setColorTab('pali');
+      loadColors();
       updateVisibility();
       updateCardHeight();
-      // also adjust on window resize
-      window.addEventListener('resize', ()=>{ adjustRowColumns(); updateCardHeight(); });
+      window.addEventListener('resize', updateCardHeight);
     })();
   </script>
 </body>
