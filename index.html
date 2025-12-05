@@ -21,7 +21,7 @@
       font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;
       background:var(--bg);
       color:#0f172a;
-      overflow:hidden; /* kiểu “app”, không scrollbar ngoài */
+      overflow:hidden;
     }
 
     .page-wrapper{
@@ -124,9 +124,36 @@
       background:rgba(37,99,235,0.08);
       color:#1d4ed8;
     }
+
+    /* hai dòng trong từng item */
+    .sutta-main{
+      display:block;
+      font-size:13px;
+    }
+    .sutta-sub{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    /* item đang chọn (active) */
     .sutta-link.active{
       background:var(--accent);
       color:#ffffff;
+    }
+    .sutta-link.active .sutta-main,
+    .sutta-link.active .sutta-sub{
+      color:#ffffff;
+    }
+
+    /* trạng thái đang bấm chuột (:active) – giữ nguyên như .active */
+    .sutta-link:active{
+      background:var(--accent) !important;
+      color:#ffffff !important;
+    }
+    .sutta-link:active .sutta-main,
+    .sutta-link:active .sutta-sub{
+      color:#ffffff !important;
     }
 
     /* CONTENT + iframe */
@@ -136,7 +163,6 @@
       flex-direction:column;
       padding-left:0.25rem;
       min-width:0;
-      /* bỏ max-width để không bị hẹp hơn header */
       max-width:none;
       margin:0;
     }
@@ -159,7 +185,7 @@
       align-items:center;
       justify-content:center;
       font-size:14px;
-      border-radius:10px; /* bớt bo cong cho đồng bộ card */
+      border-radius:10px;
       white-space:nowrap;
       background:#f8fafc;
       border:1px solid #e2e8f0;
@@ -171,7 +197,6 @@
       color:#334155;
     }
 
-    /* Nút Index hơi “thuộc về sidebar” */
     #btnSidebarToggle{
       background:#e5e9f2;
       border-color:#d1d5db;
@@ -188,8 +213,12 @@
       align-items:center;
       justify-content:center;
     }
+    .btn-lang.btn-lang-active{
+      background:var(--accent);
+      color:#fff;
+      border-color:var(--accent);
+    }
 
-    /* Nhóm control bên phải */
     .top-controls{
       display:flex;
       align-items:center;
@@ -198,7 +227,7 @@
       border-radius:12px;
       background:#f8fafc;
       border:1px solid #e2e8f0;
-      flex-wrap:wrap;          /* cho phép xuống hàng khi hẹp */
+      flex-wrap:wrap;
       justify-content:flex-end;
     }
 
@@ -232,18 +261,16 @@
     }
     .dialog-close:hover{color:#0f172a;}
 
-    /* Overlay cho mobile sidebar */
     .mobile-mask{
       display:none;
     }
 
-    /* MOBILE: sidebar thành drawer trượt */
     @media (max-width:768px){
-         header .container{
-    flex-direction:column;
-    align-items:flex-start;
-    gap:0.35rem;
-  }
+      header .container{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:0.35rem;
+      }
       .content-wrapper{
         padding-left:0;
         max-width:none;
@@ -251,7 +278,7 @@
 
       .sidebar-wrapper{
         position:fixed;
-        top:56px;        /* gần bằng chiều cao header */
+        top:56px;
         bottom:0;
         left:0;
         width:80%;
@@ -275,22 +302,21 @@
         display:block;
       }
 
-      /* Top controls gọn lại */
       .btn-header{
-         min-width:auto;
-    padding:0 8px;
-    font-size:13px;
-    height:34px;
+        min-width:auto;
+        padding:0 8px;
+        font-size:13px;
+        height:34px;
       }
       .top-controls{
         width:100%;
-    justify-content:flex-start;
-    padding:3px 0;
-    border-radius:0;          /* bỏ oval nếu muốn */
-    background:transparent;   /* bỏ nền ngoài, chỉ còn nút */
-    border:none;
-    gap:4px;
-    flex-wrap:wrap;
+        justify-content:flex-start;
+        padding:3px 0;
+        border-radius:0;
+        background:transparent;
+        border:none;
+        gap:4px;
+        flex-wrap:wrap;
       }
     }
   </style>
@@ -319,7 +345,6 @@
           <h1 class="h5 mb-0">NIKĀYA</h1>
         </div>
 
-        <!-- Nhóm control bên phải -->
         <div class="top-controls">
           <button class="btn btn-outline-secondary btn-sm btn-header" type="button" id="btnPrev">
             <span>⟨</span>
@@ -333,7 +358,6 @@
             <span data-text-vi="Hướng dẫn" data-text-en="Help">Hướng dẫn</span>
           </button>
 
-          <!-- Nút ngôn ngữ -->
           <button class="btn btn-outline-secondary btn-sm btn-header btn-lang"
                   type="button"
                   id="btnLangVi"
@@ -367,17 +391,208 @@
                   <span class="chevron">▸</span>
                 </button>
                 <div id="listDN" class="sidebar-list collapsed">
-                  <a href="dn01.html"
-                     class="sutta-link"
-                     data-title-pali="DN 1 – Brahmajāla Sutta"
+                  <a href="dn01.html" class="sutta-link"
+                     data-title-pali="DN 1 – Brahmajāla Sutta (The Supreme Net)"
                      data-title-vi="DN 1 – Brahmajāla Sutta — Kinh Phạm Võng">
                     DN 1 – Brahmajāla Sutta — Kinh Phạm Võng
                   </a>
-                  <a href="dn02.html"
-                     class="sutta-link"
-                     data-title-pali="DN 2 – Sāmaññaphala Sutta"
-                     data-title-vi="DN 2 – Sāmaññaphala Sutta — Kinh Quả Báu Sa-môn Hạnh">
-                    DN 2 – Sāmaññaphala Sutta — Kinh Quả Báu Sa-môn Hạnh
+
+                  <a href="dn02.html" class="sutta-link"
+                     data-title-pali="DN 2 – Sāmaññaphala Sutta (The Fruits of the Contemplative Life)"
+                     data-title-vi="DN 2 – Sāmaññaphala Sutta — Kinh Sa-môn Quả">
+                    DN 2 – Sāmaññaphala Sutta — Kinh Sa-môn Quả
+                  </a>
+
+                  <a href="dn03.html" class="sutta-link"
+                     data-title-pali="DN 3 – Ambaṭṭha Sutta"
+                     data-title-vi="DN 3 – Ambaṭṭha Sutta — Kinh A-ma-trú">
+                    DN 3 – Ambaṭṭha Sutta — Kinh A-ma-trú
+                  </a>
+
+                  <a href="dn04.html" class="sutta-link"
+                     data-title-pali="DN 4 – Soṇadaṇḍa Sutta"
+                     data-title-vi="DN 4 – Soṇadaṇḍa Sutta — Kinh Tôn-đạt-na">
+                    DN 4 – Soṇadaṇḍa Sutta — Kinh Tôn-đạt-na
+                  </a>
+
+                  <a href="dn05.html" class="sutta-link"
+                     data-title-pali="DN 5 – Kūṭadanta Sutta"
+                     data-title-vi="DN 5 – Kūṭadanta Sutta — Kinh Cứu-la-đàn-đầu">
+                    DN 5 – Kūṭadanta Sutta — Kinh Cứu-la-đàn-đầu
+                  </a>
+
+                  <a href="dn06.html" class="sutta-link"
+                     data-title-pali="DN 6 – Mahāli Sutta"
+                     data-title-vi="DN 6 – Mahāli Sutta — Kinh Ma-ha-li">
+                    DN 6 – Mahāli Sutta — Kinh Ma-ha-li
+                  </a>
+
+                  <a href="dn07.html" class="sutta-link"
+                     data-title-pali="DN 7 – Jāliya Sutta"
+                     data-title-vi="DN 7 – Jāliya Sutta — Kinh Gia-li-ya">
+                    DN 7 – Jāliya Sutta — Kinh Gia-li-ya
+                  </a>
+
+                  <a href="dn08.html" class="sutta-link"
+                     data-title-pali="DN 8 – Mahāsīhanāda Sutta"
+                     data-title-vi="DN 8 – Mahāsīhanāda Sutta — Kinh Sư Tử Hống Lớn">
+                    DN 8 – Mahāsīhanāda Sutta — Kinh Sư Tử Hống Lớn
+                  </a>
+
+                  <a href="dn09.html" class="sutta-link"
+                     data-title-pali="DN 9 – Poṭṭhapāda Sutta"
+                     data-title-vi="DN 9 – Poṭṭhapāda Sutta — Kinh Phất-đà">
+                    DN 9 – Poṭṭhapāda Sutta — Kinh Phất-đà
+                  </a>
+
+                  <a href="dn10.html" class="sutta-link"
+                     data-title-pali="DN 10 – Subha Sutta"
+                     data-title-vi="DN 10 – Subha Sutta — Kinh Tu-bà">
+                    DN 10 – Subha Sutta — Kinh Tu-bà
+                  </a>
+
+                  <a href="dn11.html" class="sutta-link"
+                     data-title-pali="DN 11 – Kevaṭṭa Sutta"
+                     data-title-vi="DN 11 – Kevaṭṭa Sutta — Kinh Kiên Cố">
+                    DN 11 – Kevaṭṭa Sutta — Kinh Kiên Cố
+                  </a>
+
+                  <a href="dn12.html" class="sutta-link"
+                     data-title-pali="DN 12 – Lohicca Sutta"
+                     data-title-vi="DN 12 – Lohicca Sutta — Kinh Lô-hê-ca">
+                    DN 12 – Lohicca Sutta — Kinh Lô-hê-ca
+                  </a>
+
+                  <a href="dn13.html" class="sutta-link"
+                     data-title-pali="DN 13 – Tevijja Sutta"
+                     data-title-vi="DN 13 – Tevijja Sutta — Kinh Tam Minh">
+                    DN 13 – Tevijja Sutta — Kinh Tam Minh
+                  </a>
+
+                  <a href="dn14.html" class="sutta-link"
+                     data-title-pali="DN 14 – Mahāpadāna Sutta"
+                     data-title-vi="DN 14 – Mahāpadāna Sutta — Kinh Đại Bổn">
+                    DN 14 – Mahāpadāna Sutta — Kinh Đại Bổn
+                  </a>
+
+                  <a href="dn15.html" class="sutta-link"
+                     data-title-pali="DN 15 – Mahānidāna Sutta"
+                     data-title-vi="DN 15 – Mahānidāna Sutta — Kinh Đại Duyên">
+                    DN 15 – Mahānidāna Sutta — Kinh Đại Duyên
+                  </a>
+
+                  <a href="dn16.html" class="sutta-link"
+                     data-title-pali="DN 16 – Mahāparinibbāna Sutta"
+                     data-title-vi="DN 16 – Mahāparinibbāna Sutta — Kinh Đại Bát Niết-bàn">
+                    DN 16 – Mahāparinibbāna Sutta — Kinh Đại Bát Niết-bàn
+                  </a>
+
+                  <a href="dn17.html" class="sutta-link"
+                     data-title-pali="DN 17 – Mahāsudassana Sutta"
+                     data-title-vi="DN 17 – Mahāsudassana Sutta — Kinh Đại Thiện Kiến">
+                    DN 17 – Mahāsudassana Sutta — Kinh Đại Thiện Kiến
+                  </a>
+
+                  <a href="dn18.html" class="sutta-link"
+                     data-title-pali="DN 18 – Janavasabha Sutta"
+                     data-title-vi="DN 18 – Janavasabha Sutta — Kinh Dân Chủ">
+                    DN 18 – Janavasabha Sutta — Kinh Dân Chủ
+                  </a>
+
+                  <a href="dn19.html" class="sutta-link"
+                     data-title-pali="DN 19 – Mahāgovinda Sutta"
+                     data-title-vi="DN 19 – Mahāgovinda Sutta — Kinh Đại Quân Đà">
+                    DN 19 – Mahāgovinda Sutta — Kinh Đại Quân Đà
+                  </a>
+
+                  <a href="dn20.html" class="sutta-link"
+                     data-title-pali="DN 20 – Mahāsamaya Sutta"
+                     data-title-vi="DN 20 – Mahāsamaya Sutta — Kinh Đại Hội">
+                    DN 20 – Mahāsamaya Sutta — Kinh Đại Hội
+                  </a>
+
+                  <a href="dn21.html" class="sutta-link"
+                     data-title-pali="DN 21 – Sakkapañha Sutta"
+                     data-title-vi="DN 21 – Sakkapañha Sutta — Kinh Đế-thích Vấn Đạo">
+                    DN 21 – Sakkapañha Sutta — Kinh Đế-thích Vấn Đạo
+                  </a>
+
+                  <a href="dn22.html" class="sutta-link"
+                     data-title-pali="DN 22 – Mahāsatipaṭṭhāna Sutta"
+                     data-title-vi="DN 22 – Mahāsatipaṭṭhāna Sutta — Kinh Đại Niệm Xứ">
+                    DN 22 – Mahāsatipaṭṭhāna Sutta — Kinh Đại Niệm Xứ
+                  </a>
+
+                  <a href="dn23.html" class="sutta-link"
+                     data-title-pali="DN 23 – Pāyāsi Sutta"
+                     data-title-vi="DN 23 – Pāyāsi Sutta — Kinh Ba-du-đề">
+                    DN 23 – Pāyāsi Sutta — Kinh Ba-du-đề
+                  </a>
+
+                  <a href="dn24.html" class="sutta-link"
+                     data-title-pali="DN 24 – Pāṭika Sutta"
+                     data-title-vi="DN 24 – Pāṭika Sutta — Kinh Ba-trí-ca">
+                    DN 24 – Pāṭika Sutta — Kinh Ba-trí-ca
+                  </a>
+
+                  <a href="dn25.html" class="sutta-link"
+                     data-title-pali="DN 25 – Udumbarika Sutta"
+                     data-title-vi="DN 25 – Udumbarika Sutta — Kinh Ưu-đàm-bà">
+                    DN 25 – Udumbarika Sutta — Kinh Ưu-đàm-bà
+                  </a>
+
+                  <a href="dn26.html" class="sutta-link"
+                     data-title-pali="DN 26 – Cakkavatti Sutta"
+                     data-title-vi="DN 26 – Cakkavatti Sutta — Kinh Chuyển Luân Thánh Vương">
+                    DN 26 – Cakkavatti Sutta — Kinh Chuyển Luân Thánh Vương
+                  </a>
+
+                  <a href="dn27.html" class="sutta-link"
+                     data-title-pali="DN 27 – Aggañña Sutta"
+                     data-title-vi="DN 27 – Aggañña Sutta — Kinh Khởi Thế Nhân Bổn">
+                    DN 27 – Aggañña Sutta — Kinh Khởi Thế Nhân Bổn
+                  </a>
+
+                  <a href="dn28.html" class="sutta-link"
+                     data-title-pali="DN 28 – Sampasādanīya Sutta"
+                     data-title-vi="DN 28 – Sampasādanīya Sutta — Kinh Tịnh Tín">
+                    DN 28 – Sampasādanīya Sutta — Kinh Tịnh Tín
+                  </a>
+
+                  <a href="dn29.html" class="sutta-link"
+                     data-title-pali="DN 29 – Pāsādika Sutta"
+                     data-title-vi="DN 29 – Pāsādika Sutta — Kinh Thanh Tịnh">
+                    DN 29 – Pāsādika Sutta — Kinh Thanh Tịnh
+                  </a>
+
+                  <a href="dn30.html" class="sutta-link"
+                     data-title-pali="DN 30 – Lakkhaṇa Sutta"
+                     data-title-vi="DN 30 – Lakkhaṇa Sutta — Kinh Tướng">
+                    DN 30 – Lakkhaṇa Sutta — Kinh Tướng
+                  </a>
+
+                  <a href="dn31.html" class="sutta-link"
+                     data-title-pali="DN 31 – Sigālovāda Sutta"
+                     data-title-vi="DN 31 – Sigālovāda Sutta — Kinh Giáo Thọ Thi Ca La Việt">
+                    DN 31 – Sigālovāda Sutta — Kinh Giáo Thọ Thi Ca La Việt
+                  </a>
+
+                  <a href="dn32.html" class="sutta-link"
+                     data-title-pali="DN 32 – Āṭānāṭiya Sutta"
+                     data-title-vi="DN 32 – Āṭānāṭiya Sutta — Kinh A-xà-na-trệ">
+                    DN 32 – Āṭānāṭiya Sutta — Kinh A-xà-na-trệ
+                  </a>
+
+                  <a href="dn33.html" class="sutta-link"
+                     data-title-pali="DN 33 – Saṅgīti Sutta"
+                     data-title-vi="DN 33 – Saṅgīti Sutta — Kinh Kết Tập">
+                    DN 33 – Saṅgīti Sutta — Kinh Kết Tập
+                  </a>
+
+                  <a href="dn34.html" class="sutta-link"
+                     data-title-pali="DN 34 – Dasuttara Sutta"
+                     data-title-vi="DN 34 – Dasuttara Sutta — Kinh Thập Thượng">
+                    DN 34 – Dasuttara Sutta — Kinh Thập Thượng
                   </a>
                 </div>
               </div>
@@ -388,31 +603,75 @@
                   <span data-text-vi="Trung Bộ Kinh (Majjhima)" data-text-en="Majjhima Nikāya (Middle-Length)">
                     Trung Bộ Kinh (Majjhima)
                   </span>
-                  <span class="chevron">▾</span>
+                  <span class="chevron">▸</span>
                 </button>
-                <div id="listMN" class="sidebar-list">
-                  <a href="mn001.html"
+                <div id="listMN" class="sidebar-list collapsed">
+                  <!-- <a href="mn001.html"
                      class="sutta-link"
                      data-title-pali="MN 1 – Mūlapariyāya Sutta"
                      data-title-vi="MN 1 – Mūlapariyāya Sutta — Kinh Căn Bản Pháp Môn">
                     MN 1 – Mūlapariyāya Sutta — Kinh Căn Bản Pháp Môn
-                  </a>
+                  </a> -->
                   <a href="mn131-bhaddekaratta.html"
                      class="sutta-link"
                      data-title-pali="MN 131 – Bhaddekaratta Sutta"
                      data-title-vi="MN 131 – Bhaddekaratta Sutta — Kinh Nhất Dạ Hiền Giả">
                     MN 131 – Bhaddekaratta Sutta — Kinh Nhất Dạ Hiền Giả
                   </a>
-                  <a href="mn132.html"
+                  <!-- <a href="mn132.html"
                      class="sutta-link"
                      data-title-pali="MN 132 – Ānandabhaddekaratta Sutta"
                      data-title-vi="MN 132 – Ānandabhaddekaratta Sutta — Kinh Nhất Dạ Hiền Giả do Tôn giả A Nan Thuyết">
                     MN 132 – Ānandabhaddekaratta Sutta — Kinh Nhất Dạ Hiền Giả do Tôn giả A Nan Thuyết
-                  </a>
+                  </a> -->
                 </div>
               </div>
 
-              <!-- thêm các bộ khác nếu cần -->
+                            <!-- Majjhima Nikāya -->
+             
+
+              <!-- Saṃyutta Nikāya -->
+              <div class="sidebar-section">
+                <button class="sidebar-toggle" type="button" data-target="listSN">
+                  <span data-text-vi="Tương Ưng Bộ Kinh (Saṃyutta)" data-text-en="Saṃyutta Nikāya (Connected Discourses)">
+                    Tương Ưng Bộ Kinh (Saṃyutta)
+                  </span>
+                  <span class="chevron">▸</span>
+                </button>
+                <div id="listSN" class="sidebar-list collapsed">
+                  <!-- Thêm các bài kinh SN tại đây sau -->
+                </div>
+              </div>
+
+              <!-- Aṅguttara Nikāya -->
+              <div class="sidebar-section">
+                <button class="sidebar-toggle" type="button" data-target="listAN">
+                  <span data-text-vi="Tăng Chi Bộ Kinh (Aṅguttara)" data-text-en="Aṅguttara Nikāya (Numerical Discourses)">
+                    Tăng Chi Bộ Kinh (Aṅguttara)
+                  </span>
+                  <span class="chevron">▸</span>
+                </button>
+                <div id="listAN" class="sidebar-list collapsed">
+                  <!-- Thêm các bài kinh AN tại đây sau -->
+                </div>
+              </div>
+
+              <!-- Khuddaka Nikāya -->
+              <div class="sidebar-section">
+                <button class="sidebar-toggle" type="button" data-target="listKN">
+                  <span data-text-vi="Tiểu Bộ Kinh (Khuddaka)" data-text-en="Khuddaka Nikāya (Minor Collection)">
+                    Tiểu Bộ Kinh (Khuddaka)
+                  </span>
+                  <span class="chevron">▸</span>
+                </button>
+                <div id="listKN" class="sidebar-list collapsed">
+                  <!-- Thêm các bài kinh KN tại đây sau -->
+                </div>
+              </div>
+
+             
+           
+
             </aside>
           </div>
 
@@ -447,13 +706,13 @@
       <div id="helpContentVi">
         <p>Một vài gợi ý sử dụng:</p>
         <ul>
-        <li>Dùng nút <strong>☰ Mục lục</strong> để ẩn / hiện danh mục kinh.</li>
+          <li>Dùng nút <strong>☰ Mục lục</strong> để ẩn / hiện danh mục kinh.</li>
           <li>Chọn một bài kinh bên trái, nội dung sẽ được tải vào khung bên phải.</li>
           <li>Nút <strong>⟨ Kinh trước</strong> và <strong>Kinh sau ⟩</strong> chuyển qua lại giữa các bài kinh theo đúng thứ tự đang hiển thị trong danh mục kinh.</li>
           <li>Nút <strong>VN / EN</strong> đổi ngôn ngữ giao diện.</li>
-          <li>Các nút <strong>PLI / EN / VI</strong> ẩn hiện bảng dịch tương ứng với ngôn ngữ của bài kinh đó</li>
-          <li>Nút <strong>☰</strong> chuyển view từ cột sang hàng và từ hàng sang cột</li>
-          <li>Nút <strong>🎨</strong>đổi àu nền và màu chứ tương ứng với từng ngôn ngữ trong bài kinh đó</li>
+          <li>Các nút <strong>PLI / EN / VI</strong> ẩn hiện bảng dịch tương ứng với ngôn ngữ của bài kinh đó.</li>
+          <li>Nút <strong>☰</strong> chuyển view từ cột sang hàng và từ hàng sang cột.</li>
+          <li>Nút <strong>🎨</strong> đổi màu nền và màu chữ tương ứng với từng ngôn ngữ trong bài kinh đó.</li>
         </ul>
         <p class="text-muted mb-0">Bấm ra ngoài khung hoặc nút ✕ để đóng phần hướng dẫn.</p>
       </div>
@@ -461,21 +720,19 @@
       <div id="helpContentEn" class="d-none">
         <p>Some quick tips:</p>
         <ul>
-         <li>Use the <strong>☰ Table of Contents</strong> button to hide/show the scripture categories.</li>
-<li>Select a sutta/reading on the left; its content will be loaded into the right panel.</li>
-<li>The <strong>⟨ Previous Sutta</strong> and <strong>Next Sutta ⟩</strong> buttons let you navigate between suttas in the exact order shown in the list.</li>
-<li>The <strong>VN / EN</strong> button switches the interface language.</li>
-<li>The <strong>PLI / EN / VI</strong> buttons show or hide the corresponding translation according to the language of that sutta.</li>
-<li>The <strong>☰</strong> button switches the view between column and row layouts.</li>
-<li>The <strong>🎨</strong> button changes the background and text colors corresponding to each language in that sutta.</li>
-
+          <li>Use the <strong>☰ Table of Contents</strong> button to hide/show the scripture categories.</li>
+          <li>Select a sutta/reading on the left; its content will be loaded into the right panel.</li>
+          <li>The <strong>⟨ Previous Sutta</strong> and <strong>Next Sutta ⟩</strong> buttons let you navigate between suttas in the exact order shown in the list.</li>
+          <li>The <strong>VN / EN</strong> button switches the interface language.</li>
+          <li>The <strong>PLI / EN / VI</strong> buttons show or hide the corresponding translation according to the language of that sutta.</li>
+          <li>The <strong>☰</strong> button switches the view between column and row layouts.</li>
+          <li>The <strong>🎨</strong> button changes the background and text colors corresponding to each language in that sutta.</li>
         </ul>
         <p class="text-muted mb-0">Click outside this dialog or press ✕ to close the help overlay.</p>
       </div>
     </div>
   </div>
 
-  <!-- overlay cho mobile sidebar -->
   <div id="mobileMask" class="mobile-mask"></div>
 
   <script>
@@ -499,7 +756,7 @@
       const LINK_KEY          = 'nikaya_last_sutta';
       const SIDEBAR_STATE_KEY = 'nikaya_sidebar_state';
       const LANG_KEY          = 'nikaya_ui_lang';
-      const LANG_SIMPLE_KEY   = 'nikaya_lang'; // cho iframe
+      const LANG_SIMPLE_KEY   = 'nikaya_lang';
 
       const links     = document.querySelectorAll('.sutta-link');
       const langElems = document.querySelectorAll('[data-text-vi]');
@@ -511,7 +768,7 @@
         return window.innerWidth <= 768;
       }
 
-      /* ========== UI LANGUAGE ========== */
+      /* =========== UI LANGUAGE =========== */
       function setLang(lang){
         currentLang = (lang === 'en') ? 'en' : 'vi';
         try{
@@ -526,9 +783,28 @@
         });
 
         links.forEach(a=>{
-          const pali = a.dataset.titlePali || a.textContent.trim();
-          const vi   = a.dataset.titleVi   || pali;
-          a.textContent = currentLang === 'vi' ? vi : pali;
+          const paliFull = a.dataset.titlePali || a.textContent.trim();
+          const viFull   = a.dataset.titleVi   || paliFull;
+
+          if(currentLang === 'vi'){
+            const parts = viFull.split('—');
+            const main = (parts[0] || '').trim();
+            const sub  = (parts[1] || '').trim();
+            a.innerHTML =
+              `<span class="sutta-main">${main}</span>` +
+              (sub ? `<span class="sutta-sub">${sub}</span>` : '');
+          } else {
+            const m = paliFull.match(/^(.*?)(\((.+)\))$/);
+            if(m){
+              const main = m[1].trim();
+              const sub  = m[3].trim();
+              a.innerHTML =
+                `<span class="sutta-main">${main}</span>` +
+                `<span class="sutta-sub">${sub}</span>`;
+            }else{
+              a.innerHTML = `<span class="sutta-main">${paliFull}</span>`;
+            }
+          }
         });
 
         btnLangVi.classList.toggle('btn-lang-active', currentLang === 'vi');
@@ -567,10 +843,8 @@
       if(btnSidebarToggle && sidebarWrapper){
         btnSidebarToggle.addEventListener('click',()=>{
           if(isMobile()){
-            // mobile: toggle drawer
             document.body.classList.toggle('mobile-sidebar-open');
           }else{
-            // desktop / tablet: ẩn/hiện cột như cũ
             sidebarWrapper.classList.toggle('d-none');
             updateContentWidth();
             saveSidebarState();
@@ -620,7 +894,6 @@
           sidebar.scrollTop = state.scrollTop;
         }
 
-        // khôi phục trạng thái thu/mở sidebar (chỉ desktop / tablet)
         if(sidebarWrapper && typeof state.collapsed === 'boolean' && !isMobile()){
           sidebarWrapper.classList.toggle('d-none', state.collapsed);
         }
@@ -669,7 +942,6 @@
         try{
           localStorage.setItem(LINK_KEY, href);
         }catch(e){}
-        // đóng drawer sau khi chọn trên mobile
         if(isMobile()){
           document.body.classList.remove('mobile-sidebar-open');
         }
@@ -689,7 +961,7 @@
         last = localStorage.getItem(LINK_KEY) || '';
       }catch(e){}
       if(!last){
-        last = 'bg.html';   // trang mặc định
+        last = 'mn131-bhaddekaratta.html';
       }
       loadSutta(last);
 
@@ -733,7 +1005,6 @@
         if(e.target === helpOverlay) closeHelp();
       });
 
-      /* ========== Mobile mask click ========== */
       if(mobileMask){
         mobileMask.addEventListener('click',()=>{
           document.body.classList.remove('mobile-sidebar-open');
@@ -756,13 +1027,11 @@
         touchEndX = e.changedTouches[0].clientX;
         const deltaX = touchEndX - touchStartX;
 
-        // Vuốt từ trái sang phải để mở (bắt đầu sát mép trái)
         if(deltaX > 60 && touchStartX < 40 && !document.body.classList.contains('mobile-sidebar-open')){
           document.body.classList.add('mobile-sidebar-open');
           return;
         }
 
-        // Vuốt từ phải sang trái để đóng khi đang mở
         if(deltaX < -60 && document.body.classList.contains('mobile-sidebar-open')){
           document.body.classList.remove('mobile-sidebar-open');
         }
