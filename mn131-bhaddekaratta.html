@@ -37,7 +37,7 @@
       background:var(--card);
       border-radius:5px;
       border:1px solid #e6edf7;
-      padding:6px;
+      padding:6px 10px 10px;
       max-width:none;
       width:100%;
       margin:0 auto;
@@ -45,22 +45,40 @@
       flex-direction:column;
     }
 
+    /* HEADER */
     .sutra-header{
       display:flex;
-      flex-wrap:wrap;
       align-items:center;
       justify-content:space-between;
-      gap:0.5rem;
-      margin-bottom:0.35rem;
+      gap:12px;
+      padding-top:6px;
+      padding-bottom:4px;
     }
 
     .sutra-title{
       font-size:1rem;
-      font-weight:700;
+      font-weight:800;
       text-transform:uppercase;
-      letter-spacing:.04em;
+      letter-spacing:.03em;
       color:var(--accent);
       margin:0;
+      line-height:1.25;
+    }
+
+    #sutraSubtitle{
+      font-size:12.5px;
+      opacity:.78;
+      margin-top:2px;
+    }
+
+    .controls{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      background:#f1f5f9;
+      padding:5px 6px;
+      border-radius:10px;
+      border:1px solid #e2e8f0;
     }
 
     .controls .btn{
@@ -71,8 +89,12 @@
       align-items:center;
       justify-content:center;
       font-size:13px;
-      border-radius:8px;
+      border-radius:6px;
       white-space:nowrap;
+      opacity:.9;
+    }
+    .controls .btn:hover{
+      opacity:1;
     }
 
     .sutra-grid{
@@ -81,7 +103,7 @@
       flex-direction:column;
       gap:8px;
       overflow:auto;
-      padding-top:2px;
+      padding-top:4px;
     }
 
     .sutra-row{
@@ -127,7 +149,7 @@
       background:var(--card);
       border-radius:12px;
       padding:14px 18px;
-      max-width:640px;
+      max-width:450px;
       width:90%;
       box-shadow:0 18px 45px rgba(15,23,42,0.35);
     }
@@ -167,9 +189,23 @@
       transform:rotate(90deg);
     }
 
+    /* Responsive header cho tablet/mobile */
+    @media (max-width: 1024px){
+      .sutra-header{
+        flex-direction:column-reverse;
+        align-items:flex-start;
+        gap:6px;
+      }
+      .controls{
+        width:100%;
+        justify-content:flex-start;
+        flex-wrap:wrap;
+      }
+    }
+
     @media(max-width:768px){
       .sutra-row{grid-template-columns:1fr;}
-      .controls .btn{min-width:80px;}
+      .controls .btn{min-width:72px;}
     }
   </style>
 </head>
@@ -183,11 +219,12 @@
             MN 131 – BHADDEKARATTA SUTTA
           </h1>
           <div id="sutraSubtitle" class="text-muted small">
-            The Discourse on a Single Excellent Night
+            <!-- sẽ được JS set lại -->
+            Kinh Nhất Dạ Hiền Giả
           </div>
         </div>
 
-        <div class="controls d-flex flex-wrap align-items-center gap-2">
+        <div class="controls" aria-label="Languages and view">
           <div class="btn-group btn-group-sm" role="group" aria-label="Languages">
             <button type="button" class="btn btn-outline-secondary active" id="btnPali">PLI</button>
             <button type="button" class="btn btn-outline-secondary active" id="btnEng">EN</button>
@@ -200,7 +237,7 @@
               <line x1="4" y1="18" x2="20" y2="18" />
             </svg>
           </button>
-          <button id="btnColor" class="btn btn-outline-secondary btn-sm" type="button">
+          <button id="btnColor" class="btn btn-outline-secondary btn-sm" type="button" title="Màu sắc cột">
             🎨
           </button>
         </div>
@@ -287,8 +324,6 @@
           </div>
         </div>
       </div>
-
-    
     </div>
   </div>
 
@@ -332,10 +367,10 @@
 
       <!-- English -->
       <div id="colorContentEng" class="d-none">
-         <p class="mb-2">Chỉnh màu cho cột English.</p>
+        <p class="mb-2">Chỉnh màu cho cột English.</p>
         <p class="mb-2">Color settings for the English column.</p>
         <div class="mb-2 d-flex justify-content-between align-items-center">
-           <span>Màu chữ / Text color :</span>
+          <span>Màu chữ / Text color :</span>
           <input id="engColor" type="color" title="English text color" value="#0f172a">
         </div>
         <div class="mb-2 d-flex justify-content-between align-items-center">
@@ -352,11 +387,11 @@
         <p class="mb-2">Chỉnh màu cho cột Tiếng Việt.</p>
         <p class="mb-2">Color settings for the Vietnamese column.</p>
         <div class="mb-2 d-flex justify-content-between align-items-center">
-         <span>Màu chữ / Text color :</span>
+          <span>Màu chữ / Text color :</span>
           <input id="vieColor" type="color" title="Màu chữ Tiếng Việt" value="#0f172a">
         </div>
         <div class="mb-2 d-flex justify-content-between align-items-center">
-            <span>Màu nền / Background:</span>
+          <span>Màu nền / Background:</span>
           <input id="vieBg" type="color" title="Màu nền Tiếng Việt" value="#ffffff">
         </div>
         <div class="text-end mt-2">
@@ -368,6 +403,8 @@
 
   <script>
     (function(){
+      'use strict';
+
       const grid        = document.getElementById('sutraGrid');
       const card        = document.querySelector('.sutra-card');
       const btnPali     = document.getElementById('btnPali');
@@ -381,45 +418,53 @@
       const engCols     = document.querySelectorAll('.eng-col');
       const vieCols     = document.querySelectorAll('.vie-col');
 
-      const colorOverlay   = document.getElementById('colorOverlay');
-      const colorClose     = document.getElementById('colorClose');
-      const tabPali        = document.getElementById('tabPali');
-      const tabEng         = document.getElementById('tabEng');
-      const tabVie         = document.getElementById('tabVie');
+      const colorOverlay    = document.getElementById('colorOverlay');
+      const colorClose      = document.getElementById('colorClose');
+      const tabPali         = document.getElementById('tabPali');
+      const tabEng          = document.getElementById('tabEng');
+      const tabVie          = document.getElementById('tabVie');
       const colorContentPali = document.getElementById('colorContentPali');
       const colorContentEng  = document.getElementById('colorContentEng');
       const colorContentVie  = document.getElementById('colorContentVie');
 
-      const paliBgInput    = document.getElementById('paliBg');
-      const paliColorInput = document.getElementById('paliColor');
-      const engBgInput     = document.getElementById('engBg');
-      const engColorInput  = document.getElementById('engColor');
-      const vieBgInput     = document.getElementById('vieBg');
-      const vieColorInput  = document.getElementById('vieColor');
+      const paliBgInput     = document.getElementById('paliBg');
+      const paliColorInput  = document.getElementById('paliColor');
+      const engBgInput      = document.getElementById('engBg');
+      const engColorInput   = document.getElementById('engColor');
+      const vieBgInput      = document.getElementById('vieBg');
+      const vieColorInput   = document.getElementById('vieColor');
 
-      const resetPaliBtn = document.getElementById('resetPali');
-      const resetEngBtn  = document.getElementById('resetEng');
-      const resetVieBtn  = document.getElementById('resetVie');
+      const resetPaliBtn    = document.getElementById('resetPali');
+      const resetEngBtn     = document.getElementById('resetEng');
+      const resetVieBtn     = document.getElementById('resetVie');
 
-      const hintText   = document.getElementById('hintText');
-      const subTitle   = document.getElementById('sutraSubtitle');
+      const subTitle        = document.getElementById('sutraSubtitle');
 
       let showPali = true;
       let showEng  = true;
       let showVie  = true;
 
-      /* ==== Ngôn ngữ giao diện dựa trên localStorage.nikaya_lang ==== */
-      function applyUiLang(){
-        let lang = 'vi';
-        try{
-          const v = localStorage.getItem('nikaya_lang');
-          if(v === 'en' || v === 'vi') lang = v;
-        }catch(e){}
+      const defaultColors = {
+        paliBg: '#ffffff',
+        paliColor: '#0f172a',
+        engBg: '#ffffff',
+        engColor: '#0f172a',
+        vieBg: '#ffffff',
+        vieColor: '#0f172a'
+      };
 
-        if(lang === 'en'){
+      /* ==== Subtitle theo ngôn ngữ đang hiển thị ==== */
+      function updateSubtitleByLang(){
+        if(showEng && showVie){
+          subTitle.innerHTML =
+            'The Discourse on a Single Excellent Night<br>' +
+            'Kinh Nhất Dạ Hiền Giả';
+        }else if(showEng){
           subTitle.textContent = 'The Discourse on a Single Excellent Night';
-        }else{
+        }else if(showVie){
           subTitle.textContent = 'Kinh Nhất Dạ Hiền Giả';
+        }else{
+          subTitle.textContent = '';
         }
       }
 
@@ -454,22 +499,26 @@
         showPali = !showPali;
         btnPali.classList.toggle('active', showPali);
         updateVisibility();
+        updateSubtitleByLang();
       });
+
       btnEng.addEventListener('click',()=>{
         showEng = !showEng;
         btnEng.classList.toggle('active', showEng);
         updateVisibility();
+        updateSubtitleByLang();
       });
+
       btnVie.addEventListener('click',()=>{
         showVie = !showVie;
         btnVie.classList.toggle('active', showVie);
         updateVisibility();
+        updateSubtitleByLang();
       });
 
       btnLayout.addEventListener('click',()=>{
         card.classList.toggle('stack');
         const isStack = card.classList.contains('stack');
-        // Row = ngang, Col = xoay 90°
         layoutIcon.classList.toggle('vertical', isStack);
         adjustRowColumns();
       });
@@ -488,6 +537,7 @@
         colorContentEng.classList.toggle('d-none',  !isEng);
         colorContentVie.classList.toggle('d-none',  !isVie);
       }
+
       function openColor(){
         colorOverlay.classList.add('show');
         colorOverlay.setAttribute('aria-hidden','false');
@@ -496,9 +546,18 @@
         colorOverlay.classList.remove('show');
         colorOverlay.setAttribute('aria-hidden','true');
       }
-      btnColor.addEventListener('click',(e)=>{ e.stopPropagation(); openColor(); });
-      colorClose.addEventListener('click',(e)=>{ e.stopPropagation(); closeColor(); });
-      colorOverlay.addEventListener('click',(e)=>{ if(e.target===colorOverlay) closeColor(); });
+
+      btnColor.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        openColor();
+      });
+      colorClose.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        closeColor();
+      });
+      colorOverlay.addEventListener('click',(e)=>{
+        if(e.target===colorOverlay) closeColor();
+      });
 
       tabPali.addEventListener('click',(e)=>{ e.stopPropagation(); setColorTab('pali'); });
       tabEng.addEventListener('click',(e)=>{ e.stopPropagation(); setColorTab('eng'); });
@@ -509,93 +568,105 @@
         let saved = {};
         try{
           saved = JSON.parse(localStorage.getItem('bh_colors') || '{}');
-        }catch(e){ saved = {}; }
+        }catch(e){
+          saved = {};
+        }
 
-        // default CSS
-        paliCols.forEach(c=>{c.style.background='#ffffff';c.style.color='#0f172a';});
-        engCols.forEach(c=>{c.style.background='#ffffff';c.style.color='#0f172a';});
-        vieCols.forEach(c=>{c.style.background='#ffffff';c.style.color='#0f172a';});
+        const colors = {
+          paliBg:   saved.paliBg   || defaultColors.paliBg,
+          paliColor:saved.paliColor|| defaultColors.paliColor,
+          engBg:    saved.engBg    || defaultColors.engBg,
+          engColor: saved.engColor || defaultColors.engColor,
+          vieBg:    saved.vieBg    || defaultColors.vieBg,
+          vieColor: saved.vieColor || defaultColors.vieColor
+        };
 
-        paliBgInput.value    = saved.paliBg    || '#ffffff';
-        paliColorInput.value = saved.paliColor || '#0f172a';
-        engBgInput.value     = saved.engBg     || '#ffffff';
-        engColorInput.value  = saved.engColor  || '#0f172a';
-        vieBgInput.value     = saved.vieBg     || '#ffffff';
-        vieColorInput.value  = saved.vieColor  || '#0f172a';
+        paliBgInput.value    = colors.paliBg;
+        paliColorInput.value = colors.paliColor;
+        engBgInput.value     = colors.engBg;
+        engColorInput.value  = colors.engColor;
+        vieBgInput.value     = colors.vieBg;
+        vieColorInput.value  = colors.vieColor;
 
-        if(saved.paliBg)    paliCols.forEach(c=>c.style.background=saved.paliBg);
-        if(saved.paliColor) paliCols.forEach(c=>c.style.color=saved.paliColor);
-        if(saved.engBg)     engCols.forEach(c=>c.style.background=saved.engBg);
-        if(saved.engColor)  engCols.forEach(c=>c.style.color=saved.engColor);
-        if(saved.vieBg)     vieCols.forEach(c=>c.style.background=saved.vieBg);
-        if(saved.vieColor)  vieCols.forEach(c=>c.style.color=saved.vieColor);
+        paliCols.forEach(c=>{
+          c.style.background = colors.paliBg;
+          c.style.color      = colors.paliColor;
+        });
+        engCols.forEach(c=>{
+          c.style.background = colors.engBg;
+          c.style.color      = colors.engColor;
+        });
+        vieCols.forEach(c=>{
+          c.style.background = colors.vieBg;
+          c.style.color      = colors.vieColor;
+        });
       }
 
       function saveColors(){
         const obj = {
-          paliBg: paliBgInput.value || '#ffffff',
-          paliColor: paliColorInput.value || '#0f172a',
-          engBg: engBgInput.value || '#ffffff',
-          engColor: engColorInput.value || '#0f172a',
-          vieBg: vieBgInput.value || '#ffffff',
-          vieColor: vieColorInput.value || '#0f172a'
+          paliBg:   paliBgInput.value   || defaultColors.paliBg,
+          paliColor:paliColorInput.value|| defaultColors.paliColor,
+          engBg:    engBgInput.value    || defaultColors.engBg,
+          engColor: engColorInput.value || defaultColors.engColor,
+          vieBg:    vieBgInput.value    || defaultColors.vieBg,
+          vieColor: vieColorInput.value || defaultColors.vieColor
         };
         try{
           localStorage.setItem('bh_colors', JSON.stringify(obj));
         }catch(e){}
       }
 
-      paliBgInput.addEventListener('input', e=>{
-        paliCols.forEach(c=>c.style.background=e.target.value);
-        saveColors();
-      });
-      paliColorInput.addEventListener('input', e=>{
-        paliCols.forEach(c=>c.style.color=e.target.value);
-        saveColors();
-      });
+      function setupColorControls(cols, bgInput, colorInput, resetBtn, defaults){
+        bgInput.addEventListener('input', e=>{
+          const value = e.target.value;
+          cols.forEach(c=>{ c.style.background = value; });
+          saveColors();
+        });
 
-      engBgInput.addEventListener('input', e=>{
-        engCols.forEach(c=>c.style.background=e.target.value);
-        saveColors();
-      });
-      engColorInput.addEventListener('input', e=>{
-        engCols.forEach(c=>c.style.color=e.target.value);
-        saveColors();
-      });
+        colorInput.addEventListener('input', e=>{
+          const value = e.target.value;
+          cols.forEach(c=>{ c.style.color = value; });
+          saveColors();
+        });
 
-      vieBgInput.addEventListener('input', e=>{
-        vieCols.forEach(c=>c.style.background=e.target.value);
-        saveColors();
-      });
-      vieColorInput.addEventListener('input', e=>{
-        vieCols.forEach(c=>c.style.color=e.target.value);
-        saveColors();
-      });
+        resetBtn.addEventListener('click',()=>{
+          cols.forEach(c=>{
+            c.style.background = defaults.bg;
+            c.style.color      = defaults.color;
+          });
+          bgInput.value    = defaults.bg;
+          colorInput.value = defaults.color;
+          saveColors();
+        });
+      }
 
-      resetPaliBtn.addEventListener('click',()=>{
-        paliCols.forEach(c=>{c.style.background='#ffffff';c.style.color='#0f172a';});
-        paliBgInput.value    = '#ffffff';
-        paliColorInput.value = '#0f172a';
-        saveColors();
-      });
-      resetEngBtn.addEventListener('click',()=>{
-        engCols.forEach(c=>{c.style.background='#ffffff';c.style.color='#0f172a';});
-        engBgInput.value     = '#ffffff';
-        engColorInput.value  = '#0f172a';
-        saveColors();
-      });
-      resetVieBtn.addEventListener('click',()=>{
-        vieCols.forEach(c=>{c.style.background='#ffffff';c.style.color='#0f172a';});
-        vieBgInput.value     = '#ffffff';
-        vieColorInput.value  = '#0f172a';
-        saveColors();
-      });
+      setupColorControls(
+        paliCols,
+        paliBgInput,
+        paliColorInput,
+        resetPaliBtn,
+        {bg: defaultColors.paliBg, color: defaultColors.paliColor}
+      );
+      setupColorControls(
+        engCols,
+        engBgInput,
+        engColorInput,
+        resetEngBtn,
+        {bg: defaultColors.engBg, color: defaultColors.engColor}
+      );
+      setupColorControls(
+        vieCols,
+        vieBgInput,
+        vieColorInput,
+        resetVieBtn,
+        {bg: defaultColors.vieBg, color: defaultColors.vieColor}
+      );
 
       // init
       setColorTab('pali');
       loadColors();
       updateVisibility();
-      applyUiLang();
+      updateSubtitleByLang();
       layoutIcon.classList.remove('vertical');
     })();
   </script>
