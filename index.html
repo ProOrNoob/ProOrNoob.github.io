@@ -195,7 +195,7 @@
       align-items:center;
       gap:6px;
       padding:3px 6px;
-      border-radius:999px;
+      border-radius:12px;
       background:#f8fafc;
       border:1px solid #e2e8f0;
       flex-wrap:wrap;          /* cho phép xuống hàng khi hẹp */
@@ -239,6 +239,11 @@
 
     /* MOBILE: sidebar thành drawer trượt */
     @media (max-width:768px){
+         header .container{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:0.35rem;
+  }
       .content-wrapper{
         padding-left:0;
         max-width:none;
@@ -272,15 +277,20 @@
 
       /* Top controls gọn lại */
       .btn-header{
-        min-width:auto;
-        padding:0 8px;
-        font-size:13px;
-        height:34px;
+         min-width:auto;
+    padding:0 8px;
+    font-size:13px;
+    height:34px;
       }
       .top-controls{
-        border-radius:14px;
-        padding:3px 4px;
-        gap:4px;
+        width:100%;
+    justify-content:flex-start;
+    padding:3px 0;
+    border-radius:0;          /* bỏ oval nếu muốn */
+    background:transparent;   /* bỏ nền ngoài, chỉ còn nút */
+    border:none;
+    gap:4px;
+    flex-wrap:wrap;
       }
     }
   </style>
