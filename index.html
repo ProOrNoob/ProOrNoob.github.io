@@ -21,7 +21,7 @@
       font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;
       background:var(--bg);
       color:#0f172a;
-      overflow:hidden; /* giữ kiểu “app” không scrollbar ngoài */
+      overflow:hidden; /* kiểu “app”, không scrollbar ngoài */
     }
 
     .page-wrapper{
@@ -36,7 +36,6 @@
       border-bottom:1px solid rgba(15,23,42,0.06);
     }
 
-    /* Tiêu đề: in hoa + màu accent */
     header h1{
       text-transform:uppercase;
       letter-spacing:.03em;
@@ -47,7 +46,7 @@
     .main-container{
       flex:1 1 auto;
       padding:0.5rem 0;
-      overflow:hidden; /* 🔧 không cho tràn ngang/đọc ngoài main */
+      overflow:hidden;
     }
 
     footer{
@@ -58,22 +57,23 @@
       color:var(--muted);
     }
 
-    /* 🔧 container + row full height, không tràn ngang */
     .main-container > .container{
       height:100%;
-      padding-left:0.5rem;
-      padding-right:0.5rem;
+      padding-left:0.25rem;
+      padding-right:0.25rem;
     }
     .main-container .row{
       height:100%;
-      overflow:hidden; /* chặn scroll ngang do negative margin của .row */
+      overflow:hidden;
+      --bs-gutter-x:0.5rem;
     }
 
     .sidebar-wrapper{
       height:100%;
+      transition:width .18s ease-out;
     }
 
-    /* SIDEBAR: nền trắng, bo góc giống iframe */
+    /* SIDEBAR */
     .sidebar{
       height:100%;
       max-height:100%;
@@ -86,6 +86,7 @@
       border-radius:12px;
     }
     .sidebar-section{margin-bottom:0.5rem;}
+
     .sidebar-toggle{
       width:100%;
       border:none;
@@ -103,6 +104,7 @@
     }
     .sidebar-toggle:hover{background:rgba(37,99,235,0.06);}
     .sidebar-toggle .chevron{font-size:11px;opacity:0.7;}
+
     .sidebar-list{margin-top:2px;padding-left:4px;}
     .sidebar-list.collapsed{display:none;}
 
@@ -122,7 +124,6 @@
       background:rgba(37,99,235,0.08);
       color:#1d4ed8;
     }
-    /* Màu chọn bài kinh: cùng accent như nút */
     .sutta-link.active{
       background:var(--accent);
       color:#ffffff;
@@ -133,8 +134,11 @@
       height:100%;
       display:flex;
       flex-direction:column;
-      padding-left:0.75rem;
-      min-width:0;        /* 🔧 cho phép co ngang, tránh tràn làm xuất hiện scroll */
+      padding-left:0.25rem;
+      min-width:0;
+      /* bỏ max-width để không bị hẹp hơn header */
+      max-width:none;
+      margin:0;
     }
     #sutraFrame{
       flex:1 1 auto;
@@ -143,7 +147,7 @@
       border-radius:12px;
       border:1px solid #e5e7eb;
       background:var(--card);
-      display:block;      /* 🔧 tránh khoảng trắng inline gây tràn nhẹ */
+      display:block;
     }
 
     /* Nút header */
@@ -155,7 +159,7 @@
       align-items:center;
       justify-content:center;
       font-size:14px;
-      border-radius:8px;
+      border-radius:10px; /* bớt bo cong cho đồng bộ card */
       white-space:nowrap;
       background:#f8fafc;
       border:1px solid #e2e8f0;
@@ -167,7 +171,16 @@
       color:#334155;
     }
 
-    /* Lá cờ SVG trong nút ngôn ngữ */
+    /* Nút Index hơi “thuộc về sidebar” */
+    #btnSidebarToggle{
+      background:#e5e9f2;
+      border-color:#d1d5db;
+      font-weight:500;
+    }
+    #btnSidebarToggle:hover{
+      background:#dbe3f0;
+    }
+
     .btn-lang{
       min-width:52px;
       padding:0 .5rem;
@@ -175,21 +188,18 @@
       align-items:center;
       justify-content:center;
     }
-    .flag-icon{
-      width:22px;
-      height:16px;
-      display:block;
-      border-radius:2px;
-      filter:grayscale(1) brightness(.9); /* xám khi chưa chọn */
-      transition:.15s ease;
-    }
-    .btn-lang-active{
-      background:var(--accent) !important;
-      border-color:var(--accent) !important;
-      color:#fff !important;
-    }
-    .btn-lang-active .flag-icon{
-      filter:none; /* về màu gốc khi được chọn */
+
+    /* Nhóm control bên phải */
+    .top-controls{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      padding:3px 6px;
+      border-radius:999px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      flex-wrap:wrap;          /* cho phép xuống hàng khi hẹp */
+      justify-content:flex-end;
     }
 
     /* HELP overlay */
@@ -222,11 +232,60 @@
     }
     .dialog-close:hover{color:#0f172a;}
 
+    /* Overlay cho mobile sidebar */
+    .mobile-mask{
+      display:none;
+    }
+
+    /* MOBILE: sidebar thành drawer trượt */
     @media (max-width:768px){
-      .content-wrapper{padding-left:0;} /* khi mobile, content full chiều ngang */
+      .content-wrapper{
+        padding-left:0;
+        max-width:none;
+      }
+
+      .sidebar-wrapper{
+        position:fixed;
+        top:56px;        /* gần bằng chiều cao header */
+        bottom:0;
+        left:0;
+        width:80%;
+        max-width:320px;
+        z-index:1200;
+        transform:translateX(-100%);
+        transition:transform .2s ease-out;
+      }
+
+      body.mobile-sidebar-open .sidebar-wrapper{
+        transform:translateX(0);
+      }
+
+      .mobile-mask{
+        position:fixed;
+        inset:0;
+        background:rgba(15,23,42,0.45);
+        z-index:1100;
+      }
+      body.mobile-sidebar-open .mobile-mask{
+        display:block;
+      }
+
+      /* Top controls gọn lại */
+      .btn-header{
+        min-width:auto;
+        padding:0 8px;
+        font-size:13px;
+        height:34px;
+      }
+      .top-controls{
+        border-radius:14px;
+        padding:3px 4px;
+        gap:4px;
+      }
     }
   </style>
 </head>
+
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-JYT2R1TWMR"></script>
 <script>
@@ -235,6 +294,7 @@
   gtag('js', new Date());
   gtag('config', 'G-JYT2R1TWMR');
 </script>
+
 <body>
   <div class="page-wrapper">
 
@@ -246,9 +306,11 @@
             <span class="me-1">☰</span>
             <span data-text-vi="Mục lục" data-text-en="Index">Mục lục</span>
           </button>
-          <h1 id="sutraTitle" class="h5 mb-0">NIKĀYA</h1>
+          <h1 class="h5 mb-0">NIKĀYA</h1>
         </div>
-        <div class="d-flex align-items-center gap-2">
+
+        <!-- Nhóm control bên phải -->
+        <div class="top-controls">
           <button class="btn btn-outline-secondary btn-sm btn-header" type="button" id="btnPrev">
             <span>⟨</span>
             <span class="ms-1" data-text-vi="Kinh trước" data-text-en="Previous">Kinh trước</span>
@@ -261,42 +323,19 @@
             <span data-text-vi="Hướng dẫn" data-text-en="Help">Hướng dẫn</span>
           </button>
 
-          <!-- Nút ngôn ngữ: lá cờ SVG -->
+          <!-- Nút ngôn ngữ -->
           <button class="btn btn-outline-secondary btn-sm btn-header btn-lang"
                   type="button"
                   id="btnLangVi"
                   title="Tiếng Việt">
-            <svg class="flag-icon" viewBox="0 0 4 3" aria-hidden="true">
-              <rect width="4" height="3" fill="#da251d"></rect>
-              <polygon fill="#ffde00"
-                points="2,0.45 2.25,1.3 3.15,1.3 2.4,1.85 2.65,2.7 2,2.2 1.35,2.7 1.6,1.85 0.85,1.3 1.75,1.3">
-              </polygon>
-            </svg>
+            VN
           </button>
 
           <button class="btn btn-outline-secondary btn-sm btn-header btn-lang"
                   type="button"
                   id="btnLangEn"
                   title="English">
-            <svg class="flag-icon" viewBox="0 0 4 3" aria-hidden="true">
-              <rect width="4" height="3" fill="#012169"></rect>
-              <polygon fill="#ffffff"
-                points="0,0 0.5,0 4,2.25 4,3 3.5,3 0,0.75"></polygon>
-              <polygon fill="#ffffff"
-                points="4,0 3.5,0 0,2.25 0,3 0.5,3 4,0.75"></polygon>
-              <polygon fill="#c8102e"
-                points="0,0 0.25,0 4,2 4,2.25"></polygon>
-              <polygon fill="#c8102e"
-                points="4,0 3.75,0 0,2 0,2.25"></polygon>
-              <polygon fill="#c8102e"
-                points="0,3 0.25,3 4,1 4,0.75"></polygon>
-              <polygon fill="#c8102e"
-                points="4,3 3.75,3 0,1 0,0.75"></polygon>
-              <rect x="1.5" width="1" height="3" fill="#ffffff"></rect>
-              <rect y="1" width="4" height="1" fill="#ffffff"></rect>
-              <rect x="1.75" width="0.5" height="3" fill="#c8102e"></rect>
-              <rect y="1.25" width="4" height="0.5" fill="#c8102e"></rect>
-            </svg>
+            EN
           </button>
         </div>
       </div>
@@ -309,7 +348,7 @@
           <!-- SIDEBAR -->
           <div class="col-12 col-md-4 col-lg-3 sidebar-wrapper" id="sidebarWrapper">
             <aside class="sidebar" id="sidebar">
-              <!-- Trường Bộ Kinh -->
+              <!-- Dīgha Nikāya -->
               <div class="sidebar-section">
                 <button class="sidebar-toggle" type="button" data-target="listDN">
                   <span data-text-vi="Trường Bộ Kinh (Dīgha)" data-text-en="Dīgha Nikāya (Long Discourses)">
@@ -333,7 +372,7 @@
                 </div>
               </div>
 
-              <!-- Trung Bộ Kinh -->
+              <!-- Majjhima Nikāya -->
               <div class="sidebar-section">
                 <button class="sidebar-toggle" type="button" data-target="listMN">
                   <span data-text-vi="Trung Bộ Kinh (Majjhima)" data-text-en="Majjhima Nikāya (Middle-Length)">
@@ -398,11 +437,12 @@
       <div id="helpContentVi">
         <p>Một vài gợi ý sử dụng:</p>
         <ul>
-          <li>Dùng nút <strong>☰ Mục lục</strong> để ẩn/hiện thanh bên trái chứa danh sách Nikāya và các bài kinh.</li>
-          <li>Khi chọn một bài kinh bên trái, nội dung sẽ được tải trong khung bên phải.</li>
-          <li>Nút <strong>⟨ Kinh trước</strong> và <strong>Kinh sau ⟩</strong> chuyển qua lại giữa các bài kinh theo thứ tự trong mục lục.</li>
-          <li>Nút lá cờ <strong>🇻🇳 / 🇬🇧</strong> đổi ngôn ngữ giao diện (mục lục, nút điều hướng, phần hướng dẫn, v.v.).</li>
-          <li>Các nút Pāli / English / Tiếng Việt, Row/Col, Màu… nằm trong từng trang kinh (HTML con) và chỉ ảnh hưởng bài kinh đó.</li>
+          <li>Dùng nút <strong>☰ Mục lục</strong> để ẩn / hiện danh mục kinh. Trên điện thoại, thanh này trượt ra/vào như một menu.</li>
+          <li>Chọn một bài kinh bên trái, nội dung sẽ được tải vào khung bên phải. Lần đọc cuối cùng được ghi nhớ và tự mở lại khi bạn quay lại trang.</li>
+          <li>Nút <strong>⟨ Kinh trước</strong> và <strong>Kinh sau ⟩</strong> chuyển qua lại giữa các bài kinh theo đúng thứ tự đang hiển thị trong danh mục kinh.</li>
+          <li>Nút <strong>VN / EN</strong> đổi ngôn ngữ giao diện.</li>
+          <li>Các nút <strong>PLI / EN / VI, bố cục Row/Col, màu cột</strong> nằm bên trong từng trang kinh và chỉ ảnh hưởng bài kinh đó.</li>
+          <li>Trạng thái mở / thu của từng nhóm danh mục, vị trí cuộn trong thanh bên và trạng thái ẩn/hiện danh mục được lưu lại cho lần truy cập sau.</li>
         </ul>
         <p class="text-muted mb-0">Bấm ra ngoài khung hoặc nút ✕ để đóng phần hướng dẫn.</p>
       </div>
@@ -410,16 +450,20 @@
       <div id="helpContentEn" class="d-none">
         <p>Some quick tips:</p>
         <ul>
-          <li>Use the <strong>☰ Index</strong> button to show/hide the left sidebar with Nikāya collections and suttas.</li>
-          <li>When you select a sutta on the left, its content is loaded in the right iframe.</li>
-          <li>The <strong>⟨ Previous</strong> and <strong>Next ⟩</strong> buttons move between suttas in the current sidebar order.</li>
-          <li>The flag buttons <strong>🇻🇳 / 🇬🇧</strong> switch the interface language (sidebar headings, navigation buttons, this help text, etc.).</li>
-          <li>Per-sutta controls (Pāli / English / Vietnamese, Row/Col, Color…) live inside each sutta HTML page and affect only that page.</li>
+          <li>Use the <strong>☰ Index</strong> button to show or hide the sutta list. On phones, this panel slides in and out like a menu.</li>
+          <li>Select a sutta on the left and its content will load in the panel on the right. The last sutta you read is remembered and automatically reopened when you come back.</li>
+          <li>The <strong>⟨ Previous Sutta</strong> and <strong>Next Sutta ⟩</strong> buttons move between suttas in the same order as in the list.</li>
+          <li>The <strong>VN / EN</strong> buttons switch the interface language.</li>
+          <li>Per-sutta controls (PLI / EN / VI toggles, row/column layout, column colors) live inside each sutta page and affect only that page.</li>
+          <li>The open/closed state of each section, the sidebar scroll position, and whether the index is hidden or shown are all remembered for your next visit.</li>
         </ul>
         <p class="text-muted mb-0">Click outside this dialog or press ✕ to close the help overlay.</p>
       </div>
     </div>
   </div>
+
+  <!-- overlay cho mobile sidebar -->
+  <div id="mobileMask" class="mobile-mask"></div>
 
   <script>
     (function(){
@@ -437,7 +481,7 @@
       const helpClose        = document.getElementById('helpClose');
       const helpContentVi    = document.getElementById('helpContentVi');
       const helpContentEn    = document.getElementById('helpContentEn');
-      const headerTitle      = document.getElementById('sutraTitle');
+      const mobileMask       = document.getElementById('mobileMask');
 
       const LINK_KEY          = 'nikaya_last_sutta';
       const SIDEBAR_STATE_KEY = 'nikaya_sidebar_state';
@@ -450,10 +494,11 @@
       let currentHref = '';
       let currentLang = 'vi';
 
-      function updateHeaderTitle(){
-        // có thể thêm logic lấy tên từ .sutta-link active nếu cần
+      function isMobile(){
+        return window.innerWidth <= 768;
       }
 
+      /* ========== UI LANGUAGE ========== */
       function setLang(lang){
         currentLang = (lang === 'en') ? 'en' : 'vi';
         try{
@@ -479,8 +524,6 @@
         const isVi = currentLang === 'vi';
         helpContentVi.classList.toggle('d-none', !isVi);
         helpContentEn.classList.toggle('d-none', isVi);
-
-        updateHeaderTitle();
       }
 
       (function initLang(){
@@ -495,9 +538,11 @@
       btnLangVi.addEventListener('click',()=> setLang('vi'));
       btnLangEn.addEventListener('click',()=> setLang('en'));
 
+      /* ========== SIDEBAR WIDTH / COLLAPSE ========== */
       function updateContentWidth(){
         if(!contentWrapper) return;
-        if(sidebarWrapper && sidebarWrapper.classList.contains('d-none')){
+        const collapsed = sidebarWrapper && sidebarWrapper.classList.contains('d-none');
+        if(collapsed){
           contentWrapper.classList.remove('col-md-8','col-lg-9');
           contentWrapper.classList.add('col-md-12','col-lg-12');
         }else{
@@ -508,11 +553,19 @@
 
       if(btnSidebarToggle && sidebarWrapper){
         btnSidebarToggle.addEventListener('click',()=>{
-          sidebarWrapper.classList.toggle('d-none');
-          updateContentWidth();
+          if(isMobile()){
+            // mobile: toggle drawer
+            document.body.classList.toggle('mobile-sidebar-open');
+          }else{
+            // desktop / tablet: ẩn/hiện cột như cũ
+            sidebarWrapper.classList.toggle('d-none');
+            updateContentWidth();
+            saveSidebarState();
+          }
         });
       }
 
+      /* ========== SAVE / RESTORE SIDEBAR STATE ========== */
       function saveSidebarState(){
         if(!sidebar) return;
         const lists = document.querySelectorAll('.sidebar-list');
@@ -524,7 +577,8 @@
         });
         const state = {
           open,
-          scrollTop: sidebar.scrollTop || 0
+          scrollTop: sidebar.scrollTop || 0,
+          collapsed: sidebarWrapper ? sidebarWrapper.classList.contains('d-none') : false
         };
         try{
           localStorage.setItem(SIDEBAR_STATE_KEY, JSON.stringify(state));
@@ -548,8 +602,14 @@
             }
           });
         }
+
         if(typeof state.scrollTop === 'number'){
           sidebar.scrollTop = state.scrollTop;
+        }
+
+        // khôi phục trạng thái thu/mở sidebar (chỉ desktop / tablet)
+        if(sidebarWrapper && typeof state.collapsed === 'boolean' && !isMobile()){
+          sidebarWrapper.classList.toggle('d-none', state.collapsed);
         }
 
         const toggles = document.querySelectorAll('.sidebar-toggle');
@@ -561,6 +621,8 @@
             chev.textContent = list.classList.contains('collapsed') ? '▸' : '▾';
           }
         });
+
+        updateContentWidth();
       }
 
       restoreSidebarState();
@@ -578,6 +640,7 @@
         });
       });
 
+      /* ========== LOAD SUTTA ========== */
       function setActiveLink(href){
         links.forEach(a=>{
           a.classList.toggle('active', a.getAttribute('href') === href);
@@ -593,7 +656,10 @@
         try{
           localStorage.setItem(LINK_KEY, href);
         }catch(e){}
-        updateHeaderTitle();
+        // đóng drawer sau khi chọn trên mobile
+        if(isMobile()){
+          document.body.classList.remove('mobile-sidebar-open');
+        }
       }
 
       links.forEach(a=>{
@@ -610,10 +676,11 @@
         last = localStorage.getItem(LINK_KEY) || '';
       }catch(e){}
       if(!last){
-        last = 'bg.html';
+        last = 'bg.html';   // trang mặc định
       }
       loadSutta(last);
 
+      /* ========== PREV / NEXT ========== */
       function goToOffset(offset){
         const hrefs = Array.from(links).map(a=>a.getAttribute('href'));
         if(!hrefs.length) return;
@@ -631,6 +698,7 @@
       btnPrev.addEventListener('click',()=> goToOffset(-1));
       btnNext.addEventListener('click',()=> goToOffset(1));
 
+      /* ========== HELP DIALOG ========== */
       function openHelp(){
         helpOverlay.classList.add('show');
         helpOverlay.setAttribute('aria-hidden','false');
@@ -639,6 +707,7 @@
         helpOverlay.classList.remove('show');
         helpOverlay.setAttribute('aria-hidden','true');
       }
+
       btnHelp.addEventListener('click',(e)=>{
         e.stopPropagation();
         openHelp();
@@ -651,8 +720,42 @@
         if(e.target === helpOverlay) closeHelp();
       });
 
+      /* ========== Mobile mask click ========== */
+      if(mobileMask){
+        mobileMask.addEventListener('click',()=>{
+          document.body.classList.remove('mobile-sidebar-open');
+        });
+      }
+
+      /* ========== Swipe mở/đóng sidebar trên mobile ========== */
+      let touchStartX = 0;
+      let touchEndX   = 0;
+
+      document.addEventListener('touchstart', (e)=>{
+        if(!isMobile()) return;
+        if(!e.touches || !e.touches.length) return;
+        touchStartX = e.touches[0].clientX;
+      }, {passive:true});
+
+      document.addEventListener('touchend', (e)=>{
+        if(!isMobile()) return;
+        if(!e.changedTouches || !e.changedTouches.length) return;
+        touchEndX = e.changedTouches[0].clientX;
+        const deltaX = touchEndX - touchStartX;
+
+        // Vuốt từ trái sang phải để mở (bắt đầu sát mép trái)
+        if(deltaX > 60 && touchStartX < 40 && !document.body.classList.contains('mobile-sidebar-open')){
+          document.body.classList.add('mobile-sidebar-open');
+          return;
+        }
+
+        // Vuốt từ phải sang trái để đóng khi đang mở
+        if(deltaX < -60 && document.body.classList.contains('mobile-sidebar-open')){
+          document.body.classList.remove('mobile-sidebar-open');
+        }
+      }, {passive:true});
+
       window.addEventListener('beforeunload', saveSidebarState);
-      updateContentWidth();
     })();
   </script>
 </body>
