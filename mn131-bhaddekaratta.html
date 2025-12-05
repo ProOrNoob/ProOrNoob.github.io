@@ -204,8 +204,21 @@
     }
 
     @media(max-width:768px){
-      .sutra-row{grid-template-columns:1fr;}
-      .controls .btn{min-width:72px;}
+        .sutra-row{
+    grid-template-columns:1fr;
+  }
+
+  .controls{
+    width:100%;
+    justify-content:flex-end;
+    flex-wrap:nowrap;   /* ép nằm 1 hàng */
+    gap:4px;
+  }
+
+  .controls .btn{
+    min-width:auto;
+    padding:0 10px;     /* hơi gọn hơn để đủ chỗ */
+  }
     }
   </style>
 </head>
