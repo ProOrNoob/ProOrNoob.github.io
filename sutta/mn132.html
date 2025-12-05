@@ -1,13 +1,12 @@
 
-<!doctype html>
+ <!doctype html>
 <html lang="vi">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MN 131 – Bhaddekaratta Sutta</title>
  <link href="https://dhammaarchive.info/css/bs.css" rel="stylesheet">
- 
-
+  
 <style>
 :root{
   --bg:#f3f4f6;
@@ -49,7 +48,7 @@ html,body{
   box-shadow:0 12px 30px rgba(15,23,42,0.12);
 }
 
-/* ============= HEADER ============= */
+/* ================= HEADER ================= */
 .sutra-header{
   display:flex;
   flex-direction:row;
@@ -85,9 +84,9 @@ html,body{
   line-height:1.35;
 }
 
-/* ============= HEADER ACTIONS ============= */
+/* ================= HEADER ACTIONS ================= */
 .header-actions{
-  position:relative;                /* để menu có chỗ bám */
+  position:relative;                /* để menu bám vào */
   display:flex;
   flex-direction:row;
   align-items:flex-start;
@@ -95,7 +94,7 @@ html,body{
   margin-top:2px;
 }
 
-/* ======= NÚT CHUNG (⚙ + controls) ======= */
+/* ===== KÍCH THƯỚC CHUNG CHO TẤT CẢ NÚT (⚙ + toolbar) ===== */
 .settings-btn,
 .sutra-card .controls .btn,
 .sutra-card .controls .btn-group > .btn{
@@ -119,7 +118,7 @@ html,body{
   margin:0;
 }
 
-/* ============= CONTROLS (toolbar) ============= */
+/* ================= CONTROLS (TOOLBAR) ================= */
 /* Desktop / tablet: nằm ngang */
 .controls{
   display:none;
@@ -161,7 +160,6 @@ html,body{
   padding:0;
 }
 
-/* icon layout */
 .layout-icon{
   width:16px;
   height:16px;
@@ -173,7 +171,7 @@ html,body{
 }
 .layout-icon.vertical{transform:rotate(90deg);}
 
-/* ============= GRID NỘI DUNG ============= */
+/* ================= GRID NỘI DUNG ================= */
 .sutra-grid{
   flex:1 1 auto;
   display:flex;
@@ -220,7 +218,6 @@ html,body{
 .hide-eng  .eng-col {display:none;}
 .hide-vie  .vie-col {display:none;}
 
-/* highlight */
 .sutra-row.reading{
   background:#ffffff !important;
   border:2px solid rgba(37,99,235,0.95);
@@ -228,7 +225,7 @@ html,body{
   z-index:1;
 }
 
-/* ============= OVERLAY COLOR ============= */
+/* ================= OVERLAY COLOR ================= */
 .overlay{
   position:fixed;
   inset:0;
@@ -268,7 +265,7 @@ html,body{
   border-color:var(--accent);
 }
 
-/* ============= BACK TO TOP ============= */
+/* ================= BACK TO TOP ================= */
 #backToTop{
   position:absolute;
   right:14px;
@@ -294,12 +291,12 @@ html,body{
   pointer-events:auto;
 }
 
-/* ============= RESPONSIVE ============= */
+/* ================= RESPONSIVE ================= */
 @media (max-width:1024px){
   .sutra-card{margin:4px 6px;}
 }
 
-/* MOBILE: <= 576px – menu xổ dọc, NỔI, không đẩy nội dung */
+/* MOBILE: menu xổ dọc, nổi, KHÔNG đẩy nội dung, vẫn click full nút */
 @media (max-width:768px){
 
   .sutra-card{
@@ -311,49 +308,56 @@ html,body{
     gap:8px;
   }
 
-.header-actions{
-    position: relative;
-    flex-direction: column;
-    align-items: flex-end;
-    margin-right: 8px;
-    gap: 8px;
+  /* ⚙ + menu thành 1 cụm ở mép phải */
+  .header-actions{
+    position:relative;
+    flex-direction:column;
+    align-items:flex-end;
+    margin-right:8px;
+    gap:8px;
   }
 
-  /* MENU NỔI: bám dưới header-actions, không đẩy nội dung */
+  .settings-btn{
+    align-self:flex-end;
+  }
+
+  /* MẶC ĐỊNH ẨN menu – chỉ hiện khi có .open */
   .controls{
-     position: absolute;
-    top: 100%;
-    right: -1px;              /* bám mép phải của header-actions */
-    left: auto;            /* CHẮC CHẮN không còn left:100% */
-    transform: none;       /* hủy mọi transform cũ */
-    margin-top: 6px;
+    position:absolute;
+    top:100%;
+    right:0;
+    left:auto;
+    margin-top:6px;
 
-    background: transparent;
-    box-shadow: none;
-    padding: 0;
+    background:transparent;
+    box-shadow:none;
+    padding:0;
 
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
-
-    z-index: 2000;
+    display:none;                 /* <-- ẨN MẶC ĐỊNH */
+    flex-direction:column;
+    align-items:flex-end;
+    gap:8px;
+    z-index:1500;
   }
- .settings-btn{
-    align-self: flex-end;
+
+  /* Khi JS thêm class .open => mới hiện */
+  .controls.open{
+    display:flex;
   }
-   .controls-left,
+
+  .controls-left,
   .controls-right,
   .controls .btn-group{
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:8px;
   }
 
   .sutra-row{
     grid-template-columns:1fr;
   }
 }
+
 
 @media (max-width:480px){
   .sutra-title{
