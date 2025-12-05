@@ -763,24 +763,34 @@ html,body{
       }
 
       /* ======================= LAYOUT & VISIBILITY ======================= */
-      function adjustRowColumns(){
-        const rows = grid.querySelectorAll('.sutra-row');
-        rows.forEach(row=>{
-          if(card.classList.contains('stack')){
-            row.style.gridTemplateColumns = '1fr';
-            return;
-          }
-          const cols = Array.from(row.querySelectorAll('.sutra-col'));
-          const visible = cols.filter(col=>{
-            if(col.classList.contains('pali-col') && !showPali) return false;
-            if(col.classList.contains('eng-col')  && !showEng)  return false;
-            if(col.classList.contains('vie-col')  && !showVie)  return false;
-            return true;
-          });
-          const n = Math.max(1, visible.length);
-          row.style.gridTemplateColumns = `repeat(${n},1fr)`;
-        });
-      }
+     function adjustRowColumns(){
+  const rows = grid.querySelectorAll('.sutra-row');
+  const isMobileNarrow = window.innerWidth <= 500;
+
+  rows.forEach(row=>{
+    if(card.classList.contains('stack')){
+      row.style.gridTemplateColumns = '1fr';
+      return;
+    }
+
+    if(isMobileNarrow){
+      row.style.gridTemplateColumns = '1fr';
+      return;
+    }
+
+    const cols = Array.from(row.querySelectorAll('.sutra-col'));
+    const visible = cols.filter(col=>{
+      if(col.classList.contains('pali-col') && !showPali) return false;
+      if(col.classList.contains('eng-col')  && !showEng)  return false;
+      if(col.classList.contains('vie-col')  && !showVie)  return false;
+      return true;
+    });
+
+    const n = Math.max(1, visible.length);
+    row.style.gridTemplateColumns = `repeat(${n},1fr)`;
+  });
+}
+window.addEventListener('resize', adjustRowColumns);
 
       function updateVisibility(){
         grid.classList.toggle('hide-pali', !showPali);
