@@ -1,4 +1,4 @@
- :root{
+  :root{
     --bg:#f3f4f6;
     --card:#ffffff;
     --muted:#64748b;
@@ -95,7 +95,7 @@
     flex-shrink:0;
   }
 
-  /* TOOLBAR (controls) – desktop: inline, không tuyệt đối */
+  /* TOOLBAR (controls) – desktop: inline */
   .controls{
     display:none;
     align-items:center;
@@ -303,6 +303,7 @@
     }
   }
 
+  /* MOBILE: ≤ 768px – controls dọc, không nền panel */
   @media(max-width:768px){
     .sutra-card{
       padding:10px 10px 14px;
@@ -314,31 +315,42 @@
       gap:6px;
     }
 
-    /* Mobile: controls là panel nổi, không đẩy trang xuống */
     .header-actions{
       align-self:flex-end;
     }
 
+    /* controls: tuyệt đối, xếp dọc, không nền trắng */
     .controls{
       position:absolute;
-      top:100%;           /* ngay dưới header-actions */
+      top:100%;
       right:0;
-      margin-right:0;
       margin-top:6px;
-      background:#ffffff;
-      padding:8px 10px;
-      border-radius:12px;
-      box-shadow:0 12px 30px rgba(15,23,42,0.3);
+
+      background:transparent;
+      box-shadow:none;
+      padding:0;
+
       flex-direction:column;
       align-items:flex-end;
+      gap:8px;
       z-index:1000;
-      
     }
 
     .controls-left,
     .controls-right{
       flex-direction:column;
       align-items:flex-end;
+      gap:8px;
+    }
+
+    /* PLI / EN / VI dọc luôn */
+    .controls .btn-group{
+      flex-direction:column;
+      align-items:flex-end;
+      gap:8px;
+    }
+    .controls .btn-group > .btn{
+      width:52px;
     }
 
     .sutra-row{
@@ -352,36 +364,4 @@
       letter-spacing:.07em;
     }
   }
-  @media (max-width: 550px){
-  .controls{
-    position:absolute;
-    top:100%;
-    right:0;
-    margin-top:6px;
 
-    background:transparent !important;   /* bỏ nền trắng */
-    box-shadow:none !important;          /* bỏ đổ bóng khung */
-    padding:0 !important;                /* bỏ padding khung */
-
-    flex-direction:column;               /* xếp dọc */
-    align-items:flex-end;
-    gap:8px;                             /* khoảng cách giữa từng nút */
-    z-index:1000;
-  }
-
-  .controls-left,
-  .controls-right{
-    flex-direction:column;
-    align-items:flex-end;
-    gap:8px;
-  }
-   .controls .btn-group{
-    flex-direction:column !important;
-    align-items:flex-end !important;
-    gap:8px !important;
-  }
-
-  .controls .btn-group > .btn{
-    width:52px !important;     /* giữ kích thước đều */
-  }
-}
