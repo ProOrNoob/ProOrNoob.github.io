@@ -1,370 +1,366 @@
+
 <!doctype html>
 <html lang="vi">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MN 131 – Bhaddekaratta Sutta</title>
+ <link href="https://dhammaarchive.info/css/bs.css" rel="stylesheet">
+ 
 
-  <link href="https://dhammaarchive.info/css/bs.css" rel="stylesheet">
 <style>
-  :root{
-    --bg:#f3f4f6;
-    --card:#ffffff;
-    --muted:#64748b;
-    --accent:#2563eb;
-    --border:#e2e8f0;
-  }
+:root{
+  --bg:#f3f4f6;
+  --card:#ffffff;
+  --muted:#64748b;
+  --accent:#2563eb;
+  --border:#e2e8f0;
+}
 
-  *{box-sizing:border-box;}
+*{box-sizing:border-box;}
 
-  html,body{
-    height:100%;
-    margin:0;
-    padding:0;
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    background:var(--bg);
-    color:#0f172a;
-  }
+html,body{
+  height:100%;
+  margin:0;
+  padding:0;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);
+  color:#0f172a;
+}
 
-  .page-wrapper{
-    height:100%;
-    display:flex;
-    align-items:stretch;
-    justify-content:center;
-    padding:4px;
-  }
+.page-wrapper{
+  height:100%;
+  display:flex;
+  justify-content:center;
+  align-items:stretch;
+  padding:4px;
+}
+
+.sutra-card{
+  background:var(--card);
+  border-radius:18px;
+  border:1px solid rgba(148,163,184,0.35);
+  padding:12px 14px 16px;
+  width:100%;
+  max-width:100%;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  box-shadow:0 12px 30px rgba(15,23,42,0.12);
+}
+
+/* ============= HEADER ============= */
+.sutra-header{
+  display:flex;
+  flex-direction:row;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  padding:6px 0;
+  border-bottom:1px solid rgba(148,163,184,0.25);
+}
+
+.sutra-header > div:first-child{
+  flex:1 1 auto;
+  min-width:0;
+}
+
+.sutra-title{
+  font-size:1.05rem;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--accent);
+  margin:0;
+  line-height:1.3;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+#sutraSubtitle{
+  font-size:12.5px;
+  margin-top:3px;
+  color:var(--muted);
+  line-height:1.35;
+}
+
+/* ============= HEADER ACTIONS ============= */
+.header-actions{
+  position:relative;                /* để menu có chỗ bám */
+  display:flex;
+  flex-direction:row;
+  align-items:flex-start;
+  gap:8px;
+  margin-top:2px;
+}
+
+/* ======= NÚT CHUNG (⚙ + controls) ======= */
+.settings-btn,
+.sutra-card .controls .btn,
+.sutra-card .controls .btn-group > .btn{
+  width:56px;
+  min-width:56px;
+  height:38px;
+  padding:0;
+  border-radius:12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  line-height:1;
+  border-width:1px;
+  border-color:rgba(148,163,184,0.9);
+  cursor:pointer;
+  white-space:nowrap;
+}
+
+.sutra-card .controls .btn-group > .btn{
+  margin:0;
+}
+
+/* ============= CONTROLS (toolbar) ============= */
+/* Desktop / tablet: nằm ngang */
+.controls{
+  display:none;
+  align-items:center;
+  flex-wrap:nowrap;
+  gap:8px;
+  margin-right:4px;
+}
+.controls.open{display:flex;}
+
+.controls-left,
+.controls-right{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:nowrap;
+}
+
+.controls .btn-group{
+  display:flex;
+  gap:8px;
+}
+
+#btnPali,#btnEng,#btnVie{
+  font-weight:600;
+  letter-spacing:.03em;
+}
+
+#btnLayout,
+#btnColor,
+#btnReadVie,
+#btnPauseVie,
+#btnRestartVie,
+#btnStopVie,
+#btnReadEng,
+#btnPauseEng,
+#btnRestartEng,
+#btnStopEng{
+  padding:0;
+}
+
+/* icon layout */
+.layout-icon{
+  width:16px;
+  height:16px;
+  stroke:#475569;
+  stroke-width:2;
+  stroke-linecap:round;
+  fill:none;
+  transition:transform .15s ease;
+}
+.layout-icon.vertical{transform:rotate(90deg);}
+
+/* ============= GRID NỘI DUNG ============= */
+.sutra-grid{
+  flex:1 1 auto;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  overflow:auto;
+  padding:10px 6px 32px;
+}
+
+.sutra-row{
+  position:relative;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:8px;
+  padding:8px 10px;
+  margin:2px 0;
+  border-radius:14px;
+  border:1px solid rgba(148,163,184,0.25);
+  background:#ffffff;
+}
+
+.stack .sutra-row{grid-template-columns:1fr;}
+
+.sutra-col{
+  min-height:1px;
+  padding:2px 4px;
+  border-radius:10px;
+}
+
+.pali{font-family:"Noto Serif",serif;font-size:14.5px;line-height:1.75;}
+.eng{font-family:Georgia,serif;font-size:13.5px;line-height:1.75;}
+.vie{font-family:system-ui;font-size:13.5px;line-height:1.75;}
+
+.col-head{
+  font-weight:600;
+  color:var(--muted);
+  font-size:11.5px;
+  margin-bottom:3px;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+
+.hide-pali .pali-col{display:none;}
+.hide-eng  .eng-col {display:none;}
+.hide-vie  .vie-col {display:none;}
+
+/* highlight */
+.sutra-row.reading{
+  background:#ffffff !important;
+  border:2px solid rgba(37,99,235,0.95);
+  box-shadow:0 0 0 3px rgba(191,219,254,0.9);
+  z-index:1;
+}
+
+/* ============= OVERLAY COLOR ============= */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,0.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:2000;
+  padding:16px;
+}
+.overlay.show{display:flex;}
+
+.dialog{
+  background:#fff;
+  border-radius:16px;
+  padding:14px 16px;
+  max-width:450px;
+  width:96%;
+  box-shadow:0 20px 50px rgba(15,23,42,0.45);
+  border:1px solid rgba(148,163,184,0.45);
+}
+
+.dialog-close{
+  border:none;
+  background:transparent;
+  font-size:22px;
+  line-height:1;
+  cursor:pointer;
+  color:#64748b;
+  padding-left:8px;
+}
+.dialog-close:hover{color:#0f172a;}
+
+.tab-btn.active{
+  background-color:var(--accent);
+  color:#fff !important;
+  border-color:var(--accent);
+}
+
+/* ============= BACK TO TOP ============= */
+#backToTop{
+  position:absolute;
+  right:14px;
+  bottom:12px;
+  width:32px;
+  height:32px;
+  border-radius:10px;
+  border:1px solid rgba(148,163,184,0.8);
+  background:#f8fafc;
+  color:#2563eb;
+  font-size:16px;
+  font-weight:600;
+  cursor:pointer;
+  box-shadow:0 4px 12px rgba(15,23,42,0.3);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+}
+#backToTop.show{
+  opacity:1;
+  pointer-events:auto;
+}
+
+/* ============= RESPONSIVE ============= */
+@media (max-width:1024px){
+  .sutra-card{margin:4px 6px;}
+}
+
+/* MOBILE: <= 576px – menu xổ dọc, NỔI, không đẩy nội dung */
+@media (max-width:768px){
 
   .sutra-card{
-    background:var(--card);
-    border-radius:18px;
-    border:1px solid rgba(148,163,184,0.35);
-    padding:12px 14px 16px;
-    width:100%;
-    max-width:100%;
-    margin:4px 10px;
-    display:flex;
-    flex-direction:column;
-    position:relative;
-    box-shadow:0 12px 30px rgba(15,23,42,0.12);
+    padding:10px 10px 14px;
   }
 
-  /* HEADER */
   .sutra-header{
-    display:flex;
-    flex-direction:row;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    padding:4px 0 6px;
-    border-bottom:1px solid rgba(148,163,184,0.25);
+    align-items:flex-start;
+    gap:8px;
   }
 
-  .sutra-header > div:first-child{
-    flex:1 1 auto;
-    min-width:0;
+.header-actions{
+    position: relative;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-right: 8px;
+    gap: 8px;
   }
 
-  .sutra-title{
-    font-size:1.05rem;
-    font-weight:800;
-    text-transform:uppercase;
-    letter-spacing:.08em;
-    color:var(--accent);
-    margin:0;
-    line-height:1.4;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-
-  #sutraSubtitle{
-    font-size:12.5px;
-    opacity:.85;
-    margin-top:3px;
-    color:var(--muted);
-  }
-
-  /* ===== HEADER ACTIONS: TOOLBAR + SETTINGS ===== */
-  .header-actions{
-    position:relative;
-    display:flex;
-    align-items:center;
-    gap:6px;
-  }
-
-  .settings-btn{
-    min-width:52px;
-    height:36px;
-    padding:0 12px;
-    border-radius:10px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    flex-shrink:0;
-  }
-
-  /* TOOLBAR (controls) – mặc định ngang (desktop + tablet) */
+  /* MENU NỔI: bám dưới header-actions, không đẩy nội dung */
   .controls{
-    display:none;
-    align-items:center;
-    gap:8px;          /* khoảng cách giữa các cụm */
-    flex-wrap:nowrap;
-    margin-right:4px;
-  }
-  .controls.open{
-    display:flex;
-  }
+     position: absolute;
+    top: 100%;
+    right: -1px;              /* bám mép phải của header-actions */
+    left: auto;            /* CHẮC CHẮN không còn left:100% */
+    transform: none;       /* hủy mọi transform cũ */
+    margin-top: 6px;
 
-  .controls-left,
-  .controls-right{
-    display:flex;
-    align-items:center;
-    gap:8px;          /* khoảng cách trong mỗi cụm */
-    flex-wrap:nowrap;
-  }
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
 
-  .controls-right{
-    margin-left:4px;
-  }
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
 
-  /* ===== KÍCH THƯỚC + STYLE TẤT CẢ NÚT TRONG TOOLBAR ===== */
-  .sutra-card .controls .btn,
-  .sutra-card .controls .btn-group > .btn{
-    min-width:52px;
-    height:36px;
-    padding:0 12px;
-    border-radius:10px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    font-size:12.5px;
-    line-height:1;
-    cursor:pointer;
-    border-width:1px;
-    border-color:rgba(148,163,184,0.9);
-    white-space:nowrap;
+    z-index: 2000;
   }
-
-  #btnPali,
-  #btnEng,
-  #btnVie{
-    font-weight:600;
-    letter-spacing:.03em;
+ .settings-btn{
+    align-self: flex-end;
   }
-
-  #btnLayout,
-  #btnColor,
-  #btnReadVie,
-  #btnPauseVie,
-  #btnRestartVie,
-  #btnStopVie,
-  #btnReadEng,
-  #btnPauseEng,
-  #btnRestartEng,
-  #btnStopEng{
-    padding:0;
-  }
-
-  .sutra-card .controls .btn-group{
-    display:flex;
-    gap:8px;
-  }
-  .sutra-card .controls .btn-group > .btn{
-    margin:0;
-  }
-
-  .layout-icon{
-    width:16px;
-    height:16px;
-    stroke:#475569;
-    stroke-width:2;
-    stroke-linecap:round;
-    fill:none;
-    transition:transform .15s ease;
-  }
-  .layout-icon.vertical{transform:rotate(90deg);}
-
-  /* ===== GRID NỘI DUNG KINH ===== */
-  .sutra-grid{
-    flex:1 1 auto;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-    overflow:auto;
-    padding:10px 6px 32px;
+   .controls-left,
+  .controls-right,
+  .controls .btn-group{
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
   }
 
   .sutra-row{
-    position:relative;
-    display:grid;
-    grid-template-columns:1fr 1fr 1fr;
-    gap:8px;
-    padding:8px 10px;
-    margin:2px 0;
-    border-radius:14px;
-    border:1px solid rgba(148,163,184,0.25);
-    background:#ffffff;
+    grid-template-columns:1fr;
   }
+}
 
-  .sutra-col{
-    min-height:1px;
-    padding:2px 4px;
-    border-radius:10px;
+@media (max-width:480px){
+  .sutra-title{
+    font-size:.96rem;
+    letter-spacing:.07em;
   }
-
-  .pali{font-family:"Noto Serif",serif;font-size:14.5px;line-height:1.75}
-  .eng{font-family:Georgia,serif;font-size:13.5px;line-height:1.75}
-  .vie{font-family:system-ui;font-size:13.5px;line-height:1.75}
-
-  .col-head{
-    font-weight:600;
-    color:var(--muted);
-    font-size:11.5px;
-    margin-bottom:3px;
-    text-transform:uppercase;
-    letter-spacing:.05em;
-  }
-
-  .hide-pali .pali-col{display:none;}
-  .hide-eng  .eng-col {display:none;}
-  .hide-vie  .vie-col {display:none;}
-  .stack .sutra-row{grid-template-columns:1fr;}
-
-  .sutra-row.reading{
-    background:#ffffff !important;
-    border:2px solid rgba(37,99,235,0.95);
-    box-shadow:0 0 0 3px rgba(191,219,254,0.9);
-    z-index:1;
-  }
-
-  .overlay{
-    position:fixed;
-    inset:0;
-    background:rgba(15,23,42,0.55);
-    display:none;
-    align-items:center;
-    justify-content:center;
-    z-index:2000;
-    padding:16px;
-  }
-  .overlay.show{display:flex;}
-
-  .dialog{
-    background:#fff;
-    border-radius:16px;
-    padding:14px 16px;
-    max-width:450px;
-    width:96%;
-    box-shadow:0 20px 50px rgba(15,23,42,0.45);
-    border:1px solid rgba(148,163,184,0.45);
-  }
-  .dialog-close{
-    border:none;
-    background:transparent;
-    font-size:22px;
-    line-height:1;
-    cursor:pointer;
-    color:#64748b;
-    padding-left:8px;
-  }
-  .dialog-close:hover{color:#0f172a;}
-
-  .tab-btn.active{
-    background-color:var(--accent);
-    color:#fff !important;
-    border-color:var(--accent);
-  }
-
-  #backToTop{
-    position:absolute;
-    right:14px;
-    bottom:12px;
-    width:32px;
-    height:32px;
-    border-radius:10px;
-    border:1px solid rgba(148,163,184,0.8);
-    background:#f8fafc;
-    color:#2563eb;
-    font-size:16px;
-    font-weight:600;
-    cursor:pointer;
-    box-shadow:0 4px 12px rgba(15,23,42,0.3);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    opacity:0;
-    pointer-events:none;
-  }
-  #backToTop.show{opacity:1;pointer-events:auto;}
-
-  /* ===== RESPONSIVE ===== */
-  @media (max-width: 1024px){
-    .sutra-card{
-      margin:4px 6px;
-    }
-  }
-
-  /* MOBILE THẬT SỰ: màn nhỏ <= 576px mới cho controls dọc */
-  @media (max-width: 575.98px){
-    .sutra-card{
-      padding:10px 10px 14px;
-    }
-
-    .sutra-header{
-      flex-direction:column;
-      align-items:flex-start;
-      gap:6px;
-    }
-
-    .header-actions{
-      align-self:flex-end;
-    }
-
-    .controls{
-      position:absolute;
-      top:100%;
-      right:0;
-      margin-top:6px;
-
-      background:transparent;
-      box-shadow:none;
-      padding:0;
-
-      flex-direction:column;
-      align-items:flex-end;
-      gap:8px;
-      z-index:1000;
-    }
-
-    .controls-left,
-    .controls-right{
-      flex-direction:column;
-      align-items:flex-end;
-      gap:8px;
-    }
-
-    .controls .btn-group{
-      flex-direction:column;
-      align-items:flex-end;
-      gap:8px;
-    }
-
-    .controls .btn-group > .btn{
-      width:52px;
-    }
-
-    .sutra-row{
-      grid-template-columns:1fr;
-    }
-  }
-
-  @media (max-width: 480px){
-    .sutra-title{
-      font-size:.96rem;
-      letter-spacing:.07em;
-    }
-  }
+}
 </style>
 
 
