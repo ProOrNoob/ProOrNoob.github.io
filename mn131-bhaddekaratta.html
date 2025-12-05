@@ -16,31 +16,28 @@
     }
     *{box-sizing:border-box}
 
-    /* ✅ CHỖ NÀY: cho html, body cao = 100% để ăn theo chiều cao iframe */
     html,body{
+      height:100%;
       margin:0;
       padding:0;
-      height:100%;
       font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;
       background:var(--bg);
       color:#0f172a;
     }
 
-    /* ✅ page-wrapper fill 100% iframe + flex để chia layout */
     .page-wrapper{
       height:100%;
       display:flex;
-      justify-content:center;
       align-items:stretch;
-      padding:7px; /* nếu muốn có viền trên dưới thì tăng padding ở đây */
+      justify-content:center;
+      padding:4px;
     }
 
-    /* ✅ sutra-card chiếm full chiều cao, chia header + thân */
     .sutra-card{
       background:var(--card);
       border-radius:5px;
       border:1px solid #e6edf7;
-      padding:5px;
+      padding:6px;
       max-width:none;
       width:100%;
       margin:0 auto;
@@ -55,7 +52,6 @@
       justify-content:space-between;
       gap:0.5rem;
       margin-bottom:0.35rem;
-      flex:0 0 auto;
     }
 
     .sutra-title{
@@ -68,7 +64,7 @@
     }
 
     .controls .btn{
-      min-width:90px;
+      width:39px;
       height:32px;
       padding:0 .6rem;
       display:inline-flex;
@@ -79,14 +75,13 @@
       white-space:nowrap;
     }
 
-    /* ✅ sutra-grid chiếm toàn bộ phần còn lại, scroll bên trong
-       KHÔNG dùng 100vh nữa */
     .sutra-grid{
+      flex:1 1 auto;
       display:flex;
       flex-direction:column;
       gap:8px;
-      flex:1 1 auto;
       overflow:auto;
+      padding-top:2px;
     }
 
     .sutra-row{
@@ -117,7 +112,7 @@
 
     .stack .sutra-row{grid-template-columns:1fr;}
 
-    /* overlay color */
+    /* Overlay cho Color */
     .overlay{
       position:fixed;
       inset:0;
@@ -157,6 +152,21 @@
       text-align:center;
     }
 
+    /* SVG icon Row / Col */
+    .layout-icon{
+      width:18px;
+      height:18px;
+      stroke:#475569;
+      stroke-width:2;
+      stroke-linecap:round;
+      fill:none;
+      transition:transform .15s ease;
+    }
+    /* Col = xoay 90 độ */
+    .layout-icon.vertical{
+      transform:rotate(90deg);
+    }
+
     @media(max-width:768px){
       .sutra-row{grid-template-columns:1fr;}
       .controls .btn{min-width:80px;}
@@ -179,15 +189,19 @@
 
         <div class="controls d-flex flex-wrap align-items-center gap-2">
           <div class="btn-group btn-group-sm" role="group" aria-label="Languages">
-            <button type="button" class="btn btn-outline-secondary active" id="btnPali">Pāli</button>
-            <button type="button" class="btn btn-outline-secondary active" id="btnEng">English</button>
-            <button type="button" class="btn btn-outline-secondary active" id="btnVie">Vietnamese</button>
+            <button type="button" class="btn btn-outline-secondary active" id="btnPali">PLI</button>
+            <button type="button" class="btn btn-outline-secondary active" id="btnEng">EN</button>
+            <button type="button" class="btn btn-outline-secondary active" id="btnVie">VI</button>
           </div>
-          <button id="btnLayout" class="btn btn-outline-secondary btn-sm" type="button">
-            Row
+          <button id="btnLayout" class="btn btn-outline-secondary btn-sm" type="button" title="Đổi kiểu hiển thị">
+            <svg id="layoutIcon" class="layout-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <line x1="4" y1="6"  x2="20" y2="6"  />
+              <line x1="4" y1="12" x2="20" y2="12" />
+              <line x1="4" y1="18" x2="20" y2="18" />
+            </svg>
           </button>
           <button id="btnColor" class="btn btn-outline-secondary btn-sm" type="button">
-            🎨 Color
+            🎨
           </button>
         </div>
       </div>
@@ -274,9 +288,7 @@
         </div>
       </div>
 
-      <p id="hintText" class="text-muted small mt-2 mb-0">
-        Use Pāli / English / Vietnamese buttons to toggle columns; "Row" / "Col" switches layout; "Color" customizes text/background colors per language (saved in localStorage).
-      </p>
+    
     </div>
   </div>
 
@@ -284,7 +296,7 @@
   <div id="colorOverlay" class="overlay" aria-hidden="true">
     <div class="dialog" role="dialog" aria-modal="true">
       <div class="d-flex justify-content-between align-items-center mb-2">
-        <h2 id="colorTitle" class="mb-0">🎨 Color settings</h2>
+        <h2 id="colorTitle" class="mb-0">🎨 </h2>
         <div class="d-flex align-items-center gap-2">
           <div class="btn-group btn-group-sm" role="tablist">
             <button type="button" class="btn btn-outline-secondary tab-btn active" id="tabPali">
@@ -303,49 +315,52 @@
 
       <!-- Pāli -->
       <div id="colorContentPali">
-        <p class="mb-2"><strong>Pāli</strong> – chỉnh màu cho cột Pāli.</p>
+        <p class="mb-2">Chỉnh màu cho cột Pāli.</p>
+        <p class="mb-2">Color settings for the Pali column.</p>
         <div class="mb-2 d-flex justify-content-between align-items-center">
-          <span>Màu chữ</span>
+          <span>Màu chữ / Text color :</span>
           <input id="paliColor" type="color" title="Màu chữ Pāli" value="#0f172a">
         </div>
         <div class="mb-2 d-flex justify-content-between align-items-center">
-          <span>Màu nền</span>
+          <span>Màu nền / Background:</span>
           <input id="paliBg" type="color" title="Màu nền Pāli" value="#ffffff">
         </div>
         <div class="text-end mt-2">
-          <button class="btn btn-outline-secondary btn-sm" type="button" id="resetPali">Reset Pāli</button>
+          <button class="btn btn-outline-secondary btn-sm" type="button" id="resetPali">Reset / Đặt lại</button>
         </div>
       </div>
 
       <!-- English -->
       <div id="colorContentEng" class="d-none">
-        <p class="mb-2"><strong>English</strong> – color settings for the English column.</p>
+         <p class="mb-2">Chỉnh màu cho cột English.</p>
+        <p class="mb-2">Color settings for the English column.</p>
         <div class="mb-2 d-flex justify-content-between align-items-center">
-          <span>Text color</span>
+           <span>Màu chữ / Text color :</span>
           <input id="engColor" type="color" title="English text color" value="#0f172a">
         </div>
         <div class="mb-2 d-flex justify-content-between align-items-center">
-          <span>Background</span>
+          <span>Màu nền / Background:</span>
           <input id="engBg" type="color" title="English background color" value="#ffffff">
         </div>
         <div class="text-end mt-2">
-          <button class="btn btn-outline-secondary btn-sm" type="button" id="resetEng">Reset English</button>
+          <button class="btn btn-outline-secondary btn-sm" type="button" id="resetEng">Reset / Đặt lại</button>
         </div>
       </div>
 
       <!-- Vietnamese -->
       <div id="colorContentVie" class="d-none">
-        <p class="mb-2"><strong>Tiếng Việt</strong> – chỉnh màu cho cột tiếng Việt.</p>
+        <p class="mb-2">Chỉnh màu cho cột Tiếng Việt.</p>
+        <p class="mb-2">Color settings for the Vietnamese column.</p>
         <div class="mb-2 d-flex justify-content-between align-items-center">
-          <span>Màu chữ</span>
+         <span>Màu chữ / Text color :</span>
           <input id="vieColor" type="color" title="Màu chữ Tiếng Việt" value="#0f172a">
         </div>
         <div class="mb-2 d-flex justify-content-between align-items-center">
-          <span>Màu nền</span>
+            <span>Màu nền / Background:</span>
           <input id="vieBg" type="color" title="Màu nền Tiếng Việt" value="#ffffff">
         </div>
         <div class="text-end mt-2">
-          <button class="btn btn-outline-secondary btn-sm" type="button" id="resetVie">Reset Tiếng Việt</button>
+          <button class="btn btn-outline-secondary btn-sm" type="button" id="resetVie">Reset / Đặt lại</button>
         </div>
       </div>
     </div>
@@ -360,6 +375,7 @@
       const btnVie      = document.getElementById('btnVie');
       const btnLayout   = document.getElementById('btnLayout');
       const btnColor    = document.getElementById('btnColor');
+      const layoutIcon  = document.getElementById('layoutIcon');
 
       const paliCols    = document.querySelectorAll('.pali-col');
       const engCols     = document.querySelectorAll('.eng-col');
@@ -392,6 +408,7 @@
       let showEng  = true;
       let showVie  = true;
 
+      /* ==== Ngôn ngữ giao diện dựa trên localStorage.nikaya_lang ==== */
       function applyUiLang(){
         let lang = 'vi';
         try{
@@ -400,26 +417,13 @@
         }catch(e){}
 
         if(lang === 'en'){
-          btnPali.textContent = 'Pāli';
-          btnEng.textContent  = 'English';
-          btnVie.textContent  = 'Vietnamese';
-          btnLayout.textContent = card.classList.contains('stack') ? 'Col' : 'Row';
-          btnColor.textContent  = '🎨 Color';
-          hintText.textContent =
-            'Use Pāli / English / Vietnamese buttons to toggle columns; "Row" / "Col" switches between multi-column and stacked layout; "Color" customizes text/background colors per language (saved in localStorage).';
           subTitle.textContent = 'The Discourse on a Single Excellent Night';
         }else{
-          btnPali.textContent = 'Pāli';
-          btnEng.textContent  = 'English';
-          btnVie.textContent  = 'Tiếng Việt';
-          btnLayout.textContent = card.classList.contains('stack') ? 'Col' : 'Row';
-          btnColor.textContent  = '🎨 Màu';
-          hintText.textContent =
-            'Dùng các nút Pāli / English / Tiếng Việt để ẩn/hiện cột; "Row" chuyển giữa nhiều cột và xếp chồng "Col"; "Màu" để chỉnh màu chữ/nền riêng cho từng ngôn ngữ (lưu bằng localStorage).';
           subTitle.textContent = 'Kinh Nhất Dạ Hiền Giả';
         }
       }
 
+      /* ==== Layout & visibility ==== */
       function adjustRowColumns(){
         const rows = grid.querySelectorAll('.sutra-row');
         rows.forEach(row=>{
@@ -465,11 +469,12 @@
       btnLayout.addEventListener('click',()=>{
         card.classList.toggle('stack');
         const isStack = card.classList.contains('stack');
-        btnLayout.textContent = isStack ? 'Col' : 'Row';
-        applyUiLang();
+        // Row = ngang, Col = xoay 90°
+        layoutIcon.classList.toggle('vertical', isStack);
         adjustRowColumns();
       });
 
+      /* ==== Overlay Color ==== */
       function setColorTab(lang){
         const isPali = lang === 'pali';
         const isEng  = lang === 'eng';
@@ -499,12 +504,14 @@
       tabEng.addEventListener('click',(e)=>{ e.stopPropagation(); setColorTab('eng'); });
       tabVie.addEventListener('click',(e)=>{ e.stopPropagation(); setColorTab('vie'); });
 
+      /* ==== Load / Save màu (bh_colors) ==== */
       function loadColors(){
         let saved = {};
         try{
           saved = JSON.parse(localStorage.getItem('bh_colors') || '{}');
         }catch(e){ saved = {}; }
 
+        // default CSS
         paliCols.forEach(c=>{c.style.background='#ffffff';c.style.color='#0f172a';});
         engCols.forEach(c=>{c.style.background='#ffffff';c.style.color='#0f172a';});
         vieCols.forEach(c=>{c.style.background='#ffffff';c.style.color='#0f172a';});
@@ -584,10 +591,12 @@
         saveColors();
       });
 
+      // init
       setColorTab('pali');
       loadColors();
       updateVisibility();
       applyUiLang();
+      layoutIcon.classList.remove('vertical');
     })();
   </script>
 </body>
