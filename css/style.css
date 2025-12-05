@@ -1,3 +1,4 @@
+
   :root{
     --bg:#f3f4f6;
     --card:#ffffff;
@@ -77,7 +78,7 @@
 
   /* ===== HEADER ACTIONS: TOOLBAR + SETTINGS ===== */
   .header-actions{
-    position:relative;      /* để controls có thể absolute bám vào */
+    position:relative;
     display:flex;
     align-items:center;
     gap:6px;
@@ -95,7 +96,7 @@
     flex-shrink:0;
   }
 
-  /* TOOLBAR (controls) – desktop: inline */
+  /* TOOLBAR (controls) – mặc định ngang (desktop + tablet) */
   .controls{
     display:none;
     align-items:center;
@@ -122,7 +123,7 @@
   /* ===== KÍCH THƯỚC + STYLE TẤT CẢ NÚT TRONG TOOLBAR ===== */
   .sutra-card .controls .btn,
   .sutra-card .controls .btn-group > .btn{
-    min-width:52px;        /* tất cả nút rộng tối thiểu 52px */
+    min-width:52px;
     height:36px;
     padding:0 12px;
     border-radius:10px;
@@ -137,7 +138,6 @@
     white-space:nowrap;
   }
 
-  /* PLI / EN / VI – chữ đậm chút cho rõ */
   #btnPali,
   #btnEng,
   #btnVie{
@@ -145,7 +145,6 @@
     letter-spacing:.03em;
   }
 
-  /* Các nút icon: icon ở giữa, width giống nút text */
   #btnLayout,
   #btnColor,
   #btnReadVie,
@@ -159,7 +158,6 @@
     padding:0;
   }
 
-  /* btn-group trong controls: flex + gap, không dính chùm */
   .sutra-card .controls .btn-group{
     display:flex;
     gap:8px;
@@ -168,7 +166,6 @@
     margin:0;
   }
 
-  /* SVG icon layout */
   .layout-icon{
     width:16px;
     height:16px;
@@ -187,7 +184,7 @@
     flex-direction:column;
     gap:8px;
     overflow:auto;
-    padding:10px 6px 32px; /* thêm khoảng trống cho highlight */
+    padding:10px 6px 32px;
   }
 
   .sutra-row{
@@ -196,7 +193,7 @@
     grid-template-columns:1fr 1fr 1fr;
     gap:8px;
     padding:8px 10px;
-    margin:2px 0;         /* tạo breathing room cho viền highlight */
+    margin:2px 0;
     border-radius:14px;
     border:1px solid rgba(148,163,184,0.25);
     background:#ffffff;
@@ -226,15 +223,13 @@
   .hide-vie  .vie-col {display:none;}
   .stack .sutra-row{grid-template-columns:1fr;}
 
-  /* ===== HIGHLIGHT DÒNG ĐANG ĐỌC ===== */
   .sutra-row.reading{
     background:#ffffff !important;
-    border:2px solid rgba(37,99,235,0.95);           /* viền xanh đậm */
-    box-shadow:0 0 0 3px rgba(191,219,254,0.9);      /* halo xanh nhạt phía ngoài */
+    border:2px solid rgba(37,99,235,0.95);
+    box-shadow:0 0 0 3px rgba(191,219,254,0.9);
     z-index:1;
   }
 
-  /* OVERLAY COLOR */
   .overlay{
     position:fixed;
     inset:0;
@@ -273,7 +268,6 @@
     border-color:var(--accent);
   }
 
-  /* BACK TO TOP */
   #backToTop{
     position:absolute;
     right:14px;
@@ -297,14 +291,14 @@
   #backToTop.show{opacity:1;pointer-events:auto;}
 
   /* ===== RESPONSIVE ===== */
-  @media(max-width:1024px){
+  @media (max-width: 1024px){
     .sutra-card{
       margin:4px 6px;
     }
   }
 
-  /* MOBILE: ≤ 768px – controls dọc, không nền panel */
-  @media(max-width:768px){
+  /* MOBILE THẬT SỰ: màn nhỏ <= 576px mới cho controls dọc */
+  @media (max-width: 575.98px){
     .sutra-card{
       padding:10px 10px 14px;
     }
@@ -319,7 +313,6 @@
       align-self:flex-end;
     }
 
-    /* controls: tuyệt đối, xếp dọc, không nền trắng */
     .controls{
       position:absolute;
       top:100%;
@@ -343,12 +336,12 @@
       gap:8px;
     }
 
-    /* PLI / EN / VI dọc luôn */
     .controls .btn-group{
       flex-direction:column;
       align-items:flex-end;
       gap:8px;
     }
+
     .controls .btn-group > .btn{
       width:52px;
     }
@@ -358,7 +351,7 @@
     }
   }
 
-  @media(max-width:480px){
+  @media (max-width: 480px){
     .sutra-title{
       font-size:.96rem;
       letter-spacing:.07em;
