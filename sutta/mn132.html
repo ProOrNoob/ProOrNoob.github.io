@@ -715,18 +715,18 @@ html,body{
       };
 
       /* ==== Detect browser: chỉ bật voice cho Edge & Safari ==== */
-      const ua = navigator.userAgent || '';
-      const isEdge   = ua.includes('Edg/') || ua.includes('Edge/');
-      const isSafari = ua.includes('Safari') &&
-                       !ua.includes('Chrome') &&
-                       !ua.includes('Chromium') &&
-                       !ua.includes('Edg');
+      // const ua = navigator.userAgent || '';
+      // const isEdge   = ua.includes('Edg/') || ua.includes('Edge/');
+      // const isSafari = ua.includes('Safari') &&
+      //                  !ua.includes('Chrome') &&
+      //                  !ua.includes('Chromium') &&
+      //                  !ua.includes('Edg');
 
-      const enableVoice = isEdge || isSafari;
+      // const enableVoice = isEdge || isSafari;
 
-      if(!enableVoice && voiceControls){
-        voiceControls.style.display = 'none';
-      }
+      // if(!enableVoice && voiceControls){
+      //   voiceControls.style.display = 'none';
+      // }
 
       /* ======================= SETTINGS TOOLBAR TOGGLE ======================= */
       if (btnSettings && sutraControls) {
