@@ -1,0 +1,424 @@
+:root{
+  --bg:#f3f4f6;
+  --card:#ffffff;
+  --muted:#64748b;
+  --accent:#2563eb;
+  --accent-soft:#dbeafe;
+  --border:#e2e8f0;
+}
+
+*{box-sizing:border-box;}
+
+html,body{
+  height:100%;
+  margin:0;
+  padding:0;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);
+  color:#0f172a;
+  overflow:hidden;
+}
+
+.app{
+  height:100%;
+  display:flex;
+  justify-content:center;
+  align-items:stretch;
+  padding:6px;
+}
+
+.card{
+  background:var(--card);
+  border-radius:16px;
+  border:1px solid rgba(148,163,184,0.35);
+  box-shadow:0 12px 30px rgba(15,23,42,0.12);
+  width:100%;
+  max-width:960px;
+  display:flex;
+  flex-direction:column;
+  padding:10px 14px 8px;
+  position:relative;
+}
+
+/* HEADER cố định */
+.header{
+  flex:0 0 auto;
+  border-bottom:1px solid rgba(148,163,184,0.25);
+  padding-bottom:6px;
+  margin-bottom:6px;
+}
+
+#title{
+  margin:0;
+  font-size:1.05rem;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--accent);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+#subtitle{
+  margin-top:3px;
+  font-size:12.5px;
+  color:var(--muted);
+}
+
+/* PHẦN KINH – chỉ phần này cuộn */
+#sutraGrid{
+  flex:1 1 auto;
+  overflow:auto;
+  padding:8px 4px 4px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.sutra-row{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:8px;
+  padding:8px 10px;
+  border-radius:12px;
+  border:1px solid rgba(148,163,184,0.25);
+  background:#ffffff;
+  transition:box-shadow .15s ease, border-color .15s ease, transform .1s ease;
+}
+
+/* highlight dòng TTS đang đọc */
+.sutra-row.reading{
+  border-color:rgba(37,99,235,0.95);
+  box-shadow:0 0 0 2px rgba(191,219,254,0.9);
+  transform:translateY(-1px);
+}
+
+.sutra-col{
+  font-size:13.5px;
+  line-height:1.7;
+}
+
+.col-head{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  color:var(--muted);
+  margin-bottom:3px;
+  font-weight:600;
+}
+
+.pali{font-family:"Noto Serif",serif;font-size:14.5px;}
+.eng{font-family:Georgia,serif;}
+.vie{font-family:system-ui;}
+
+.hide-pali .pali-col{display:none;}
+.hide-eng  .eng-col {display:none;}
+.hide-vie  .vie-col {display:none;}
+
+.stack .sutra-row{grid-template-columns:1fr;}
+
+/* HÀNG NÚT DƯỚI PHẦN KINH – TRÊN FOOTER */
+.bottom-controls{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:4px 0 4px;
+  margin-top:2px;
+  border-top:1px dashed rgba(148,163,184,0.35);
+  border-bottom:1px dashed rgba(148,163,184,0.15);
+}
+
+.bottom-controls-spacer{
+  flex:1;
+}
+
+/* Nút tròn kiểu “cũ” */
+.btn-circle{
+  width:32px;
+  height:32px;
+  border-radius:10px;
+  border:1px solid rgba(148,163,184,0.9);
+  background:#f8fafc;
+  color:#111827;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  cursor:pointer;
+  padding:0;
+  box-shadow:0 2px 6px rgba(15,23,42,0.15);
+  transition:background .12s ease, box-shadow .12s ease, transform .08s ease;
+}
+.btn-circle:hover{
+  background:#e5e7eb;
+  transform:translateY(-1px);
+  box-shadow:0 3px 8px rgba(15,23,42,0.2);
+}
+
+#btnBackTop{
+  opacity:.4;
+  background:#e5e7eb;
+  box-shadow:none;
+  cursor:default;
+}
+#btnBackTop.enabled{
+  opacity:1;
+  background:#f8fafc;
+  cursor:pointer;
+  box-shadow:0 2px 6px rgba(15,23,42,0.15);
+}
+
+.top-note{
+  flex:0 0 auto;
+  text-align:center;
+  font-size:13px;
+  color:#64748b;
+  margin-bottom:6px;
+}
+
+/* PANEL nổi trong card (menu, settings) */
+.panel{
+  position:absolute;
+  left:12px;
+  bottom:60px;
+  min-width:230px;
+  max-width:280px;
+  max-height:60vh;
+  overflow:auto;
+  background:#ffffff;
+  border-radius:12px;
+  border:1px solid rgba(148,163,184,0.7);
+  box-shadow:0 12px 30px rgba(15,23,42,0.35);
+  padding:8px 10px;
+  font-size:12px;
+  display:none;
+  opacity:0;
+  transform:translateY(6px);
+  pointer-events:none;
+  z-index:20;
+}
+.panel.open{
+  display:block;
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
+  transition:opacity .2s ease, transform .2s ease;
+}
+
+#settingsPanel{
+  right:12px;
+  left:auto;
+}
+
+.panel-title{
+  font-size:12px;
+  font-weight:600;
+  margin-bottom:4px;
+  color:#0f172a;
+}
+
+.panel-row{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom:6px;
+  flex-wrap:wrap;
+}
+
+.panel-label{
+  font-size:11.5px;
+  color:#4b5563;
+  min-width:60px;
+}
+
+.panel button{
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,0.9);
+  background:#f1f5f9;
+  padding:2px 10px;
+  font-size:11.5px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+
+.panel button.active{
+  background:var(--accent);
+  color:#fff;
+  border-color:var(--accent);
+}
+
+.tts-group button{
+  min-width:40px;
+  justify-content:center;
+}
+
+/* MENU BÀI KINH – ACCORDION */
+.sutra-list{
+  list-style:none;
+  margin:4px 0 0;
+  padding:0;
+}
+
+.menu-block{
+  margin-bottom:4px;
+}
+
+.menu-toggle{
+  width:100%;
+  border-radius:8px;
+  border:1px solid rgba(148,163,184,0.7);
+  background:#f8fafc;
+  padding:3px 8px;
+  font-size:11.5px;
+  cursor:pointer;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:3px;
+}
+
+.menu-toggle.nested{
+  background:#eef2ff;
+  font-size:11px;
+}
+
+.menu-toggle span:first-child{
+  text-align:left;
+}
+
+.chevron{
+  font-size:10px;
+  margin-left:6px;
+}
+
+.menu-list{
+  margin-left:0;
+  padding-left:0;
+  margin-bottom:3px;
+}
+
+.menu-list.collapsed{
+  display:none;
+}
+
+.menu-subblock{
+  margin-bottom:3px;
+}
+
+.menu-sutta-link{
+  display:block;
+  padding:3px 6px;
+  border-radius:6px;
+  cursor:pointer;
+  text-decoration:none;
+  color:#0f172a;
+  font-size:11.5px;
+}
+.menu-sutta-link:hover{
+  background:var(--accent-soft);
+}
+.menu-sutta-link.active{
+  background:#2563eb;
+  color:#fff;
+}
+.menu-sutta-link.match{
+  background:#fee2e2;
+}
+
+/* Ô tìm kiếm trong menu */
+.search-box{
+  margin-bottom:6px;
+}
+#sutraSearch{
+  width:100%;
+  padding:4px 8px;
+  font-size:12px;
+  border-radius:8px;
+  border:1px solid rgba(148,163,184,0.9);
+  outline:none;
+}
+#sutraSearch:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 1px var(--accent-soft);
+}
+
+/* OVERLAY HƯỚNG DẪN */
+#guideOverlay{
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,0.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:100;
+}
+#guideOverlay.show{ display:flex; }
+
+.guide-dialog{
+  background:#ffffff;
+  border-radius:16px;
+  padding:12px 14px;
+  max-width:360px;
+  width:90%;
+  font-size:13px;
+  box-shadow:0 20px 50px rgba(15,23,42,0.5);
+}
+.guide-dialog h2{
+  margin:0 0 6px;
+  font-size:15px;
+}
+.guide-dialog button{
+  margin-top:8px;
+  float:right;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,0.9);
+  background:#f8fafc;
+  padding:2px 10px;
+  font-size:12px;
+  cursor:pointer;
+}
+/* Kết quả tìm kiếm trong menu */
+.search-results{
+  margin-top:2px;
+  margin-bottom:4px;
+  max-height:180px;
+  overflow:auto;
+}
+
+.search-result-item{
+  width:100%;
+  text-align:left;
+  padding:3px 6px;
+  margin-bottom:2px;
+  border-radius:6px;
+  border:1px solid transparent;
+  background:transparent;
+  font-size:11.5px;
+  cursor:pointer;
+}
+
+.search-result-item:hover{
+  background:var(--accent-soft);
+  border-color:rgba(148,163,184,0.9);
+}
+
+.search-result-item mark{
+  background:#fde68a;
+  padding:0 1px;
+  border-radius:3px;
+}
+
+/* gạch ngang ngăn cách search & mục lục */
+.menu-divider{
+  border:none;
+  border-top:1px solid #e5e7eb;
+  margin:4px 0;
+}
+
+@media(max-width:500px){
+  .sutra-row{ grid-template-columns:1fr; }
+}
