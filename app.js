@@ -20,11 +20,11 @@
     });
   }
 
-  // Map id -> tên file JS (không .js) – chỉnh cho đúng thực tế của bạn
+  // Map id -> tên file JS (không .js) – TUỲ BẠN CHỈNH
   function getPackBySutraId(id){
     if(id === 'mn131') return 'sutra-mn131';
     if(id === 'mn132') return 'sutra-mn132';
-    // ... thêm mapping khác ...
+    // ... thêm mapping khác ở đây ...
     return null;
   }
 
@@ -50,24 +50,272 @@
   const btnVie    = document.getElementById('btnVie');
   const btnLayout = document.getElementById('btnLayout');
 
-  const searchInput = document.getElementById('sutraSearch');
+  const searchInput     = document.getElementById('sutraSearch');
+  const searchResultsEl = document.getElementById('sutraSearchResults');
 
   /* TTS buttons */
-  const btnReadVi    = document.getElementById('btnReadVi');
-  const btnPauseVi   = document.getElementById('btnPauseVi');
-  const btnRestartVi = document.getElementById('btnRestartVi');
-  const btnStopVi    = document.getElementById('btnStopVi');
+  const btnReadVi  = document.getElementById('btnReadVi');
+  const btnPauseVi = document.getElementById('btnPauseVi');
+  const btnStopVi  = document.getElementById('btnStopVi');
 
-  const btnReadEn    = document.getElementById('btnReadEn');
-  const btnPauseEn   = document.getElementById('btnPauseEn');
-  const btnRestartEn = document.getElementById('btnRestartEn');
-  const btnStopEn    = document.getElementById('btnStopEn');
+  const btnReadEn  = document.getElementById('btnReadEn');
+  const btnPauseEn = document.getElementById('btnPauseEn');
+  const btnStopEn  = document.getElementById('btnStopEn');
 
+  /* Color controls */
+  const paliBgInput   = document.getElementById('paliBgColor');
+  const paliFgInput   = document.getElementById('paliTextColor');
+  const engBgInput    = document.getElementById('engBgColor');
+  const engFgInput    = document.getElementById('engTextColor');
+  const vieBgInput    = document.getElementById('vieBgColor');
+  const vieFgInput    = document.getElementById('vieTextColor');
+
+  const btnResetPali = document.getElementById('btnResetPaliColor');
+  const btnResetEng  = document.getElementById('btnResetEngColor');
+  const btnResetVie  = document.getElementById('btnResetVieColor');
+
+  /* Zoom controls */
+  const btnZoomOut   = document.getElementById('btnZoomOut');
+  const btnZoomIn    = document.getElementById('btnZoomIn');
+  const btnZoomReset = document.getElementById('btnZoomReset');
+  /* Layout & Theme controls */
+  const btnFullWidth = document.getElementById('btnFullWidth');
+
+
+  
   let currentSutraId = null;
   let showPali = true, showEng = true, showVie = true;
 
   /* Thứ tự bài dùng cho vuốt/kéo trái phải */
   let SUTRA_ORDER = [];
+
+  /* Danh sách phẳng cho search */
+  // FLAT_SUTTAS: { id, main, sub, flat }
+  let FLAT_SUTTAS = [];
+  /* ========== LAYOUT WIDE ONLY ========== */
+
+const WIDE_STORAGE_KEY  = 'sutra_layout_wide';
+let isWide = false;
+
+function applyWideLayout(on){
+  isWide = !!on;
+  document.documentElement.classList.toggle('layout-wide', isWide);
+  if(btnFullWidth){
+    btnFullWidth.classList.toggle('active', isWide);
+  }
+}
+
+function initLayoutWideControls(){
+  const wideStored = localStorage.getItem(WIDE_STORAGE_KEY);
+  if(wideStored === '1') applyWideLayout(true);
+
+  if(btnFullWidth){
+    btnFullWidth.addEventListener('click', ()=>{
+      const newVal = !isWide;
+      applyWideLayout(newVal);
+      localStorage.setItem(WIDE_STORAGE_KEY, newVal ? '1' : '0');
+    });
+  }
+}
+
+  /* ========== COLOR CONFIG ========== */
+
+  const COLOR_DEFAULTS = {
+    paliBg: '#ffffff',
+    paliFg: '#111827',
+    engBg:  '#ffffff',
+    engFg:  '#111827',
+    vieBg:  '#ffffff',
+    vieFg:  '#111827'
+  };
+
+  const COLOR_VAR_MAP = {
+    paliBg: '--pali-bg',
+    paliFg: '--pali-fg',
+    engBg:  '--eng-bg',
+    engFg:  '--eng-fg',
+    vieBg:  '--vie-bg',
+    vieFg:  '--vie-fg'
+  };
+
+  const COLOR_STORAGE_PREFIX = 'sutra_color_';
+
+  function applyColorVar(key, value){
+    const cssVar = COLOR_VAR_MAP[key];
+    if(!cssVar) return;
+    document.documentElement.style.setProperty(cssVar, value);
+  }
+
+  function loadColorPrefs(){
+    const result = {};
+    Object.keys(COLOR_DEFAULTS).forEach(key=>{
+      const stored = localStorage.getItem(COLOR_STORAGE_PREFIX + key);
+      result[key] = stored || COLOR_DEFAULTS[key];
+    });
+    return result;
+  }
+
+  function saveColorPref(key, value){
+    localStorage.setItem(COLOR_STORAGE_PREFIX + key, value);
+  }
+
+  function applyAllColors(colors){
+    Object.keys(colors).forEach(key=>{
+      applyColorVar(key, colors[key]);
+    });
+  }
+
+  function resetLangColors(lang){
+    // lang: 'pali' | 'eng' | 'vie'
+    const bgKey = lang + 'Bg';
+    const fgKey = lang + 'Fg';
+
+    const defBg = COLOR_DEFAULTS[bgKey];
+    const defFg = COLOR_DEFAULTS[fgKey];
+
+    applyColorVar(bgKey, defBg);
+    applyColorVar(fgKey, defFg);
+
+    saveColorPref(bgKey, defBg);
+    saveColorPref(fgKey, defFg);
+
+    if(lang === 'pali'){
+      if(paliBgInput) paliBgInput.value = defBg;
+      if(paliFgInput) paliFgInput.value = defFg;
+    }else if(lang === 'eng'){
+      if(engBgInput) engBgInput.value = defBg;
+      if(engFgInput) engFgInput.value = defFg;
+    }else if(lang === 'vie'){
+      if(vieBgInput) vieBgInput.value = defBg;
+      if(vieFgInput) vieFgInput.value = defFg;
+    }
+  }
+
+  function initColorControls(){
+    const colors = loadColorPrefs();
+    applyAllColors(colors);
+
+    if(paliBgInput) paliBgInput.value = colors.paliBg;
+    if(paliFgInput) paliFgInput.value = colors.paliFg;
+    if(engBgInput)  engBgInput.value  = colors.engBg;
+    if(engFgInput)  engFgInput.value  = colors.engFg;
+    if(vieBgInput)  vieBgInput.value  = colors.vieBg;
+    if(vieFgInput)  vieFgInput.value  = colors.vieFg;
+
+    if(paliBgInput){
+      paliBgInput.addEventListener('input', e=>{
+        const val = e.target.value;
+        applyColorVar('paliBg', val);
+        saveColorPref('paliBg', val);
+      });
+    }
+    if(paliFgInput){
+      paliFgInput.addEventListener('input', e=>{
+        const val = e.target.value;
+        applyColorVar('paliFg', val);
+        saveColorPref('paliFg', val);
+      });
+    }
+    if(engBgInput){
+      engBgInput.addEventListener('input', e=>{
+        const val = e.target.value;
+        applyColorVar('engBg', val);
+        saveColorPref('engBg', val);
+      });
+    }
+    if(engFgInput){
+      engFgInput.addEventListener('input', e=>{
+        const val = e.target.value;
+        applyColorVar('engFg', val);
+        saveColorPref('engFg', val);
+      });
+    }
+    if(vieBgInput){
+      vieBgInput.addEventListener('input', e=>{
+        const val = e.target.value;
+        applyColorVar('vieBg', val);
+        saveColorPref('vieBg', val);
+      });
+    }
+    if(vieFgInput){
+      vieFgInput.addEventListener('input', e=>{
+        const val = e.target.value;
+        applyColorVar('vieFg', val);
+        saveColorPref('vieFg', val);
+      });
+    }
+
+    if(btnResetPali){
+      btnResetPali.addEventListener('click', ()=> resetLangColors('pali'));
+    }
+    if(btnResetEng){
+      btnResetEng.addEventListener('click', ()=> resetLangColors('eng'));
+    }
+    if(btnResetVie){
+      btnResetVie.addEventListener('click', ()=> resetLangColors('vie'));
+    }
+  }
+
+  /* ========== ZOOM CONFIG ========== */
+
+  const ZOOM_STORAGE_KEY = 'sutra_zoom';
+  const MIN_ZOOM = 0.8;
+  const MAX_ZOOM = 1.6;
+  const ZOOM_STEP = 0.1;
+  let zoomLevel = 1;
+
+  function clampZoom(z){
+    return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, z));
+  }
+
+  function applyZoom(){
+    document.documentElement
+      .style
+      .setProperty('--sutra-font-scale', String(zoomLevel));
+  }
+
+  function loadZoom(){
+    const stored = localStorage.getItem(ZOOM_STORAGE_KEY);
+    if(stored){
+      const v = parseFloat(stored);
+      if(!Number.isNaN(v)){
+        zoomLevel = clampZoom(v);
+      }
+    }
+    applyZoom();
+  }
+
+  function saveZoom(){
+    localStorage.setItem(ZOOM_STORAGE_KEY, String(zoomLevel));
+  }
+
+  function initZoomControls(){
+    loadZoom(); // áp dụng zoom lúc init
+
+    if(btnZoomIn){
+      btnZoomIn.addEventListener('click', ()=>{
+        zoomLevel = clampZoom(zoomLevel + ZOOM_STEP);
+        applyZoom();
+        saveZoom();
+      });
+    }
+
+    if(btnZoomOut){
+      btnZoomOut.addEventListener('click', ()=>{
+        zoomLevel = clampZoom(zoomLevel - ZOOM_STEP);
+        applyZoom();
+        saveZoom();
+      });
+    }
+
+    if(btnZoomReset){
+      btnZoomReset.addEventListener('click', ()=>{
+        zoomLevel = 1;
+        applyZoom();
+        saveZoom();
+      });
+    }
+  }
 
   /* ========== PANEL ========== */
   function togglePanel(panel, force){
@@ -86,9 +334,6 @@
   btnSutraMenu.onclick = ()=>{
     togglePanel(settingsPanel, false);
     togglePanel(sutraMenuPanel);
-    if(sutraMenuPanel.classList.contains('open')){
-      searchInput.focus();
-    }
   };
 
   btnGuide.onclick = ()=>{
@@ -102,6 +347,8 @@
   /* ========== MENU ACCORDION TỪ SUTRA_INDEX ========== */
   function buildSutraMenuFromIndex(){
     const index = window.SUTRA_INDEX || [];
+    FLAT_SUTTAS = [];   // reset
+
     if(!Array.isArray(index) || !index.length){
       sutraMenuList.innerHTML = '<li>Chưa có mục lục.</li>';
       return;
@@ -113,7 +360,7 @@
       html += `
         <li class="menu-block">
           <button class="menu-toggle" type="button"
-                  data-target="${secId}" data-level="1">
+                  data-target="${secId}">
             <span>${section.labelVi || section.labelEn || section.key}</span>
             <span class="chevron">▸</span>
           </button>
@@ -126,26 +373,60 @@
           html += `
             <div class="menu-subblock">
               <button class="menu-toggle nested" type="button"
-                      data-target="${grpId}" data-level="2">
+                      data-target="${grpId}">
                 <span>${child.labelVi || child.labelEn || child.key}</span>
                 <span class="chevron">▸</span>
               </button>
               <div id="${grpId}" class="menu-list collapsed">
           `;
+
           (child.children || []).forEach(s=>{
+            const mainText = `${s.code ? s.code + " – " : ""}${s.titlePali || s.titleVi || s.id}`;
+            const subText  = (s.titleVi && s.titlePali) ? s.titleVi : '';
+            const htmlLabel = `
+              <div class="sutra-label">
+                <div class="sutra-label-main">${mainText}</div>
+                ${subText ? `<div class="sutra-label-sub">${subText}</div>` : ''}
+              </div>
+            `;
+            const flatLabel = subText ? `${mainText} ${subText}` : mainText;
+
             html += `
               <a href="#" class="menu-sutta-link" data-id="${s.id}">
-                ${s.code ? s.code + " – " : ""}${s.titleVi || s.titlePali || s.id}
+                ${htmlLabel}
               </a>
             `;
+            FLAT_SUTTAS.push({
+              id:   s.id,
+              main: mainText,
+              sub:  subText,
+              flat: flatLabel
+            });
           });
+
           html += `</div></div>`;
         }else if(child.type === 'sutta'){
+          const mainText = `${child.code ? child.code + " – " : ""}${child.titlePali || child.titleVi || child.id}`;
+          const subText  = (child.titleVi && child.titlePali) ? child.titleVi : '';
+          const htmlLabel = `
+            <div class="sutra-label">
+              <div class="sutra-label-main">${mainText}</div>
+              ${subText ? `<div class="sutra-label-sub">${subText}</div>` : ''}
+            </div>
+          `;
+          const flatLabel = subText ? `${mainText} ${subText}` : mainText;
+
           html += `
             <a href="#" class="menu-sutta-link" data-id="${child.id}">
-              ${child.code ? child.code + " – " : ""}${child.titleVi || child.titlePali || child.id}
+              ${htmlLabel}
             </a>
           `;
+          FLAT_SUTTAS.push({
+            id:   child.id,
+            main: mainText,
+            sub:  subText,
+            flat: flatLabel
+          });
         }
       });
 
@@ -154,45 +435,82 @@
 
     sutraMenuList.innerHTML = html;
 
-    /* accordion */
+    /* helper: đóng 1 panel cấp 1 + tất cả nhóm con bên trong */
+    function collapsePanelWithChildren(panelEl){
+      if(!panelEl) return;
+
+      panelEl.classList.add('collapsed');
+
+      panelEl.querySelectorAll('.menu-toggle.nested').forEach(nestedBtn=>{
+        const nestedId    = nestedBtn.dataset.target;
+        if(!nestedId) return;
+        const nestedPanel = document.getElementById(nestedId);
+        if(nestedPanel && !nestedPanel.classList.contains('collapsed')){
+          nestedPanel.classList.add('collapsed');
+        }
+        const ch = nestedBtn.querySelector('.chevron');
+        if(ch) ch.textContent = '▸';
+      });
+    }
+
+    /* accordion – tự đóng các nhóm cùng kiểu (top-level / nested) */
     sutraMenuList.querySelectorAll('.menu-toggle').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         const targetId = btn.dataset.target;
-        const level    = btn.dataset.level || '1';
         const panel    = document.getElementById(targetId);
         if(!panel) return;
 
         const isCollapsed = panel.classList.contains('collapsed');
+        const isNested    = btn.classList.contains('nested');
 
         if(isCollapsed){
-          // thu tất cả cùng level
-          sutraMenuList
-            .querySelectorAll('.menu-toggle[data-level="'+level+'"]')
-            .forEach(other=>{
-              if(other === btn) return;
-              const oId = other.dataset.target;
-              const oPanel = document.getElementById(oId);
-              if(oPanel && !oPanel.classList.contains('collapsed')){
+          const selector = isNested
+            ? '.menu-toggle.nested'
+            : '.menu-toggle:not(.nested)';
+
+          sutraMenuList.querySelectorAll(selector).forEach(other=>{
+            if(other === btn) return;
+            const oId    = other.dataset.target;
+            const oPanel = document.getElementById(oId);
+            if(oPanel && !oPanel.classList.contains('collapsed')){
+              if(!other.classList.contains('nested')){
+                collapsePanelWithChildren(oPanel);
+              }else{
                 oPanel.classList.add('collapsed');
-                const ch2 = other.querySelector('.chevron');
-                if(ch2) ch2.textContent = '▸';
               }
-            });
+              const ch2 = other.querySelector('.chevron');
+              if(ch2) ch2.textContent = '▸';
+            }
+          });
         }
 
-        panel.classList.toggle('collapsed', !isCollapsed);
+        if(isNested){
+          panel.classList.toggle('collapsed', !isCollapsed);
+        }else{
+          if(isCollapsed){
+            panel.classList.remove('collapsed');
+          }else{
+            collapsePanelWithChildren(panel);
+          }
+        }
+
         const chev = btn.querySelector('.chevron');
-        if(chev) chev.textContent = isCollapsed ? '▾' : '▸';
+        if(chev) chev.textContent =
+          panel.classList.contains('collapsed') ? '▸' : '▾';
       });
     });
 
-    /* click bài kinh */
+    /* click bài kinh trong menu thường */
     sutraMenuList.querySelectorAll('.menu-sutta-link').forEach(a=>{
       a.addEventListener('click',(e)=>{
         e.preventDefault();
         const id = a.dataset.id;
         openSutra(id);
         togglePanel(sutraMenuPanel,false);
+
+        // clear search khi chọn kinh trong menu
+        if(searchInput) searchInput.value = '';
+        if(searchResultsEl) searchResultsEl.innerHTML = '';
       });
     });
 
@@ -209,41 +527,73 @@
     });
   }
 
-  /* ========== SEARCH HIGHLIGHT ========== */
-  function applySearch(query){
-    const q = query.trim().toLowerCase();
-    const links = sutraMenuList.querySelectorAll('.menu-sutta-link');
-
+  /* ========== SEARCH: kết quả riêng dưới ô search ========== */
+  function renderSearchResults(matches, q){
+    if(!searchResultsEl) return;
     if(!q){
-      links.forEach(a=>a.classList.remove('match'));
+      searchResultsEl.innerHTML = '';
       return;
     }
 
-    links.forEach(a=>a.classList.remove('match'));
+    if(!matches.length){
+      searchResultsEl.innerHTML =
+        '<div class="search-result-empty">Không tìm thấy kinh phù hợp.</div>';
+      return;
+    }
 
-    links.forEach(a=>{
-      const text = a.textContent.toLowerCase();
-      if(text.includes(q)){
-        a.classList.add('match');
+    const lowerQ = q.toLowerCase();
 
-        // mở section cha
-        let parent = a.parentElement;
-        while(parent && parent !== sutraMenuList){
-          if(parent.classList.contains('menu-list')){
-            parent.classList.remove('collapsed');
+    function highlightPart(text, lowerQ){
+      if(!text) return '';
+      const lower = text.toLowerCase();
+      const idx   = lower.indexOf(lowerQ);
+      if(idx === -1) return text;
+      const before = text.slice(0, idx);
+      const mid    = text.slice(idx, idx + lowerQ.length);
+      const after  = text.slice(idx + lowerQ.length);
+      return `${before}<mark>${mid}</mark>${after}`;
+    }
 
-            const toggle = sutraMenuList.querySelector(
-              `.menu-toggle[data-target="${parent.id}"]`
-            );
-            if(toggle){
-              const ch = toggle.querySelector('.chevron');
-              if(ch) ch.textContent = '▾';
-            }
-          }
-          parent = parent.parentElement;
+    const html = matches.map(m => {
+      const mainHtml = highlightPart(m.main, lowerQ);
+      const subHtml  = m.sub ? highlightPart(m.sub, lowerQ) : '';
+
+      return `
+        <button class="search-result-item" data-id="${m.id}">
+          <span class="search-main">${mainHtml}</span>
+          ${subHtml ? `<span class="search-sub">${subHtml}</span>` : ''}
+        </button>
+      `;
+    }).join('');
+
+    searchResultsEl.innerHTML = html;
+
+    // gán click cho từng kết quả
+    searchResultsEl.querySelectorAll('.search-result-item').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.dataset.id;
+        if(id){
+          openSutra(id);
+          togglePanel(sutraMenuPanel, false);
+          if(searchInput) searchInput.value = '';
+          searchResultsEl.innerHTML = '';
         }
-      }
+      });
     });
+  }
+
+  function applySearch(query){
+    const q = (query || '').trim().toLowerCase();
+    if(!q){
+      renderSearchResults([], '');
+      return;
+    }
+
+    const matches = FLAT_SUTTAS.filter(item =>
+      item.flat.toLowerCase().includes(q)
+    );
+
+    renderSearchResults(matches, query);
   }
 
   if(searchInput){
@@ -310,7 +660,7 @@
     grid.scrollTop = saved ? parseInt(saved,10) : 0;
     toggleBackTop(grid.scrollTop > 0);
 
-    restoreTtsStateForCurrentSutra(); // highlight dòng TTS đang đọc dở nếu có
+    restoreTtsStateForCurrentSutra();
   }
 
   function openSutra(id){
@@ -464,7 +814,6 @@
     const row = rows[index];
     row.classList.add('reading');
 
-    // đảm bảo row trong viewport
     const top = row.offsetTop;
     const bottom = top + row.offsetHeight;
     const viewTop = grid.scrollTop;
@@ -510,27 +859,24 @@
 
   function setTtsButtons(lang, state){
     const map = {
-      vi: {play:btnReadVi, pause:btnPauseVi, restart:btnRestartVi, stop:btnStopVi},
-      en: {play:btnReadEn, pause:btnPauseEn, restart:btnRestartEn, stop:btnStopEn}
+      vi: {play:btnReadVi, pause:btnPauseVi, stop:btnStopVi},
+      en: {play:btnReadEn, pause:btnPauseEn, stop:btnStopEn}
     }[lang];
 
     if(!map) return;
 
     if(state === 'idle'){
-      map.play.disabled    = false;
-      map.pause.disabled   = true;
-      map.restart.disabled = true;
-      map.stop.disabled    = true;
+      if (map.play)  map.play.disabled  = false;
+      if (map.pause) map.pause.disabled = true;
+      if (map.stop)  map.stop.disabled  = true;
     }else if(state === 'playing'){
-      map.play.disabled    = true;
-      map.pause.disabled   = false;
-      map.restart.disabled = false;
-      map.stop.disabled    = false;
+      if (map.play)  map.play.disabled  = true;
+      if (map.pause) map.pause.disabled = false;
+      if (map.stop)  map.stop.disabled  = false;
     }else if(state === 'paused'){
-      map.play.disabled    = false;
-      map.pause.disabled   = true;
-      map.restart.disabled = false;
-      map.stop.disabled    = false;
+      if (map.play)  map.play.disabled  = false;
+      if (map.pause) map.pause.disabled = true;
+      if (map.stop)  map.stop.disabled  = false;
     }
   }
 
@@ -547,11 +893,12 @@
 
     const rows = grid.querySelectorAll('.sutra-row');
     if(ttsState.index >= rows.length){
-      // hết bài
       saveTtsState(null,0);
       clearRowHighlight();
       ttsState.isPlaying = false;
       ttsState.isPaused  = false;
+      ttsState.lang      = null;
+      ttsState.index     = 0;
       setTtsButtons('vi','idle');
       setTtsButtons('en','idle');
       return;
@@ -631,7 +978,10 @@
       return;
     }
 
-    // nếu đang pause cùng lang -> resume
+    if (ttsState.lang === lang && ttsState.isPlaying) {
+      return;
+    }
+
     if(ttsState.lang === lang && ttsState.isPaused && ttsState.currentUtter){
       ttsState.isPaused = false;
       ttsState.isPlaying = true;
@@ -640,14 +990,12 @@
       return;
     }
 
-    // nếu đang đọc lang khác -> dừng nhưng giữ highlight
     if(ttsState.lang && ttsState.lang !== lang){
       stopTtsAll(false);
     }
 
     ttsState.lang = lang;
 
-    // lấy state cũ nếu có
     if(currentSutraId){
       const raw = localStorage.getItem('tts_state_' + currentSutraId);
       if(raw){
@@ -678,31 +1026,28 @@
     setTtsButtons(lang,'paused');
   }
 
-  function restartTts(lang){
-    if(!synthSupported) return;
-    stopTtsAll(false);
-    ttsState.lang  = lang;
-    ttsState.index = 0;
-    saveTtsState(lang, 0);
-    speakNextRow();
-  }
-
   function stopTts(lang){
     if(!synthSupported) return;
     if(lang && ttsState.lang && ttsState.lang !== lang) return;
-    stopTtsAll(false); // giữ highlight & index
+
+    stopTtsAll(true);
+
+    if(currentSutraId){
+      localStorage.removeItem('tts_state_' + currentSutraId);
+    }
+
+    ttsState.lang  = null;
+    ttsState.index = 0;
   }
 
   /* gán sự kiện TTS */
-  btnReadVi.onclick    = ()=> startTts('vi');
-  btnPauseVi.onclick   = ()=> pauseTts('vi');
-  btnRestartVi.onclick = ()=> restartTts('vi');
-  btnStopVi.onclick    = ()=> stopTts('vi');
+  if (btnReadVi)  btnReadVi.onclick  = ()=> startTts('vi');
+  if (btnPauseVi) btnPauseVi.onclick = ()=> pauseTts('vi');
+  if (btnStopVi)  btnStopVi.onclick  = ()=> stopTts('vi');
 
-  btnReadEn.onclick    = ()=> startTts('en');
-  btnPauseEn.onclick   = ()=> pauseTts('en');
-  btnRestartEn.onclick = ()=> restartTts('en');
-  btnStopEn.onclick    = ()=> stopTts('en');
+  if (btnReadEn)  btnReadEn.onclick  = ()=> startTts('en');
+  if (btnPauseEn) btnPauseEn.onclick = ()=> pauseTts('en');
+  if (btnStopEn)  btnStopEn.onclick  = ()=> stopTts('en');
 
   /* ========== INIT ========== */
   function init(){
@@ -718,10 +1063,13 @@
       grid.innerHTML = '<div style="padding:8px 4px;font-size:13px;color:#6b7280;">Hãy mở 📖 để chọn bài kinh.</div>';
     }
 
+    initColorControls();
+    initZoomControls();
+initLayoutWideControls();
     if(!synthSupported){
-      [btnReadVi,btnPauseVi,btnRestartVi,btnStopVi,
-       btnReadEn,btnPauseEn,btnRestartEn,btnStopEn].forEach(b=>{
-        b.disabled = true;
+      [btnReadVi,btnPauseVi,btnStopVi,
+       btnReadEn,btnPauseEn,btnStopEn].forEach(b=>{
+        if (b) b.disabled = true;
       });
     }else{
       setTtsButtons('vi','idle');
