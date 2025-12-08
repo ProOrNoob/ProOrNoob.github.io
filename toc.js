@@ -14,8 +14,8 @@ window.SUTRA_INDEX = [
         id: "dn01",
         code: "DN 1",
         href: "dn01.html",
-        titlePali: "DN 1 – Brahmajāla Sutta (The Supreme Net)",
-        titleVi: "DN 1 – Brahmajāla Sutta — Kinh Phạm Võng"
+        titlePali: "DN 1 – Brahmajāla Sutta ",
+        titleVi: "Kinh Phạm Võng (The Supreme Net)"
       },
       {
         type: "sutta",
@@ -89,6 +89,23 @@ window.SUTRA_INDEX = [
             titlePali: "SN 1 – Devatā Saṃyutta",
             titleVi:
               "SN 1 – Devatā Saṃyutta — [01] Chương Một: Tương Ưng Chư Thiên"
+          }, {
+            type: "sutta",
+            id: "sn02",
+            code: "SN 2",
+            href: "sn02-devaputta-samyutta.html",
+            titlePali: "SN 2 – Devaputta Saṃyutta",
+            titleVi:
+              "SN 2 – Devaputta Saṃyutta — [02] Chương Hai: Tương Ưng Thiên Tử"
+          },
+          {
+            type: "sutta",
+            id: "sn03",
+            code: "SN 3",
+            href: "sn03-kosala-samyutta.html",
+            titlePali: "SN 3 – Kosala Saṃyutta",
+            titleVi:
+              "SN 3 – Kosala Saṃyutta — [03] Chương Ba: Tương Ưng Kosala"
           }
        
         ]
@@ -107,7 +124,26 @@ window.SUTRA_INDEX = [
             titlePali: "SN 1 – Devatā Saṃyutta",
             titleVi:
               "SN 1 – Devatā Saṃyutta — [01] Chương Một: Tương Ưng Chư Thiên"
+          },
+           {
+            type: "sutta",
+            id: "sn02",
+            code: "SN 2",
+            href: "sn02-devaputta-samyutta.html",
+            titlePali: "SN 2 – Devaputta Saṃyutta",
+            titleVi:
+              "SN 2 – Devaputta Saṃyutta — [02] Chương Hai: Tương Ưng Thiên Tử"
+          },
+          {
+            type: "sutta",
+            id: "sn03",
+            code: "SN 3",
+            href: "sn03-kosala-samyutta.html",
+            titlePali: "SN 3 – Kosala Saṃyutta",
+            titleVi:
+              "SN 3 – Kosala Saṃyutta — [03] Chương Ba: Tương Ưng Kosala"
           }
+          
        
         ]
       }
@@ -251,20 +287,20 @@ window.SUTRA_INDEX = [
   },
 
   /* ====================== TRANG KINH MẪU ====================== */
-  {
-    type: "nikaya",
-    key: "SAMPLE",
-    labelVi: "Trang kinh mẫu",
-    labelEn: "Sample Sutta Page",
-    children: [
-      {
-        type: "sutta",
-        id: "sample-sutta",
-        code: "Sample",
-        href: "sample-sutta.html",
-        titlePali: "Sample Sutta (Demo Layout)",
-        titleVi: "Sample Sutta — Trang kinh mẫu để thử giao diện"
-      }
-    ]
-  }
+  // {
+  //   type: "nikaya",
+  //   key: "SAMPLE",
+  //   labelVi: "Trang kinh mẫu",
+  //   labelEn: "Sample Sutta Page",
+  //   children: [
+  //     {
+  //       type: "sutta",
+  //       id: "sample-sutta",
+  //       code: "Sample",
+  //       href: "sample-sutta.html",
+  //       titlePali: "Sample Sutta (Demo Layout)",
+  //       titleVi: "Sample Sutta — Trang kinh mẫu để thử giao diện"
+  //     }
+  //   ]
+  // }
 ];
