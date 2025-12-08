@@ -36,6 +36,10 @@
     <div class="bottom-controls">
       <button id="btnSutraMenu" class="btn-circle" title="Danh mục bài kinh">📖</button>
       <button id="btnSettings"  class="btn-circle" title="Cài đặt hiển thị / TTS">⚙</button>
+       <!-- Nút giãn rộng -->
+  <button id="btnFullWidth" class="btn-circle" title="Giãn rộng toàn màn">⤢</button>
+
+  <!-- Nút Dark/Light -->
       <div class="bottom-controls-spacer"></div>
       <button id="btnGuide"     class="btn-circle" title="Hướng dẫn">?</button>
       <button id="btnBackTop"   class="btn-circle" title="Lên đầu">↑</button>
@@ -65,7 +69,7 @@
         <span class="panel-label">Tiếng Việt:</span>
         <button id="btnReadVi">▶</button>
         <button id="btnPauseVi" disabled>⏸</button>
-        <button id="btnRestartVi" disabled>⏮</button>
+  
         <button id="btnStopVi" disabled>⏹</button>
       </div>
 
@@ -73,14 +77,65 @@
         <span class="panel-label">English:</span>
         <button id="btnReadEn">▶</button>
         <button id="btnPauseEn" disabled>⏸</button>
-        <button id="btnRestartEn" disabled>⏮</button>
         <button id="btnStopEn" disabled>⏹</button>
       </div>
 
       <div style="font-size:11px;color:#9ca3af;margin-top:2px;">
         * TTS dùng giọng có sẵn của trình duyệt, có thể khác nhau giữa thiết bị.
       </div>
+      <div class="color-settings">
+  <h3>Màu cột ngôn ngữ</h3>
+
+  <div class="color-row">
+    <span class="color-lang-label">Pāli</span>
+    <label>
+      Nền
+      <input type="color" id="paliBgColor" value="#fffef8">
+    </label>
+    <label>
+      Chữ
+      <input type="color" id="paliTextColor" value="#1f2933">
+    </label>
+    <button type="button" id="btnResetPaliColor">Reset</button>
+  </div>
+
+  <div class="color-row">
+    <span class="color-lang-label">EN</span>
+    <label>
+      Nền
+      <input type="color" id="engBgColor" value="#f7f9ff">
+    </label>
+    <label>
+      Chữ
+      <input type="color" id="engTextColor" value="#111827">
+    </label>
+    <button type="button" id="btnResetEngColor">Reset</button>
+  </div>
+
+  <div class="color-row">
+    <span class="color-lang-label">VI</span>
+    <label>
+      Nền
+      <input type="color" id="vieBgColor" value="#f8fffb">
+    </label>
+    <label>
+      Chữ
+      <input type="color" id="vieTextColor" value="#111827">
+    </label>
+    <button type="button" id="btnResetVieColor">Reset</button>
+  </div>
+</div>
+<div class="panel-row">
+  <div class="panel-label">Cỡ chữ:</div>
+  <div class="tts-group">
+    <button type="button" id="btnZoomOut">A-</button>
+    <button type="button" id="btnZoomReset">A</button>
+    <button type="button" id="btnZoomIn">A+</button>
+  </div>
+</div>
+ 
     </div>
+    
 
     <!-- PANEL DANH MỤC KINH (ACCORDION + SEARCH) -->
       <div id="sutraMenuPanel" class="panel" aria-hidden="true">
@@ -95,7 +150,7 @@
 
       <!-- KẾT QUẢ TÌM KIẾM -->
       <div id="sutraSearchResults" class="search-results"></div>
-
+      
       <hr class="menu-divider">
 
       <!-- MỤC LỤC ACCORDION -->
