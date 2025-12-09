@@ -143,14 +143,7 @@ html,body{
   color:var(--vie-fg);
 }
 
-.col-head{
-  font-size:11px;
-  text-transform:uppercase;
-  letter-spacing:.05em;
-  color:var(--muted);
-  margin-bottom:3px;
-  font-weight:600;
-}
+
 
 .pali{
   font-family:"Noto Serif",serif;
@@ -289,7 +282,7 @@ html,body{
 
 /* tiêu đề trong panel */
 .panel-title{
-  font-size:12px;
+  font-size:14px;
   font-weight:600;
   margin-bottom:4px;
   color:#0f172a;
@@ -604,20 +597,43 @@ html,body{
   box-shadow:0 20px 50px rgba(15,23,42,0.5);
 }
 .guide-dialog h2{
-  margin:0 0 6px;
-  font-size:15px;
+  font-size:16px;
+  font-weight:700;
+  text-align:center;
+  color:#2563eb;
+  letter-spacing:.03em;
+  margin-bottom:8px;
 }
 .guide-dialog button{
-  margin-top:8px;
+margin-top:10px;
   float:right;
   border-radius:999px;
-  border:1px solid var(--border-strong);
-  background:#f8fafc;
-  padding:2px 10px;
+  border:1px solid #2563eb;
+  background:#eff6ff;
+  padding:3px 14px;
   font-size:12px;
+  color:#2563eb;
   cursor:pointer;
 }
+.guide-dialog em{
+  display:block;
+  font-size:12px;
+  color:#6b7280;
+  font-style:italic;
+  margin-top:2px;
+}
+.guide-dialog ul{
+  padding-left:18px;
+  line-height:1.55;
+}
 
+.guide-dialog li{
+  margin-bottom:8px;
+}
+.guide-dialog li::marker{
+  color:#2563eb;
+  font-size:14px;
+}
 /* RESPONSIVE: dưới 500px thì 1 cột */
 @media (max-width:500px){
   .sutra-row{
@@ -690,4 +706,23 @@ html,body{
     rgba(59,130,246,0.4),
     transparent
   );
+}
+.welcome-screen{
+  width:100%;
+  display:flex;
+  justify-content:center;   /* canh giữa ngang */
+  padding-top:24px;         /* đẩy xuống nhẹ cho thoáng */
+}
+
+.welcome-box{
+  max-width:520px;
+  width:100%;
+  padding:14px 16px;
+  font-size:13.5px;
+  line-height:1.7;
+  color:#6b7280;
+  border:1px dashed rgba(148,163,184,0.35);
+  border-radius:12px;
+  background:#ffffff;
+  text-align:left;
 }
