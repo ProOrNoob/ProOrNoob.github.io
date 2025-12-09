@@ -12,7 +12,7 @@
   --shadow-panel:0 12px 30px rgba(15,23,42,0.35);
   --shadow-btn:0 2px 6px rgba(15,23,42,0.15);
 
-  /* === MÀU CỘT NGÔN NGỮ (để JS chỉnh) === */
+  /* Màu cột ngôn ngữ (JS chỉnh) */
   --pali-bg:#ffffff;
   --pali-fg:#111827;
   --eng-bg:#ffffff;
@@ -20,7 +20,7 @@
   --vie-bg:#ffffff;
   --vie-fg:#111827;
 
-  /* === SCALE PHÓNG TO/THU NHỎ CHỮ KINH === */
+  /* Scale phóng to/thu nhỏ chữ kinh */
   --sutra-font-scale:1;
 }
 
@@ -37,6 +37,8 @@ html,body{
   color:#0f172a;
   overflow:hidden;
 }
+
+/* ================= LAYOUT CHÍNH ================= */
 
 .app{
   height:100%;
@@ -59,7 +61,7 @@ html,body{
   position:relative;
 }
 
-/* HEADER cố định */
+/* HEADER */
 .header{
   flex:0 0 auto;
   border-bottom:1px solid rgba(148,163,184,0.25);
@@ -85,23 +87,43 @@ html,body{
   color:var(--muted);
 }
 
-/* Dòng NAMO... trên header */
+/* Dòng NAMO */
 .top-note{
   flex:0 0 auto;
   text-align:center;
   font-size:13px;
   color:#64748b;
-  margin-bottom:6px;
+  position:relative;
+  padding-bottom:6px;
+  margin-bottom:8px;
 }
 
-/* PHẦN KINH – chỉ phần này cuộn */
+.top-note::after{
+  content:"";
+  position:absolute;
+  left:20%;
+  right:20%;
+  bottom:0;
+  height:1px;
+  background:linear-gradient(
+    to right,
+    transparent,
+    rgba(59,130,246,0.4),
+    transparent
+  );
+}
+
+/* =============== PHẦN KINH (SCROLL) =============== */
+
 #sutraGrid{
   flex:1 1 auto;
+  min-height:0;                 /* chống bug không cuộn được */
   overflow:auto;
   padding:8px 4px 4px;
   display:flex;
   flex-direction:column;
   gap:8px;
+  -webkit-overflow-scrolling:touch;
 }
 
 .sutra-row{
@@ -129,7 +151,7 @@ html,body{
   border-radius:8px;
 }
 
-/* === ÁP MÀU THEO NGÔN NGỮ === */
+/* Màu cột ngôn ngữ */
 .pali-col{
   background-color:var(--pali-bg);
   color:var(--pali-fg);
@@ -143,8 +165,6 @@ html,body{
   color:var(--vie-fg);
 }
 
-
-
 .pali{
   font-family:"Noto Serif",serif;
   font-size:calc(14.5px * var(--sutra-font-scale));
@@ -156,21 +176,17 @@ html,body{
   font-family:system-ui;
 }
 
-.hide-pali .pali-col{
-  display:none;
-}
-.hide-eng .eng-col{
-  display:none;
-}
-.hide-vie .vie-col{
-  display:none;
-}
+/* Ẩn/hiện cột */
+.hide-pali .pali-col{ display:none; }
+.hide-eng  .eng-col{  display:none; }
+.hide-vie  .vie-col{  display:none; }
 
 .stack .sutra-row{
   grid-template-columns:1fr;
 }
 
-/* HÀNG NÚT DƯỚI PHẦN KINH – TRÊN FOOTER */
+/* ================== BOTTOM CONTROLS ================== */
+
 .bottom-controls{
   flex:0 0 auto;
   display:flex;
@@ -210,6 +226,7 @@ html,body{
   box-shadow:0 3px 8px rgba(15,23,42,0.2);
 }
 
+/* Nút lên đầu */
 #btnBackTop{
   opacity:.4;
   background:#e5e7eb;
@@ -223,7 +240,8 @@ html,body{
   box-shadow:var(--shadow-btn);
 }
 
-/* PANEL nổi trong card (menu, settings) */
+/* ================== PANEL (SETTINGS & MENU) ================== */
+
 .panel{
   position:absolute;
   left:12px;
@@ -243,14 +261,16 @@ html,body{
   pointer-events:none;
   z-index:20;
   transition:opacity .2s ease, transform .2s ease;
+  -webkit-overflow-scrolling:touch;
 }
+
 .panel.open{
   opacity:1;
   transform:translateY(0);
   pointer-events:auto;
 }
 
-/* chỉ áp pill cho các nút cài đặt, không áp cho menu/search-item */
+/* Chỉ áp pill cho các nút cài đặt */
 .panel button:not(.menu-toggle):not(.search-result-item){
   border-radius:999px;
   border:1px solid var(--border-strong);
@@ -263,13 +283,13 @@ html,body{
   gap:4px;
 }
 
-/* riêng panel CÀI ĐẶT vẫn ở góc phải dưới card */
+/* Panel cài đặt ở góc phải */
 #settingsPanel{
   right:12px;
   left:auto;
 }
 
-/* riêng panel DANH SÁCH BÀI KINH – đặt lên dưới header */
+/* Panel danh sách bài kinh – dưới header */
 #sutraMenuPanel{
   top:90px;
   bottom:auto;
@@ -280,7 +300,7 @@ html,body{
   max-width:320px;
 }
 
-/* tiêu đề trong panel */
+/* Tiêu đề trong panel */
 .panel-title{
   font-size:14px;
   font-weight:600;
@@ -302,25 +322,27 @@ html,body{
   min-width:60px;
 }
 
-/* group TTS */
+/* Nhóm nút TTS, Zoom */
 .tts-group button{
   min-width:40px;
   justify-content:center;
 }
 
-/* ========== KHỐI CHỌN MÀU NGÔN NGỮ (OPTIONAL, CHO ĐẸP) ========== */
+/* ========== KHỐI CHỌN MÀU NGÔN NGỮ ========== */
 
 .color-settings{
   margin-top:6px;
   padding-top:6px;
   border-top:1px dashed rgba(148,163,184,0.3);
 }
+
 .color-settings h3{
   margin:0 0 4px;
   font-size:12px;
   font-weight:600;
   color:#0f172a;
 }
+
 .color-row{
   display:flex;
   align-items:center;
@@ -328,11 +350,13 @@ html,body{
   margin-bottom:4px;
   flex-wrap:wrap;
 }
+
 .color-lang-label{
   font-size:11.5px;
   font-weight:600;
   min-width:40px;
 }
+
 .color-row label{
   font-size:11px;
   color:#4b5563;
@@ -340,6 +364,7 @@ html,body{
   align-items:center;
   gap:4px;
 }
+
 .color-row input[type="color"]{
   width:18px;
   height:18px;
@@ -356,7 +381,7 @@ html,body{
   padding:0;
 }
 
-/* mỗi block bộ kinh cách nhau chút */
+/* Block bộ kinh */
 .menu-block{
   margin-bottom:4px;
 }
@@ -366,7 +391,7 @@ html,body{
   border-top:1px solid #e5e7eb;
 }
 
-/* Tiêu đề cấp 1: Trường Bộ, Trung Bộ, Tương Ưng... */
+/* Tiêu đề cấp 1: Trường Bộ, Trung Bộ... */
 .menu-toggle{
   width:100%;
   background:transparent;
@@ -385,7 +410,7 @@ html,body{
   color:#111827;
 }
 
-/* cấp 2: nhóm nhỏ trong bộ kinh (SN 1–11…) */
+/* Cấp 2: nhóm nhỏ */
 .menu-toggle.nested{
   font-size:13px;
   font-weight:600;
@@ -425,7 +450,7 @@ html,body{
   padding-left:12px;
 }
 
-/* ===== ITEM BÀI KINH – PHÂN TẦNG RÕ RÀNG ===== */
+/* ITEM BÀI KINH */
 
 .menu-sutta-link{
   display:flex;
@@ -440,7 +465,7 @@ html,body{
   color:#0f172a;
 }
 
-/* hover nhẹ nhàng */
+/* hover nhẹ */
 .menu-sutta-link:hover{
   background:#f1f5f9;
 }
@@ -464,14 +489,14 @@ html,body{
   color:#111827;
 }
 
-/* Dòng phụ: tiếng Việt, nhỏ và nhạt hơn */
+/* Dòng phụ: tiếng Việt */
 .sutra-label-sub{
   font-size:12px;
   font-weight:400;
   color:#6b7280;
 }
 
-/* Khi active: đổi màu nội dung cho phù hợp nền xanh */
+/* Khi active: đổi màu nội dung */
 .menu-sutta-link.active .sutra-label-main{
   color:#ffffff;
 }
@@ -512,9 +537,10 @@ html,body{
   padding:0;
   max-height:220px;
   overflow:auto;
+  -webkit-overflow-scrolling:touch;
 }
 
-/* mỗi item search: dạng dòng phẳng */
+/* mỗi item search */
 .search-result-item{
   width:100%;
   text-align:left;
@@ -534,12 +560,10 @@ html,body{
   line-height:1.4;
 }
 
-/* hover chỉ đổi nền rất nhẹ */
 .search-result-item:hover{
   background:#f8fafc;
 }
 
-/* focus không viền xấu */
 .search-result-item:focus,
 .search-result-item:focus-visible{
   outline:none;
@@ -573,7 +597,8 @@ html,body{
   color:#9ca3af;
 }
 
-/* OVERLAY HƯỚNG DẪN */
+/* ================== OVERLAY HƯỚNG DẪN ================== */
+
 #guideOverlay{
   position:fixed;
   inset:0;
@@ -593,8 +618,8 @@ html,body{
   padding:12px 14px;
   max-width:360px;
   width:92%;
-  max-height:78vh;       /* giới hạn chiều cao */
-  overflow-y:auto;       /* cho nội dung cuộn */
+  max-height:78vh;
+  overflow-y:auto;
   font-size:13px;
   box-shadow:0 20px 50px rgba(15,23,42,0.5);
 }
@@ -607,8 +632,9 @@ html,body{
   letter-spacing:.03em;
   margin-bottom:8px;
 }
+
 .guide-dialog button{
-margin-top:10px;
+  margin-top:10px;
   float:right;
   border-radius:999px;
   border:1px solid #2563eb;
@@ -618,6 +644,7 @@ margin-top:10px;
   color:#2563eb;
   cursor:pointer;
 }
+
 .guide-dialog em{
   display:block;
   font-size:12px;
@@ -625,6 +652,7 @@ margin-top:10px;
   font-style:italic;
   margin-top:2px;
 }
+
 .guide-dialog ul{
   padding-left:18px;
   line-height:1.55;
@@ -633,88 +661,19 @@ margin-top:10px;
 .guide-dialog li{
   margin-bottom:8px;
 }
+
 .guide-dialog li::marker{
   color:#2563eb;
   font-size:14px;
 }
-/* RESPONSIVE: dưới 500px thì 1 cột */
-@media (max-width:500px){
-  .sutra-row{
-    grid-template-columns:1fr;
-  }
 
-  #sutraMenuPanel{
-    left:8px;
-    right:8px;
-    max-width:none;
-  }
-}
-/* ================= BUTTON SELECTED / ACTIVE ================= */
+/* ================== WELCOME SCREEN ================== */
 
-/* Trạng thái được chọn bằng class .active */
-.panel button.active{
-  background:var(--accent) !important;
-  color:#ffffff !important;
-  border-color:var(--accent) !important;
-  box-shadow:0 0 0 1px var(--accent-soft);
-}
-
-/* Hover trên nút đang active */
-.panel button.active:hover{
-  background:#1d4ed8;
-}
-
-/* Trường hợp bạn dùng aria-pressed (chuẩn accessibility) */
-.panel button[aria-pressed="true"]{
-  background:var(--accent);
-  color:#ffffff;
-  border-color:var(--accent);
-  box-shadow:0 0 0 1px var(--accent-soft);
-}
-
-
-/* ========== LAYOUT WIDE – GIÃN HẾT MÀN HÌNH ========== */
-.layout-wide .app{
-  padding:0;
-}
-.layout-wide .card{
-  max-width:none;
-  width:100%;
-  height:100%;
-  border-radius:0;
-}
-
-/* cho nút đang bật active rõ hơn */
-.btn-circle.active{
-  background:var(--accent);
-  color:#fff;
-  border-color:var(--accent);
-}
-.top-note{
-  position: relative;
-  padding-bottom: 6px;
-  margin-bottom: 8px;
-}
-
-.top-note::after{
-  content: "";
-  position: absolute;
-  left: 20%;
-  right: 20%;
-  bottom: 0;
-  height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(59,130,246,0.4),
-    transparent
-  );
-}
 .welcome-screen{
   width:100%;
   display:flex;
-  justify-content:center;   /* canh giữa ngang */
-  padding-top:24px;         /* đẩy xuống nhẹ cho thoáng */
+  justify-content:center;
+  padding-top:24px;
 }
 
 .welcome-box{
@@ -728,4 +687,57 @@ margin-top:10px;
   border-radius:12px;
   background:#ffffff;
   text-align:left;
+}
+
+/* ================== ACTIVE STATES ================== */
+
+.panel button.active{
+  background:var(--accent) !important;
+  color:#ffffff !important;
+  border-color:var(--accent) !important;
+  box-shadow:0 0 0 1px var(--accent-soft);
+}
+
+.panel button.active:hover{
+  background:#1d4ed8;
+}
+
+.panel button[aria-pressed="true"]{
+  background:var(--accent);
+  color:#ffffff;
+  border-color:var(--accent);
+  box-shadow:0 0 0 1px var(--accent-soft);
+}
+
+/* cho nút tròn đang bật rõ hơn */
+.btn-circle.active{
+  background:var(--accent);
+  color:#fff;
+  border-color:var(--accent);
+}
+
+/* ========== LAYOUT WIDE – GIÃN HẾT MÀN HÌNH ========== */
+
+.layout-wide .app{
+  padding:0;
+}
+.layout-wide .card{
+  max-width:none;
+  width:100%;
+  height:100%;
+  border-radius:0;
+}
+
+/* ========== RESPONSIVE ========== */
+
+@media (max-width:500px){
+  .sutra-row{
+    grid-template-columns:1fr;
+  }
+
+  #sutraMenuPanel{
+    left:8px;
+    right:8px;
+    max-width:none;
+  }
 }
