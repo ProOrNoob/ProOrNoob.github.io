@@ -78,11 +78,10 @@
   const btnZoomOut   = document.getElementById('btnZoomOut');
   const btnZoomIn    = document.getElementById('btnZoomIn');
   const btnZoomReset = document.getElementById('btnZoomReset');
-  /* Layout & Theme controls */
+
+  /* Layout wide control */
   const btnFullWidth = document.getElementById('btnFullWidth');
 
-
-  
   let currentSutraId = null;
   let showPali = true, showEng = true, showVie = true;
 
@@ -92,31 +91,32 @@
   /* Danh sách phẳng cho search */
   // FLAT_SUTTAS: { id, main, sub, flat }
   let FLAT_SUTTAS = [];
+
   /* ========== LAYOUT WIDE ONLY ========== */
 
-const WIDE_STORAGE_KEY  = 'sutra_layout_wide';
-let isWide = false;
+  const WIDE_STORAGE_KEY  = 'sutra_layout_wide';
+  let isWide = false;
 
-function applyWideLayout(on){
-  isWide = !!on;
-  document.documentElement.classList.toggle('layout-wide', isWide);
-  if(btnFullWidth){
-    btnFullWidth.classList.toggle('active', isWide);
+  function applyWideLayout(on){
+    isWide = !!on;
+    document.documentElement.classList.toggle('layout-wide', isWide);
+    if(btnFullWidth){
+      btnFullWidth.classList.toggle('active', isWide);
+    }
   }
-}
 
-function initLayoutWideControls(){
-  const wideStored = localStorage.getItem(WIDE_STORAGE_KEY);
-  if(wideStored === '1') applyWideLayout(true);
+  function initLayoutWideControls(){
+    const wideStored = localStorage.getItem(WIDE_STORAGE_KEY);
+    if(wideStored === '1') applyWideLayout(true);
 
-  if(btnFullWidth){
-    btnFullWidth.addEventListener('click', ()=>{
-      const newVal = !isWide;
-      applyWideLayout(newVal);
-      localStorage.setItem(WIDE_STORAGE_KEY, newVal ? '1' : '0');
-    });
+    if(btnFullWidth){
+      btnFullWidth.addEventListener('click', ()=>{
+        const newVal = !isWide;
+        applyWideLayout(newVal);
+        localStorage.setItem(WIDE_STORAGE_KEY, newVal ? '1' : '0');
+      });
+    }
   }
-}
 
   /* ========== COLOR CONFIG ========== */
 
@@ -326,23 +326,33 @@ function initLayoutWideControls(){
     panel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
   }
 
-  btnSettings.onclick = ()=>{
-    togglePanel(sutraMenuPanel, false);
-    togglePanel(settingsPanel);
-  };
+  if(btnSettings){
+    btnSettings.onclick = ()=>{
+      togglePanel(sutraMenuPanel, false);
+      togglePanel(settingsPanel);
+    };
+  }
 
-  btnSutraMenu.onclick = ()=>{
-    togglePanel(settingsPanel, false);
-    togglePanel(sutraMenuPanel);
-  };
+  if(btnSutraMenu){
+    btnSutraMenu.onclick = ()=>{
+      togglePanel(settingsPanel, false);
+      togglePanel(sutraMenuPanel);
+    };
+  }
 
-  btnGuide.onclick = ()=>{
-    guideOverlay.classList.add('show');
-  };
-  btnCloseGuide.onclick = ()=> guideOverlay.classList.remove('show');
-  guideOverlay.addEventListener('click', (e)=>{
-    if(e.target === guideOverlay) guideOverlay.classList.remove('show');
-  });
+  if(btnGuide){
+    btnGuide.onclick = ()=>{
+      guideOverlay.classList.add('show');
+    };
+  }
+  if(btnCloseGuide){
+    btnCloseGuide.onclick = ()=> guideOverlay.classList.remove('show');
+  }
+  if(guideOverlay){
+    guideOverlay.addEventListener('click', (e)=>{
+      if(e.target === guideOverlay) guideOverlay.classList.remove('show');
+    });
+  }
 
   /* ========== MENU ACCORDION TỪ SUTRA_INDEX ========== */
   function buildSutraMenuFromIndex(){
@@ -350,7 +360,9 @@ function initLayoutWideControls(){
     FLAT_SUTTAS = [];   // reset
 
     if(!Array.isArray(index) || !index.length){
-      sutraMenuList.innerHTML = '<li>Chưa có mục lục.</li>';
+      if(sutraMenuList){
+        sutraMenuList.innerHTML = '<li>Chưa có mục lục.</li>';
+      }
       return;
     }
 
@@ -433,6 +445,7 @@ function initLayoutWideControls(){
       html += `</div></li>`;
     });
 
+    if(!sutraMenuList) return;
     sutraMenuList.innerHTML = html;
 
     /* helper: đóng 1 panel cấp 1 + tất cả nhóm con bên trong */
@@ -522,6 +535,7 @@ function initLayoutWideControls(){
   }
 
   function highlightActiveInMenu(){
+    if(!sutraMenuList) return;
     sutraMenuList.querySelectorAll('.menu-sutta-link').forEach(a=>{
       a.classList.toggle('active', a.dataset.id === currentSutraId);
     });
@@ -635,18 +649,16 @@ function initLayoutWideControls(){
     (data.rows || []).forEach(r=>{
       html += `
         <div class="sutra-row">
-          <div class="sutra-col pali-col">
-            <div class="col-head">Pāli</div>
+        <div class="sutra-col pali-col">
             <div class="pali">${r.pali || ''}</div>
           </div>
           <div class="sutra-col eng-col">
-            <div class="col-head">EN</div>
             <div class="eng">${r.eng || ''}</div>
           </div>
           <div class="sutra-col vie-col">
-            <div class="col-head">VI</div>
             <div class="vie">${r.vie || ''}</div>
           </div>
+
         </div>
       `;
     });
@@ -669,6 +681,7 @@ function initLayoutWideControls(){
 
   /* ========== HIỂN THỊ CỘT & BỐ CỤC ========== */
   function adjustRowColumns(){
+    if(!grid) return;
     const isNarrow = window.innerWidth <= 500;
     const rows = grid.querySelectorAll('.sutra-row');
     rows.forEach(row=>{
@@ -686,6 +699,7 @@ function initLayoutWideControls(){
   }
 
   function applyVisibility(){
+    if(!grid) return;
     grid.classList.toggle('hide-pali', !showPali);
     grid.classList.toggle('hide-eng',  !showEng);
     grid.classList.toggle('hide-vie',  !showVie);
@@ -694,43 +708,56 @@ function initLayoutWideControls(){
 
   window.addEventListener('resize', adjustRowColumns);
 
-  btnPali.onclick = ()=>{
-    showPali = !showPali;
-    btnPali.classList.toggle('active', showPali);
-    applyVisibility();
-  };
-  btnEng.onclick = ()=>{
-    showEng = !showEng;
-    btnEng.classList.toggle('active', showEng);
-    applyVisibility();
-  };
-  btnVie.onclick = ()=>{
-    showVie = !showVie;
-    btnVie.classList.toggle('active', showVie);
-    applyVisibility();
-  };
-  btnLayout.onclick = ()=>{
-    card.classList.toggle('stack');
-    btnLayout.classList.toggle('active', card.classList.contains('stack'));
-    adjustRowColumns();
-  };
+  if(btnPali){
+    btnPali.onclick = ()=>{
+      showPali = !showPali;
+      btnPali.classList.toggle('active', showPali);
+      applyVisibility();
+    };
+  }
+  if(btnEng){
+    btnEng.onclick = ()=>{
+      showEng = !showEng;
+      btnEng.classList.toggle('active', showEng);
+      applyVisibility();
+    };
+  }
+  if(btnVie){
+    btnVie.onclick = ()=>{
+      showVie = !showVie;
+      btnVie.classList.toggle('active', showVie);
+      applyVisibility();
+    };
+  }
+  if(btnLayout){
+    btnLayout.onclick = ()=>{
+      card.classList.toggle('stack');
+      btnLayout.classList.toggle('active', card.classList.contains('stack'));
+      adjustRowColumns();
+    };
+  }
 
   /* ========== BACK TO TOP ========== */
   function toggleBackTop(show){
+    if(!btnBackTop) return;
     btnBackTop.classList.toggle('enabled', show);
   }
 
-  grid.addEventListener('scroll', ()=>{
-    toggleBackTop(grid.scrollTop > 0);
-    if(currentSutraId){
-      localStorage.setItem('scroll_' + currentSutraId, grid.scrollTop);
-    }
-  });
+  if(grid){
+    grid.addEventListener('scroll', ()=>{
+      toggleBackTop(grid.scrollTop > 0);
+      if(currentSutraId){
+        localStorage.setItem('scroll_' + currentSutraId, grid.scrollTop);
+      }
+    });
+  }
 
-  btnBackTop.onclick = ()=>{
-    if(!btnBackTop.classList.contains('enabled')) return;
-    grid.scrollTo({top:0, behavior:'smooth'});
-  };
+  if(btnBackTop){
+    btnBackTop.onclick = ()=>{
+      if(!btnBackTop.classList.contains('enabled')) return;
+      grid.scrollTo({top:0, behavior:'smooth'});
+    };
+  }
 
   /* ========== SWIPE & MOUSE DRAG TRÁI/PHẢI ========== */
   const SWIPE_THRESHOLD = 60;
@@ -748,48 +775,50 @@ function initLayoutWideControls(){
   /* touch */
   let touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
 
-  grid.addEventListener('touchstart', e=>{
-    if(e.touches.length > 0){
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-    }
-  },{passive:true});
+  if(grid){
+    grid.addEventListener('touchstart', e=>{
+      if(e.touches.length > 0){
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }
+    },{passive:true});
 
-  grid.addEventListener('touchend', e=>{
-    if(e.changedTouches.length > 0){
-      touchEndX = e.changedTouches[0].clientX;
-      touchEndY = e.changedTouches[0].clientY;
-      const dx = touchEndX - touchStartX;
-      const dy = touchEndY - touchStartY;
+    grid.addEventListener('touchend', e=>{
+      if(e.changedTouches.length > 0){
+        touchEndX = e.changedTouches[0].clientX;
+        touchEndY = e.changedTouches[0].clientY;
+        const dx = touchEndX - touchStartX;
+        const dy = touchEndY - touchStartY;
+        if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) >= SWIPE_THRESHOLD){
+          if(dx < 0) goPrevNext('next');
+          else goPrevNext('prev');
+        }
+      }
+    },{passive:true});
+
+    /* mouse drag */
+    let mouseDown = false;
+    let mouseStartX = 0;
+    let mouseStartY = 0;
+
+    grid.addEventListener('mousedown', e=>{
+      if(e.button !== 0) return;
+      mouseDown = true;
+      mouseStartX = e.clientX;
+      mouseStartY = e.clientY;
+    });
+
+    grid.addEventListener('mouseup', e=>{
+      if(!mouseDown) return;
+      mouseDown = false;
+      const dx = e.clientX - mouseStartX;
+      const dy = e.clientY - mouseStartY;
       if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) >= SWIPE_THRESHOLD){
         if(dx < 0) goPrevNext('next');
         else goPrevNext('prev');
       }
-    }
-  },{passive:true});
-
-  /* mouse drag */
-  let mouseDown = false;
-  let mouseStartX = 0;
-  let mouseStartY = 0;
-
-  grid.addEventListener('mousedown', e=>{
-    if(e.button !== 0) return;
-    mouseDown = true;
-    mouseStartX = e.clientX;
-    mouseStartY = e.clientY;
-  });
-
-  grid.addEventListener('mouseup', e=>{
-    if(!mouseDown) return;
-    mouseDown = false;
-    const dx = e.clientX - mouseStartX;
-    const dy = e.clientY - mouseStartY;
-    if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) >= SWIPE_THRESHOLD){
-      if(dx < 0) goPrevNext('next');
-      else goPrevNext('prev');
-    }
-  });
+    });
+  }
 
   /* ========== TTS (Web Speech) – đọc từng hàng, lưu trạng thái ========== */
   const synthSupported = 'speechSynthesis' in window;
@@ -804,10 +833,12 @@ function initLayoutWideControls(){
   };
 
   function clearRowHighlight(){
+    if(!grid) return;
     grid.querySelectorAll('.sutra-row.reading').forEach(r=>r.classList.remove('reading'));
   }
 
   function highlightRowAt(index){
+    if(!grid) return;
     clearRowHighlight();
     const rows = grid.querySelectorAll('.sutra-row');
     if(index < 0 || index >= rows.length) return;
@@ -833,29 +864,19 @@ function initLayoutWideControls(){
     localStorage.setItem('tts_state_' + currentSutraId, JSON.stringify(obj));
   }
 
-  function restoreTtsStateForCurrentSutra(){
-    clearRowHighlight();
-    ttsState.lang = null;
-    ttsState.index = 0;
-    ttsState.isPlaying = false;
-    ttsState.isPaused  = false;
-    ttsState.currentUtter = null;
-    setTtsButtons('vi','idle');
-    setTtsButtons('en','idle');
+function restoreTtsStateForCurrentSutra(){
+  // Chỉ reset sạch trạng thái, KHÔNG khôi phục highlight
+  clearRowHighlight();
+  ttsState.lang = null;
+  ttsState.index = 0;
+  ttsState.isPlaying = false;
+  ttsState.isPaused  = false;
+  ttsState.currentUtter = null;
 
-    if(!currentSutraId) return;
-    const raw = localStorage.getItem('tts_state_' + currentSutraId);
-    if(!raw) return;
-    try{
-      const st = JSON.parse(raw);
-      if(!st || typeof st.index !== 'number' || !st.lang) return;
-      const rows = grid.querySelectorAll('.sutra-row');
-      if(st.index < 0 || st.index >= rows.length) return;
-      ttsState.lang  = st.lang;
-      ttsState.index = st.index;
-      highlightRowAt(ttsState.index);
-    }catch(e){}
-  }
+  setTtsButtons('vi','idle');
+  setTtsButtons('en','idle');
+}
+
 
   function setTtsButtons(lang, state){
     const map = {
@@ -887,18 +908,23 @@ function initLayoutWideControls(){
     return list[0] || null;
   }
 
+  /* ====== TTS: phiên bản an toàn cho Android (không dùng resume) ====== */
+
   function speakNextRow(){
     if(!synthSupported) return;
     if(!ttsState.lang) return;
+    if(!grid) return;
 
     const rows = grid.querySelectorAll('.sutra-row');
     if(ttsState.index >= rows.length){
+      // Hết bài
       saveTtsState(null,0);
       clearRowHighlight();
       ttsState.isPlaying = false;
       ttsState.isPaused  = false;
       ttsState.lang      = null;
       ttsState.index     = 0;
+      ttsState.currentUtter = null;
       setTtsButtons('vi','idle');
       setTtsButtons('en','idle');
       return;
@@ -941,13 +967,38 @@ function initLayoutWideControls(){
     }
 
     utter.onend = ()=>{
-      if(!ttsState.isPlaying || ttsState.isPaused) return;
+      // utter kết thúc (do đọc xong hoặc do cancel)
+      ttsState.currentUtter = null;
+
+      // Nếu đã stop hoàn toàn
+      if(!ttsState.lang){
+        clearRowHighlight();
+        return;
+      }
+
+      // Nếu đang paused (pause đã cancel trước đó)
+      if(ttsState.isPaused){
+        // index giữ nguyên, highlight đã được clear trong pause
+        return;
+      }
+
+      // Nếu không còn trạng thái đang đọc -> dừng luôn
+      if(!ttsState.isPlaying){
+        clearRowHighlight();
+        return;
+      }
+
+      // Đọc bình thường -> sang dòng tiếp theo
       ttsState.index++;
       speakNextRow();
     };
+
     utter.onerror = ()=>{
+      // Có lỗi: dừng đọc, tắt highlight, cho phép user bấm Play lại
+      ttsState.currentUtter = null;
       ttsState.isPlaying = false;
-      ttsState.isPaused  = false;
+      // Không xoá lang/index để user có thể Play lại tiếp tục dòng đó
+      clearRowHighlight();
       setTtsButtons('vi','idle');
       setTtsButtons('en','idle');
     };
@@ -978,24 +1029,27 @@ function initLayoutWideControls(){
       return;
     }
 
-    if (ttsState.lang === lang && ttsState.isPlaying) {
+    // Nếu đang đọc cùng ngôn ngữ -> bỏ qua
+    if(ttsState.lang === lang && ttsState.isPlaying){
       return;
     }
 
-    if(ttsState.lang === lang && ttsState.isPaused && ttsState.currentUtter){
-      ttsState.isPaused = false;
-      ttsState.isPlaying = true;
-      synth.resume();
-      setTtsButtons(lang,'playing');
+    // Nếu đang pause cùng ngôn ngữ -> đọc lại từ dòng đang dở
+    if(ttsState.lang === lang && ttsState.isPaused){
+      ttsState.isPaused  = false;
+      ttsState.isPlaying = false;    // sẽ set true trong speakNextRow
+      speakNextRow();                // tạo utter mới, đọc lại từ đầu dòng
       return;
     }
 
+    // Đang đọc ngôn ngữ khác -> dừng nhưng không xoá highlight
     if(ttsState.lang && ttsState.lang !== lang){
       stopTtsAll(false);
     }
 
     ttsState.lang = lang;
 
+    // Lấy index cũ từ localStorage nếu có
     if(currentSutraId){
       const raw = localStorage.getItem('tts_state_' + currentSutraId);
       if(raw){
@@ -1006,7 +1060,9 @@ function initLayoutWideControls(){
           }else{
             ttsState.index = 0;
           }
-        }catch(e){ ttsState.index = 0; }
+        }catch(e){
+          ttsState.index = 0;
+        }
       }else{
         ttsState.index = 0;
       }
@@ -1020,9 +1076,20 @@ function initLayoutWideControls(){
   function pauseTts(lang){
     if(!synthSupported) return;
     if(ttsState.lang !== lang || !ttsState.isPlaying || !ttsState.currentUtter) return;
-    synth.pause();
+
     ttsState.isPaused  = true;
     ttsState.isPlaying = false;
+
+    // Dừng utter hiện tại hoàn toàn (Android không tin tưởng resume)
+    synth.cancel();
+    ttsState.currentUtter = null;
+
+    // Lưu lại index hiện tại để sau này Play đọc lại từ dòng này
+    saveTtsState(ttsState.lang, ttsState.index);
+
+    // Bạn muốn: pause thì tắt highlight
+    clearRowHighlight();
+
     setTtsButtons(lang,'paused');
   }
 
@@ -1054,18 +1121,35 @@ function initLayoutWideControls(){
     buildSutraMenuFromIndex();
 
     let startId = localStorage.getItem('lastSutraId');
-    if(!startId && SUTRA_ORDER.length){
-      startId = SUTRA_ORDER[0];
-    }
-    if(startId){
-      openSutra(startId);
-    }else{
-      grid.innerHTML = '<div style="padding:8px 4px;font-size:13px;color:#6b7280;">Hãy mở 📖 để chọn bài kinh.</div>';
-    }
+
+  if(startId){
+    // Đã từng mở bài → mở lại
+    openSutra(startId);
+  }else if(grid){
+    // Lần đầu dùng → chỉ hiện lời chào + hướng dẫn nút ?
+   titleEl.textContent = 'Chào mừng bạn đến với trang lưu trữ kinh';
+subtitleEl.textContent = 'Welcome! Vui lòng chọn bài kinh hoặc xem hướng dẫn.';
+
+grid.innerHTML = `
+  <div class="welcome-screen">
+    <div class="welcome-box">
+      <strong>Xin chào!</strong> Đây là lần đầu bạn mở ứng dụng.<br>
+      • Bấm nút 📖 <strong>Danh mục bài kinh</strong> để chọn bài muốn đọc.<br>
+      • Bấm nút ❓ <strong>Hướng dẫn</strong> để xem cách sử dụng chi tiết.
+      <br><br>
+      <strong>Welcome!</strong> This is your first time using the app.<br>
+      • Tap 📖 <strong>Sutta Index</strong> to select a sutta to read.<br>
+      • Tap ❓ <strong>Guide</strong> to view the full usage instructions.
+    </div>
+  </div>
+`;
+
+  }
 
     initColorControls();
     initZoomControls();
-initLayoutWideControls();
+    initLayoutWideControls();
+
     if(!synthSupported){
       [btnReadVi,btnPauseVi,btnStopVi,
        btnReadEn,btnPauseEn,btnStopEn].forEach(b=>{
