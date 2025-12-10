@@ -289,15 +289,27 @@ html,body{
   left:auto;
 }
 
-/* Panel danh sách bài kinh – dưới header */
+/* Panel danh sách bài kinh – dưới header, không che hàng nút */
 #sutraMenuPanel{
-  top:90px;
-  bottom:auto;
+  position:absolute;
   left:12px;
   right:auto;
-  max-height:calc(100% - 110px);
+  top:90px;              /* neo phía dưới header */
+  bottom:auto;
   min-width:260px;
   max-width:320px;
+  max-height:60vh;       /* panel không cao quá 60% màn hình */
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;       /* bo cong + cắt gọn phần cuộn bên trong */
+}
+
+@media (max-width:500px){
+  #sutraMenuPanel{
+    left:8px;
+    right:8px;
+    max-width:none;
+  }
 }
 
 /* Tiêu đề trong panel */
@@ -325,6 +337,27 @@ html,body{
 /* Nhóm nút TTS, Zoom */
 .tts-group button{
   min-width:40px;
+  justify-content:center;
+}
+
+/* ----- Hàng TTS: label + 3 nút trên một hàng, label có thể xuống dòng ----- */
+
+.panel-row.tts-group{
+  display:grid; /* override display:flex */
+  grid-template-columns:minmax(0,1fr) auto auto auto; /* label | ▶ | ⏸ | ⏹ */
+  column-gap:6px;
+  align-items:center;
+}
+
+/* Label TTS cho phép xuống dòng trong ô riêng, không đẩy nút xuống hàng */
+.panel-row.tts-group .panel-label{
+  min-width:0;
+  white-space:normal;
+}
+
+/* Nút TTS: gọn gàng, đồng đều */
+.panel-row.tts-group button{
+  min-width:32px;
   justify-content:center;
 }
 
@@ -375,10 +408,33 @@ html,body{
 
 /* ========== MENU BÀI KINH – ACCORDION ========== */
 
-.sutra-list{
+/* Panel menu là cột, phần trên cố định, chỉ danh sách kinh cuộn */
+#sutraMenuPanel .search-box,
+#sutraMenuPanel .search-results,
+#sutraMenuPanel .menu-divider{
+  flex:0 0 auto;
+}
+
+#sutraMenuPanel .sutra-list{
   list-style:none;
   margin:4px 0 0;
   padding:0;
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  position:relative;
+}
+
+/* Scrollbar gọn, nằm trong bo cong */
+#sutraMenuPanel .sutra-list::-webkit-scrollbar{
+  width:6px;
+}
+#sutraMenuPanel .sutra-list::-webkit-scrollbar-track{
+  background:transparent;
+}
+#sutraMenuPanel .sutra-list::-webkit-scrollbar-thumb{
+  background:#cbd5e1;
+  border-radius:999px;
 }
 
 /* Block bộ kinh */
@@ -408,6 +464,11 @@ html,body{
   font-weight:700;
   font-size:14px;
   color:#111827;
+}
+
+/* KHÔNG sticky nữa để tránh bug chèn nội dung */
+#sutraMenuPanel .menu-block > .menu-toggle:not(.nested){
+  position:static;
 }
 
 /* Cấp 2: nhóm nhỏ */
@@ -538,6 +599,11 @@ html,body{
   max-height:220px;
   overflow:auto;
   -webkit-overflow-scrolling:touch;
+}
+
+/* Nếu không có kết quả search thì ẩn hẳn khối, khỏi chừa khoảng trống */
+.search-results:empty{
+  display:none;
 }
 
 /* mỗi item search */
@@ -716,6 +782,13 @@ html,body{
   border-color:var(--accent);
 }
 
+/* Nút cờ chọn ngôn ngữ UI */
+.btn-flag svg{
+  width:18px;
+  height:18px;
+  display:block;
+}
+
 /* ========== LAYOUT WIDE – GIÃN HẾT MÀN HÌNH ========== */
 
 .layout-wide .app{
@@ -734,10 +807,22 @@ html,body{
   .sutra-row{
     grid-template-columns:1fr;
   }
+}
+/* ==== CĂN GIỮA CHUẨN CHO NÚT BIỂU TƯỢNG (ĐẶC BIỆT NÚT SÁCH 📖) ==== */
 
-  #sutraMenuPanel{
-    left:8px;
-    right:8px;
-    max-width:none;
-  }
+#btnSutraMenu{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:17px;      /* chỉnh riêng cho icon sách */
+  line-height:1;      /* tránh bị lệch do line-height mặc định */
+  padding:0;
+}
+
+#btnSutraMenu span,
+#btnSutraMenu svg,
+#btnSutraMenu::before{
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
