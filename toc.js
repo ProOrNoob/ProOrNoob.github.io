@@ -1292,143 +1292,23 @@ window.SUTRA_INDEX = [
     labelVi: "Chương Hai Pháp",
     labelEn: "Dukanipāta (The Book of the Twos)",
     children:  [
-    {
-      type: "sutta",
-      id: "an2_v1",
-      code: "AN 2 – Vagga 1",
-      titlePali: "Vassūpanāyikavagga",
-      titleVi: "01. Phẩm Hình Phạt",
-      titleEn: "Rains Residence / Punishment"
-    },
-    {
-      type: "sutta",
-      id: "an2_v2",
-      code: "AN 2 – Vagga 2",
-      titlePali: "Adhikaraṇavagga",
-      titleVi: "02. Phẩm Tranh Luận",
-      titleEn: "Legal Disputes"
-    },
-    {
-      type: "sutta",
-      id: "an2_v3",
-      code: "AN 2 – Vagga 3",
-      titlePali: "Bālavagga",
-      titleVi: "03. Phẩm Người Ngu",
-      titleEn: "Fools"
-    },
-    {
-      type: "sutta",
-      id: "an2_v4",
-      code: "AN 2 – Vagga 4",
-      titlePali: "Samacittavagga",
-      titleVi: "04. Phẩm Tâm Thăng Bằng",
-      titleEn: "Even Mind / Equanimity"
-    },
-
-    {
-      type: "sutta",
-      id: "an2_v5",
-      code: "AN 2 – Vagga 5",
-      titlePali: "Parisāvagga",
-      titleVi: "05. Phẩm Hội Chúng",
-      titleEn: "Assemblies"
-    },
-    {
-      type: "sutta",
-      id: "an2_v6",
-      code: "AN 2 – Vagga 6",
-      titlePali: "Puggalavagga",
-      titleVi: "06. Phẩm Người",
-      titleEn: "Persons"
-    },
-    {
-      type: "sutta",
-      id: "an2_v7",
-      code: "AN 2 – Vagga 7",
-      titlePali: "Sukhavagga",
-      titleVi: "07. Phẩm Lạc",
-      titleEn: "Happiness"
-    },
-    {
-      type: "sutta",
-      id: "an2_v8",
-      code: "AN 2 – Vagga 8",
-      titlePali: "Sānimittavagga",
-      titleVi: "08. Phẩm Tướng",
-      titleEn: "Signs / Characteristics"
-    },
-    {
-      type: "sutta",
-      id: "an2_v9",
-      code: "AN 2 – Vagga 9",
-      titlePali: "Dhammavagga",
-      titleVi: "09. Phẩm Các Pháp",
-      titleEn: "Dhammas"
-    },
-    {
-      type: "sutta",
-      id: "an2_v10",
-      code: "AN 2 – Vagga 10",
-      titlePali: "Balavagga",
-      titleVi: "10. Phẩm Kẻ Ngu",
-      titleEn: "Powers (and the Unwise)"
-    },
-    {
-      type: "sutta",
-      id: "an2_v11",
-      code: "AN 2 – Vagga 11",
-      titlePali: "Āsavavagga",
-      titleVi: "11. Phẩm Các Hy Vọng",
-      titleEn: "Taints / Expectations"
-    },
-    {
-      type: "sutta",
-      id: "an2_v12",
-      code: "AN 2 – Vagga 12",
-      titlePali: "Āyācanāvagga",
-      titleVi: "12. Phẩm Hy Cầu",
-      titleEn: "Requests / Supplications"
-    },
-    {
-      type: "sutta",
-      id: "an2_v13",
-      code: "AN 2 – Vagga 13",
-      titlePali: "Dānavagga",
-      titleVi: "13. Phẩm Bố Thí",
-      titleEn: "Giving"
-    },
-    {
-      type: "sutta",
-      id: "an2_v14",
-      code: "AN 2 – Vagga 14",
-      titlePali: "Saṃsandanavagga (Saṃthāravagga)",
-      titleVi: "14. Phẩm Đón Chào",
-      titleEn: "Hospitality / Welcoming"
-    },
-    {
-      type: "sutta",
-      id: "an2_v15",
-      code: "AN 2 – Vagga 15",
-      titlePali: "Samāpattivagga",
-      titleVi: "15. Phẩm Nhập Định",
-      titleEn: "Attainments / Concentration"
-    },
-    {
-      type: "sutta",
-      id: "an2_v16",
-      code: "AN 2 – Vagga 16",
-      titlePali: "Kodhavagga",
-      titleVi: "16. Phẩm Phẫn Nộ",
-      titleEn: "Anger"
-    },
-    {
-      type: "sutta",
-      id: "an2_v17",
-      code: "AN 2 – Vagga 17",
-      titlePali: "Sattarasamavagga",
-      titleVi: "17. Phẩm Thứ Mười Bảy",
-      titleEn: "The Seventeens"
-    }
+{ type: "sutta", id: "an2_v1", code: "AN 2 – Vagga 1", titlePali: "Vassūpanāyikavagga", titleVi: "01. Phẩm Hình Phạt", titleEn: "Rains Residence / Punishment" },
+ { type: "sutta", id: "an2_v2", code: "AN 2 – Vagga 2", titlePali: "Adhikaraṇavagga", titleVi: "02. Phẩm Tranh Luận", titleEn: "Legal Disputes" },
+ { type: "sutta", id: "an2_v3", code: "AN 2 – Vagga 3", titlePali: "Bālavagga", titleVi: "03. Phẩm Người Ngu", titleEn: "Fools" },
+ { type: "sutta", id: "an2_v4", code: "AN 2 – Vagga 4", titlePali: "Samacittavagga", titleVi: "04. Phẩm Tâm Thăng Bằng", titleEn: "Even Mind / Equanimity" },
+ { type: "sutta", id: "an2_v5", code: "AN 2 – Vagga 5", titlePali: "Parisāvagga", titleVi: "05. Phẩm Hội Chúng", titleEn: "Assemblies" },
+ { type: "sutta", id: "an2_v6", code: "AN 2 – Vagga 6", titlePali: "Puggalavagga", titleVi: "06. Phẩm Người", titleEn: "Persons" },
+ { type: "sutta", id: "an2_v7", code: "AN 2 – Vagga 7", titlePali: "Sukhavagga", titleVi: "07. Phẩm Lạc", titleEn: "Happiness" },
+ { type: "sutta", id: "an2_v8", code: "AN 2 – Vagga 8", titlePali: "Sānimittavagga", titleVi: "08. Phẩm Tướng", titleEn: "Signs / Characteristics" },
+ { type: "sutta", id: "an2_v9", code: "AN 2 – Vagga 9", titlePali: "Dhammavagga", titleVi: "09. Phẩm Các Pháp", titleEn: "Dhammas" },
+ { type: "sutta", id: "an2_v10", code: "AN 2 – Vagga 10", titlePali: "Balavagga", titleVi: "10. Phẩm Kẻ Ngu", titleEn: "Powers (and the Unwise)" },
+ { type: "sutta", id: "an2_v11", code: "AN 2 – Vagga 11", titlePali: "Āsavavagga", titleVi: "11. Phẩm Các Hy Vọng", titleEn: "Taints / Expectations" },
+ { type: "sutta", id: "an2_v12", code: "AN 2 – Vagga 12", titlePali: "Āyācanāvagga", titleVi: "12. Phẩm Hy Cầu", titleEn: "Requests / Supplications" },
+ { type: "sutta", id: "an2_v13", code: "AN 2 – Vagga 13", titlePali: "Dānavagga", titleVi: "13. Phẩm Bố Thí", titleEn: "Giving" },
+ { type: "sutta", id: "an2_v14", code: "AN 2 – Vagga 14", titlePali: "Saṃsandanavagga (Saṃthāravagga)", titleVi: "14. Phẩm Đón Chào", titleEn: "Hospitality / Welcoming" },
+ { type: "sutta", id: "an2_v15", code: "AN 2 – Vagga 15", titlePali: "Samāpattivagga", titleVi: "15. Phẩm Nhập Định", titleEn: "Attainments / Concentration" },
+ { type: "sutta", id: "an2_v16", code: "AN 2 – Vagga 16", titlePali: "Kodhavagga", titleVi: "16. Phẩm Phẫn Nộ", titleEn: "Anger" },
+ { type: "sutta", id: "an2_v17", code: "AN 2 – Vagga 17", titlePali: "Sattarasamavagga", titleVi: "17. Phẩm Thứ Mười Bảy", titleEn: "The Seventeens" }
   ]
   },
   {
@@ -1437,134 +1317,22 @@ window.SUTRA_INDEX = [
     labelVi: "Chương Ba Pháp",
     labelEn: "Tikanipāta (The Book of the Threes)",
     children: [
-    {
-      type: "sutta",
-      id: "an3_v1",
-      code: "AN 3 – Vagga 1",
-      titlePali: "Balavagga",
-      titleVi: "01. Phẩm Người Ngu",
-      titleEn: "Fools Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an3_v2",
-      code: "AN 3 – Vagga 2",
-      titlePali: "Rathakaravagga",
-      titleVi: "02. Phẩm Người Đóng Xe",
-      titleEn: "Cart-makers Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an3_v3",
-      code: "AN 3 – Vagga 3",
-      titlePali: "Puggalavagga",
-      titleVi: "03. Phẩm Người",
-      titleEn: "Persons Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an3_v4",
-      code: "AN 3 – Vagga 4",
-      titlePali: "Devadutavagga",
-      titleVi: "04. Phẩm Sứ Giả Của Trời",
-      titleEn: "Divine Messengers Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an3_v5",
-      code: "AN 3 – Vagga 5",
-      titlePali: "Cūḷavagga",
-      titleVi: "05. Phẩm Nhỏ",
-      titleEn: "Lesser Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an3_v6",
-      code: "AN 3 – Vagga 6",
-      titlePali: "Brāhmaṇavagga",
-      titleVi: "06. Phẩm Các Bà-la-môn",
-      titleEn: "Brahmins Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an3_v7",
-      code: "AN 3 – Vagga 7",
-      titlePali: "Mahāvagga",
-      titleVi: "07. Phẩm Lớn",
-      titleEn: "Great Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an3_v8",
-      code: "AN 3 – Vagga 8",
-      titlePali: "Ānandavagga",
-      titleVi: "08. Phẩm Ananda",
-      titleEn: "Ānanda Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an3_v9",
-      code: "AN 3 – Vagga 9",
-      titlePali: "Samaṇavagga",
-      titleVi: "09. Phẩm Sa-môn",
-      titleEn: "Ascetics Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an3_v10",
-      code: "AN 3 – Vagga 10",
-      titlePali: "Loṇakapallavagga",
-      titleVi: "10. Phẩm Hạt Muối",
-      titleEn: "Lump of Salt Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an3_v11",
-      code: "AN 3 – Vagga 11",
-      titlePali: "Sambodhavagga",
-      titleVi: "11. Phẩm Chánh Giác",
-      titleEn: "Enlightenment Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an3_v12",
-      code: "AN 3 – Vagga 12",
-      titlePali: "Āpāyikavagga",
-      titleVi: "12. Phẩm Đọa Xứ",
-      titleEn: "States of Woe Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an3_v13",
-      code: "AN 3 – Vagga 13",
-      titlePali: "Kusināravagga",
-      titleVi: "13. Phẩm Kusinara",
-      titleEn: "Kusinārā Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an3_v14",
-      code: "AN 3 – Vagga 14",
-      titlePali: "Yodhājīvavagga",
-      titleVi: "14. Phẩm Kẻ Chiến Sĩ",
-      titleEn: "Warriors Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an3_v15",
-      code: "AN 3 – Vagga 15",
-      titlePali: "Maṅgalavagga",
-      titleVi: "15. Phẩm Cát Tường",
-      titleEn: "Good Fortune Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an3_v16",
-      code: "AN 3 – Vagga 16",
-      titlePali: "Acelakavagga",
-      titleVi: "16. Phẩm Lõa Thể",
-      titleEn: "Naked Ascetics Chapter"
-    }
+   { type: "sutta", id: "an3_v1", code: "AN 3 – Vagga 1", titlePali: "Balavagga", titleVi: "01. Phẩm Người Ngu", titleEn: "Fools Chapter" },
+ { type: "sutta", id: "an3_v2", code: "AN 3 – Vagga 2", titlePali: "Rathakaravagga", titleVi: "02. Phẩm Người Đóng Xe", titleEn: "Cart-makers Chapter" },
+ { type: "sutta", id: "an3_v3", code: "AN 3 – Vagga 3", titlePali: "Puggalavagga", titleVi: "03. Phẩm Người", titleEn: "Persons Chapter" },
+ { type: "sutta", id: "an3_v4", code: "AN 3 – Vagga 4", titlePali: "Devadutavagga", titleVi: "04. Phẩm Sứ Giả Của Trời", titleEn: "Divine Messengers Chapter" },
+ { type: "sutta", id: "an3_v5", code: "AN 3 – Vagga 5", titlePali: "Cūḷavagga", titleVi: "05. Phẩm Nhỏ", titleEn: "Lesser Chapter" },
+ { type: "sutta", id: "an3_v6", code: "AN 3 – Vagga 6", titlePali: "Brāhmaṇavagga", titleVi: "06. Phẩm Các Bà-la-môn", titleEn: "Brahmins Chapter" },
+ { type: "sutta", id: "an3_v7", code: "AN 3 – Vagga 7", titlePali: "Mahāvagga", titleVi: "07. Phẩm Lớn", titleEn: "Great Chapter" },
+ { type: "sutta", id: "an3_v8", code: "AN 3 – Vagga 8", titlePali: "Ānandavagga", titleVi: "08. Phẩm Ananda", titleEn: "Ānanda Chapter" },
+ { type: "sutta", id: "an3_v9", code: "AN 3 – Vagga 9", titlePali: "Samaṇavagga", titleVi: "09. Phẩm Sa-môn", titleEn: "Ascetics Chapter" },
+ { type: "sutta", id: "an3_v10", code: "AN 3 – Vagga 10", titlePali: "Loṇakapallavagga", titleVi: "10. Phẩm Hạt Muối", titleEn: "Lump of Salt Chapter" },
+ { type: "sutta", id: "an3_v11", code: "AN 3 – Vagga 11", titlePali: "Sambodhavagga", titleVi: "11. Phẩm Chánh Giác", titleEn: "Enlightenment Chapter" },
+ { type: "sutta", id: "an3_v12", code: "AN 3 – Vagga 12", titlePali: "Āpāyikavagga", titleVi: "12. Phẩm Đọa Xứ", titleEn: "States of Woe Chapter" },
+ { type: "sutta", id: "an3_v13", code: "AN 3 – Vagga 13", titlePali: "Kusināravagga", titleVi: "13. Phẩm Kusinara", titleEn: "Kusinārā Chapter" },
+ { type: "sutta", id: "an3_v14", code: "AN 3 – Vagga 14", titlePali: "Yodhājīvavagga", titleVi: "14. Phẩm Kẻ Chiến Sĩ", titleEn: "Warriors Chapter" },
+ { type: "sutta", id: "an3_v15", code: "AN 3 – Vagga 15", titlePali: "Maṅgalavagga", titleVi: "15. Phẩm Cát Tường", titleEn: "Good Fortune Chapter" },
+ { type: "sutta", id: "an3_v16", code: "AN 3 – Vagga 16", titlePali: "Acelakavagga", titleVi: "16. Phẩm Lõa Thể", titleEn: "Naked Ascetics Chapter" }
   ]
   },
   {
@@ -1573,230 +1341,34 @@ window.SUTRA_INDEX = [
     labelVi: "Chương Bốn Pháp",
     labelEn: "Catukkanipāta (The Book of the Fours)",
     children:[
-    {
-      type: "sutta",
-      id: "an4_v1",
-      code: "AN 4 – Vagga 1",
-      titlePali: "Bhandagāma­vagga",
-      titleVi: "01. Phẩm Bhandagāma",
-      titleEn: "Bhandagāma Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v2",
-      code: "AN 4 – Vagga 2",
-      titlePali: "Cara­vagga",
-      titleVi: "02. Phẩm Hành",
-      titleEn: "Deportment Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v3",
-      code: "AN 4 – Vagga 3",
-      titlePali: "Uruvelā­vagga",
-      titleVi: "03. Phẩm Urvelā",
-      titleEn: "Uruvelā Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v4",
-      code: "AN 4 – Vagga 4",
-      titlePali: "Cakka­vagga",
-      titleVi: "04. Phẩm Bánh Xe",
-      titleEn: "Wheel Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v5",
-      code: "AN 4 – Vagga 5",
-      titlePali: "Rohitassa­vagga",
-      titleVi: "05. Phẩm Rohitassa",
-      titleEn: "Rohitassa Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v6",
-      code: "AN 4 – Vagga 6",
-      titlePali: "Puññābhisanda­vagga",
-      titleVi: "06. Phẩm Nguồn Sanh Phước",
-      titleEn: "Streams of Merit Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v7",
-      code: "AN 4 – Vagga 7",
-      titlePali: "Pattakamma­vagga",
-      titleVi: "07. Phẩm Nghiệp Công Đức",
-      titleEn: "Good Deeds Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v8",
-      code: "AN 4 – Vagga 8",
-      titlePali: "Apaṇṇaka­vagga",
-      titleVi: "08. Phẩm Không Hý Luận",
-      titleEn: "Incontrovertible Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v9",
-      code: "AN 4 – Vagga 9",
-      titlePali: "Macala­vagga",
-      titleVi: "09. Phẩm Không Có Rung Động",
-      titleEn: "Unshakable Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v10",
-      code: "AN 4 – Vagga 10",
-      titlePali: "Asura­vagga",
-      titleVi: "10. Phẩm Asura",
-      titleEn: "Asuras Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v11",
-      code: "AN 4 – Vagga 11",
-      titlePali: "Valāhaka­vagga",
-      titleVi: "11. Phẩm Mây Mưa",
-      titleEn: "Clouds and Rain Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v12",
-      code: "AN 4 – Vagga 12",
-      titlePali: "Kesī­vagga",
-      titleVi: "12. Phẩm Kesi",
-      titleEn: "Kesi Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v13",
-      code: "AN 4 – Vagga 13",
-      titlePali: "Bhaya­vagga",
-      titleVi: "13. Phẩm Sợ Hãi",
-      titleEn: "Fear Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v14",
-      code: "AN 4 – Vagga 14",
-      titlePali: "Puggala­vagga",
-      titleVi: "14. Phẩm Loài Người",
-      titleEn: "Persons Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v15",
-      code: "AN 4 – Vagga 15",
-      titlePali: "Ābhā­vagga",
-      titleVi: "15. Phẩm Ánh Sáng",
-      titleEn: "Light Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v16",
-      code: "AN 4 – Vagga 16",
-      titlePali: "Indriya­vagga",
-      titleVi: "16. Phẩm Các Căn",
-      titleEn: "Faculties Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v17",
-      code: "AN 4 – Vagga 17",
-      titlePali: "Paṭipadā­vagga",
-      titleVi: "17. Phẩm Đạo Hạnh",
-      titleEn: "Practice Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v18",
-      code: "AN 4 – Vagga 18",
-      titlePali: "Sañcetaniya­vagga",
-      titleVi: "18. Phẩm Tư Tâm Sở",
-      titleEn: "Volitional States Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v19",
-      code: "AN 4 – Vagga 19",
-      titlePali: "Brāhmaṇa­vagga",
-      titleVi: "19. Phẩm Chiến Sĩ",
-      titleEn: "Warriors / Brahmins Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v20",
-      code: "AN 4 – Vagga 20",
-      titlePali: "Mahā­vagga",
-      titleVi: "20. Đại Phẩm",
-      titleEn: "Great Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v21",
-      code: "AN 4 – Vagga 21",
-      titlePali: "Sappurisa­vagga",
-      titleVi: "21. Phẩm Bậc Chân Nhân",
-      titleEn: "True Persons Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v22",
-      code: "AN 4 – Vagga 22",
-      titlePali: "Parisā­vagga",
-      titleVi: "22. Phẩm Ô Uế",
-      titleEn: "Assemblies Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v23",
-      code: "AN 4 – Vagga 23",
-      titlePali: "Duccarita­vagga",
-      titleVi: "23. Phẩm Diệu Hạnh",
-      titleEn: "(Mis)Conduct Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v24",
-      code: "AN 4 – Vagga 24",
-      titlePali: "Kamma­vagga",
-      titleVi: "24. Phẩm Nghiệp",
-      titleEn: "Kamma Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v25",
-      code: "AN 4 – Vagga 25",
-      titlePali: "Āpattibhaya­vagga",
-      titleVi: "25. Phẩm Sợ Hãi Phạm Tội",
-      titleEn: "Fear of Offense Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v26",
-      code: "AN 4 – Vagga 26",
-      titlePali: "Abhiññā­vagga",
-      titleVi: "26. Phẩm Thắng Trí",
-      titleEn: "Higher Knowledges Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v27",
-      code: "AN 4 – Vagga 27",
-      titlePali: "Kammapatha­vagga",
-      titleVi: "27. Phẩm Nghiệp Đạo",
-      titleEn: "Courses of Action Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an4_v28",
-      code: "AN 4 – Vagga 28",
-      titlePali: "Rāgapeyyāla",
-      titleVi: "28. Phẩm Tham",
-      titleEn: "Repetition on Lust Chapter"
-    }
+  { type: "sutta", id: "an4_v1", code: "AN 4 – Vagga 1", titlePali: "Bhandagāma­vagga", titleVi: "01. Phẩm Bhandagāma", titleEn: "Bhandagāma Chapter" },
+ { type: "sutta", id: "an4_v2", code: "AN 4 – Vagga 2", titlePali: "Cara­vagga", titleVi: "02. Phẩm Hành", titleEn: "Deportment Chapter" },
+ { type: "sutta", id: "an4_v3", code: "AN 4 – Vagga 3", titlePali: "Uruvelā­vagga", titleVi: "03. Phẩm Urvelā", titleEn: "Uruvelā Chapter" },
+ { type: "sutta", id: "an4_v4", code: "AN 4 – Vagga 4", titlePali: "Cakka­vagga", titleVi: "04. Phẩm Bánh Xe", titleEn: "Wheel Chapter" },
+ { type: "sutta", id: "an4_v5", code: "AN 4 – Vagga 5", titlePali: "Rohitassa­vagga", titleVi: "05. Phẩm Rohitassa", titleEn: "Rohitassa Chapter" },
+ { type: "sutta", id: "an4_v6", code: "AN 4 – Vagga 6", titlePali: "Puññābhisanda­vagga", titleVi: "06. Phẩm Nguồn Sanh Phước", titleEn: "Streams of Merit Chapter" },
+ { type: "sutta", id: "an4_v7", code: "AN 4 – Vagga 7", titlePali: "Pattakamma­vagga", titleVi: "07. Phẩm Nghiệp Công Đức", titleEn: "Good Deeds Chapter" },
+ { type: "sutta", id: "an4_v8", code: "AN 4 – Vagga 8", titlePali: "Apaṇṇaka­vagga", titleVi: "08. Phẩm Không Hý Luận", titleEn: "Incontrovertible Chapter" },
+ { type: "sutta", id: "an4_v9", code: "AN 4 – Vagga 9", titlePali: "Macala­vagga", titleVi: "09. Phẩm Không Có Rung Động", titleEn: "Unshakable Chapter" },
+ { type: "sutta", id: "an4_v10", code: "AN 4 – Vagga 10", titlePali: "Asura­vagga", titleVi: "10. Phẩm Asura", titleEn: "Asuras Chapter" },
+ { type: "sutta", id: "an4_v11", code: "AN 4 – Vagga 11", titlePali: "Valāhaka­vagga", titleVi: "11. Phẩm Mây Mưa", titleEn: "Clouds and Rain Chapter" },
+ { type: "sutta", id: "an4_v12", code: "AN 4 – Vagga 12", titlePali: "Kesī­vagga", titleVi: "12. Phẩm Kesi", titleEn: "Kesi Chapter" },
+ { type: "sutta", id: "an4_v13", code: "AN 4 – Vagga 13", titlePali: "Bhaya­vagga", titleVi: "13. Phẩm Sợ Hãi", titleEn: "Fear Chapter" },
+ { type: "sutta", id: "an4_v14", code: "AN 4 – Vagga 14", titlePali: "Puggala­vagga", titleVi: "14. Phẩm Loài Người", titleEn: "Persons Chapter" },
+ { type: "sutta", id: "an4_v15", code: "AN 4 – Vagga 15", titlePali: "Ābhā­vagga", titleVi: "15. Phẩm Ánh Sáng", titleEn: "Light Chapter" },
+ { type: "sutta", id: "an4_v16", code: "AN 4 – Vagga 16", titlePali: "Indriya­vagga", titleVi: "16. Phẩm Các Căn", titleEn: "Faculties Chapter" },
+ { type: "sutta", id: "an4_v17", code: "AN 4 – Vagga 17", titlePali: "Paṭipadā­vagga", titleVi: "17. Phẩm Đạo Hạnh", titleEn: "Practice Chapter" },
+ { type: "sutta", id: "an4_v18", code: "AN 4 – Vagga 18", titlePali: "Sañcetaniya­vagga", titleVi: "18. Phẩm Tư Tâm Sở", titleEn: "Volitional States Chapter" },
+ { type: "sutta", id: "an4_v19", code: "AN 4 – Vagga 19", titlePali: "Brāhmaṇa­vagga", titleVi: "19. Phẩm Chiến Sĩ", titleEn: "Warriors / Brahmins Chapter" },
+ { type: "sutta", id: "an4_v20", code: "AN 4 – Vagga 20", titlePali: "Mahā­vagga", titleVi: "20. Đại Phẩm", titleEn: "Great Chapter" },
+ { type: "sutta", id: "an4_v21", code: "AN 4 – Vagga 21", titlePali: "Sappurisa­vagga", titleVi: "21. Phẩm Bậc Chân Nhân", titleEn: "True Persons Chapter" },
+ { type: "sutta", id: "an4_v22", code: "AN 4 – Vagga 22", titlePali: "Parisā­vagga", titleVi: "22. Phẩm Ô Uế", titleEn: "Assemblies Chapter" },
+ { type: "sutta", id: "an4_v23", code: "AN 4 – Vagga 23", titlePali: "Duccarita­vagga", titleVi: "23. Phẩm Diệu Hạnh", titleEn: "(Mis)Conduct Chapter" },
+ { type: "sutta", id: "an4_v24", code: "AN 4 – Vagga 24", titlePali: "Kamma­vagga", titleVi: "24. Phẩm Nghiệp", titleEn: "Kamma Chapter" },
+ { type: "sutta", id: "an4_v25", code: "AN 4 – Vagga 25", titlePali: "Āpattibhaya­vagga", titleVi: "25. Phẩm Sợ Hãi Phạm Tội", titleEn: "Fear of Offense Chapter" },
+ { type: "sutta", id: "an4_v26", code: "AN 4 – Vagga 26", titlePali: "Abhiññā­vagga", titleVi: "26. Phẩm Thắng Trí", titleEn: "Higher Knowledges Chapter" },
+ { type: "sutta", id: "an4_v27", code: "AN 4 – Vagga 27", titlePali: "Kammapatha­vagga", titleVi: "27. Phẩm Nghiệp Đạo", titleEn: "Courses of Action Chapter" },
+ { type: "sutta", id: "an4_v28", code: "AN 4 – Vagga 28", titlePali: "Rāgapeyyāla", titleVi: "28. Phẩm Tham", titleEn: "Repetition on Lust Chapter" }
   ]
   },
   {
@@ -1844,102 +1416,18 @@ window.SUTRA_INDEX = [
     labelVi: "Chương Sáu Pháp",
     labelEn: "Chakkanipāta (The Book of the Sixes)",
     children: [
-    {
-      type: "sutta",
-      id: "an6_v1",
-      code: "AN 6 – Vagga 1",
-      titlePali: "Ahuneyyavagga",
-      titleVi: "01. Phẩm Đáng Được Cung Kính",
-      titleEn: "Worthy of Gifts Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an6_v2",
-      code: "AN 6 – Vagga 2",
-      titlePali: "Sāraṇīyavagga",
-      titleVi: "02. Phẩm Cần Phải Nhớ",
-      titleEn: "To Be Remembered Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an6_v3",
-      code: "AN 6 – Vagga 3",
-      titlePali: "Anuttariyavagga",
-      titleVi: "03. Phẩm Trên Tất Cả",
-      titleEn: "Unsurpassed Things Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an6_v4",
-      code: "AN 6 – Vagga 4",
-      titlePali: "Devatāvagga",
-      titleVi: "04. Phẩm Chư Thiên",
-      titleEn: "Devas Chapter (1)"
-    },
-    {
-      type: "sutta",
-      id: "an6_v5",
-      code: "AN 6 – Vagga 5",
-      titlePali: "Dhammikavagga",
-      titleVi: "05. Phẩm Dhammika",
-      titleEn: "Dhammika Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an6_v6",
-      code: "AN 6 – Vagga 6",
-      titlePali: "Mahāvagga",
-      titleVi: "06. Đại Phẩm",
-      titleEn: "Great Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an6_v7",
-      code: "AN 6 – Vagga 7",
-      titlePali: "Devatāvagga (dutiyā)",
-      titleVi: "07. Phẩm Chư Thiên",
-      titleEn: "Devas Chapter (2)"
-    },
-    {
-      type: "sutta",
-      id: "an6_v8",
-      code: "AN 6 – Vagga 8",
-      titlePali: "Arahatta­vagga",
-      titleVi: "08. Phẩm A-la-hán",
-      titleEn: "Arahant Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an6_v9",
-      code: "AN 6 – Vagga 9",
-      titlePali: "Sītivagga",
-      titleVi: "09. Phẩm Mát Lạnh",
-      titleEn: "Coolness Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an6_v10",
-      code: "AN 6 – Vagga 10",
-      titlePali: "Ānisaṃsavagga",
-      titleVi: "10. Phẩm Lợi Ích",
-      titleEn: "Benefits Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an6_v11",
-      code: "AN 6 – Vagga 11",
-      titlePali: "Tikavagga",
-      titleVi: "11. Phẩm Ba Pháp",
-      titleEn: "Three Qualities Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an6_v12",
-      code: "AN 6 – Vagga 12",
-      titlePali: "Peyyālavagga",
-      titleVi: "12. Phẩm Các Kinh Không Nhiếp Trong Phẩm",
-      titleEn: "Mixed / Repeated Discourses Chapter"
-    }
+   { type: "sutta", id: "an6_v1", code: "AN 6 – Vagga 1", titlePali: "Ahuneyyavagga", titleVi: "01. Phẩm Đáng Được Cung Kính", titleEn: "Worthy of Gifts Chapter" },
+ { type: "sutta", id: "an6_v2", code: "AN 6 – Vagga 2", titlePali: "Sāraṇīyavagga", titleVi: "02. Phẩm Cần Phải Nhớ", titleEn: "To Be Remembered Chapter" },
+ { type: "sutta", id: "an6_v3", code: "AN 6 – Vagga 3", titlePali: "Anuttariyavagga", titleVi: "03. Phẩm Trên Tất Cả", titleEn: "Unsurpassed Things Chapter" },
+ { type: "sutta", id: "an6_v4", code: "AN 6 – Vagga 4", titlePali: "Devatāvagga", titleVi: "04. Phẩm Chư Thiên", titleEn: "Devas Chapter (1)" },
+ { type: "sutta", id: "an6_v5", code: "AN 6 – Vagga 5", titlePali: "Dhammikavagga", titleVi: "05. Phẩm Dhammika", titleEn: "Dhammika Chapter" },
+ { type: "sutta", id: "an6_v6", code: "AN 6 – Vagga 6", titlePali: "Mahāvagga", titleVi: "06. Đại Phẩm", titleEn: "Great Chapter" },
+ { type: "sutta", id: "an6_v7", code: "AN 6 – Vagga 7", titlePali: "Devatāvagga (dutiyā)", titleVi: "07. Phẩm Chư Thiên", titleEn: "Devas Chapter (2)" },
+ { type: "sutta", id: "an6_v8", code: "AN 6 – Vagga 8", titlePali: "Arahatta­vagga", titleVi: "08. Phẩm A-la-hán", titleEn: "Arahant Chapter" },
+ { type: "sutta", id: "an6_v9", code: "AN 6 – Vagga 9", titlePali: "Sītivagga", titleVi: "09. Phẩm Mát Lạnh", titleEn: "Coolness Chapter" },
+ { type: "sutta", id: "an6_v10", code: "AN 6 – Vagga 10", titlePali: "Ānisaṃsavagga", titleVi: "10. Phẩm Lợi Ích", titleEn: "Benefits Chapter" },
+ { type: "sutta", id: "an6_v11", code: "AN 6 – Vagga 11", titlePali: "Tikavagga", titleVi: "11. Phẩm Ba Pháp", titleEn: "Three Qualities Chapter" },
+ { type: "sutta", id: "an6_v12", code: "AN 6 – Vagga 12", titlePali: "Peyyālavagga", titleVi: "12. Phẩm Các Kinh Không Nhiếp Trong Phẩm", titleEn: "Mixed / Repeated Discourses Chapter" }
   ]
   },
   {
@@ -1948,81 +1436,16 @@ window.SUTRA_INDEX = [
     labelVi: "Chương Bảy Pháp",
     labelEn: "Sattakanipāta (The Book of the Sevens)",
     children: [
-
-    {
-      type: "sutta",
-      id: "an7_v1",
-      code: "AN 7 – Vagga 1",
-      titlePali: "Dhanavagga",
-      titleVi: "01. Phẩm Tài Sản",
-      titleEn: "Wealth Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an7_v2",
-      code: "AN 7 – Vagga 2",
-      titlePali: "Anusayavagga",
-      titleVi: "02. Phẩm Tùy Miên",
-      titleEn: "Latent Tendencies Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an7_v3",
-      code: "AN 7 – Vagga 3",
-      titlePali: "Vajjikavagga",
-      titleVi: "03. Phẩm Vajji (Bạt-kỳ)",
-      titleEn: "The Vajjians Chapter"
-    },
-
-    {
-      type: "sutta",
-      id: "an7_v4",
-      code: "AN 7 – Vagga 4",
-      titlePali: "Devatāvagga",
-      titleVi: "04. Phẩm Chư Thiên",
-      titleEn: "Devas Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an7_v5",
-      code: "AN 7 – Vagga 5",
-      titlePali: "Mahādānavagga",
-      titleVi: "05. Phẩm Đại Tế Đàn",
-      titleEn: "The Great Sacrifice Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an7_v6",
-      code: "AN 7 – Vagga 6",
-      titlePali: "Abyākatavagga",
-      titleVi: "06. Phẩm Không Tuyên Bố",
-      titleEn: "Undeclared Matters Chapter"
-    },
-
-    {
-      type: "sutta",
-      id: "an7_v7",
-      code: "AN 7 – Vagga 7",
-      titlePali: "Mahāvagga",
-      titleVi: "07. Đại Phẩm",
-      titleEn: "Great Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an7_v8",
-      code: "AN 7 – Vagga 8",
-      titlePali: "Vinayavagga",
-      titleVi: "08. Phẩm Về Luật",
-      titleEn: "Discipline Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an7_v9",
-      code: "AN 7 – Vagga 9",
-      titlePali: "Peyyālavagga",
-      titleVi: "09. Phẩm Các Kinh Không Nhiếp",
-      titleEn: "Miscellaneous / Repetition Chapter"
-    }
+{ type: "sutta", id: "an7_v1", code: "AN 7 – Vagga 1", titlePali: "Dhanavagga", titleVi: "01. Phẩm Tài Sản", titleEn: "Wealth Chapter" },
+ { type: "sutta", id: "an7_v2", code: "AN 7 – Vagga 2", titlePali: "Anusayavagga", titleVi: "02. Phẩm Tùy Miên", titleEn: "Latent Tendencies Chapter" },
+ { type: "sutta", id: "an7_v3", code: "AN 7 – Vagga 3", titlePali: "Vajjikavagga", titleVi: "03. Phẩm Vajji (Bạt-kỳ)", titleEn: "The Vajjians Chapter" },
+ { type: "sutta", id: "an7_v4", code: "AN 7 – Vagga 4", titlePali: "Devatāvagga", titleVi: "04. Phẩm Chư Thiên", titleEn: "Devas Chapter" },
+ { type: "sutta", id: "an7_v5", code: "AN 7 – Vagga 5", titlePali: "Mahādānavagga", titleVi: "05. Phẩm Đại Tế Đàn", titleEn: "The Great Sacrifice Chapter" },
+ { type: "sutta", id: "an7_v6", code: "AN 7 – Vagga 6", titlePali: "Abyākatavagga", titleVi: "06. Phẩm Không Tuyên Bố", titleEn: "Undeclared Matters Chapter" },
+ { type: "sutta", id: "an7_v7", code: "AN 7 – Vagga 7", titlePali: "Mahāvagga", titleVi: "07. Đại Phẩm", titleEn: "Great Chapter" },
+ { type: "sutta", id: "an7_v8", code: "AN 7 – Vagga 8", titlePali: "Vinayavagga", titleVi: "08. Phẩm Về Luật", titleEn: "Discipline Chapter" },
+ { type: "sutta", id: "an7_v9", code: "AN 7 – Vagga 9", titlePali: "Peyyālavagga", titleVi: "09. Phẩm Các Kinh Không Nhiếp", titleEn: "Miscellaneous / Repetition Chapter" }
+  
 
   ]
   },
@@ -2032,89 +1455,16 @@ window.SUTRA_INDEX = [
     labelVi: "Chương Tám Pháp",
     labelEn: "Aṭṭhakanipāta (The Book of the Eights)",
     children:  [
-
-    {
-      type: "sutta",
-      id: "an8_v1",
-      code: "AN 8 – Vagga 1",
-      titlePali: "Metta­vagga",
-      titleVi: "01. Phẩm Từ",
-      titleEn: "Loving-kindness Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an8_v2",
-      code: "AN 8 – Vagga 2",
-      titlePali: "Mahā­vagga",
-      titleVi: "02. Phẩm Lớn",
-      titleEn: "Great Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an8_v3",
-      code: "AN 8 – Vagga 3",
-      titlePali: "Gaha­pati­vagga",
-      titleVi: "03. Phẩm Gia Chủ",
-      titleEn: "Householders Chapter"
-    },
-
-    {
-      type: "sutta",
-      id: "an8_v4",
-      code: "AN 8 – Vagga 4",
-      titlePali: "Dāna­vagga",
-      titleVi: "04. Phẩm Bố Thí",
-      titleEn: "Giving Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an8_v5",
-      code: "AN 8 – Vagga 5",
-      titlePali: "Uposatha­vagga",
-      titleVi: "05. Phẩm Ngày Trai Giới",
-      titleEn: "Uposatha Observance Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an8_v6",
-      code: "AN 8 – Vagga 6",
-      titlePali: "Gotamī­vagga",
-      titleVi: "06. Phẩm Gotamī",
-      titleEn: "Gotamī Chapter"
-    },
-
-    {
-      type: "sutta",
-      id: "an8_v7",
-      code: "AN 8 – Vagga 7",
-      titlePali: "Kampanīya­vagga",
-      titleVi: "07. Phẩm Đất Rung Động",
-      titleEn: "Earth-shaking Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an8_v8",
-      code: "AN 8 – Vagga 8",
-      titlePali: "Yamakavagga",
-      titleVi: "08. Phẩm Song Đôi",
-      titleEn: "Pairs Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an8_v9",
-      code: "AN 8 – Vagga 9",
-      titlePali: "Sati­vagga",
-      titleVi: "09. Phẩm Niệm",
-      titleEn: "Mindfulness Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an8_v10",
-      code: "AN 8 – Vagga 10",
-      titlePali: "Tanhā­vagga",
-      titleVi: "10. Phẩm Tham Ái",
-      titleEn: "Craving Chapter"
-    }
+{ type: "sutta", id: "an8_v1", code: "AN 8 – Vagga 1", titlePali: "Metta­vagga", titleVi: "01. Phẩm Từ", titleEn: "Loving-kindness Chapter" },
+ { type: "sutta", id: "an8_v2", code: "AN 8 – Vagga 2", titlePali: "Mahā­vagga", titleVi: "02. Phẩm Lớn", titleEn: "Great Chapter" },
+ { type: "sutta", id: "an8_v3", code: "AN 8 – Vagga 3", titlePali: "Gaha­pati­vagga", titleVi: "03. Phẩm Gia Chủ", titleEn: "Householders Chapter" },
+ { type: "sutta", id: "an8_v4", code: "AN 8 – Vagga 4", titlePali: "Dāna­vagga", titleVi: "04. Phẩm Bố Thí", titleEn: "Giving Chapter" },
+ { type: "sutta", id: "an8_v5", code: "AN 8 – Vagga 5", titlePali: "Uposatha­vagga", titleVi: "05. Phẩm Ngày Trai Giới", titleEn: "Uposatha Observance Chapter" },
+ { type: "sutta", id: "an8_v6", code: "AN 8 – Vagga 6", titlePali: "Gotamī­vagga", titleVi: "06. Phẩm Gotamī", titleEn: "Gotamī Chapter" },
+ { type: "sutta", id: "an8_v7", code: "AN 8 – Vagga 7", titlePali: "Kampanīya­vagga", titleVi: "07. Phẩm Đất Rung Động", titleEn: "Earth-shaking Chapter" },
+ { type: "sutta", id: "an8_v8", code: "AN 8 – Vagga 8", titlePali: "Yamakavagga", titleVi: "08. Phẩm Song Đôi", titleEn: "Pairs Chapter" },
+ { type: "sutta", id: "an8_v9", code: "AN 8 – Vagga 9", titlePali: "Sati­vagga", titleVi: "09. Phẩm Niệm", titleEn: "Mindfulness Chapter" },
+ { type: "sutta", id: "an8_v10", code: "AN 8 – Vagga 10", titlePali: "Tanhā­vagga", titleVi: "10. Phẩm Tham Ái", titleEn: "Craving Chapter" }
 
   ]
   },
@@ -2124,88 +1474,17 @@ window.SUTRA_INDEX = [
     labelVi: "Chương Chín Pháp",
     labelEn: "Navakanipāta (The Book of the Nines)",
     children: [
-
-    {
-      type: "sutta",
-      id: "an9_v1",
-      code: "AN 9 – Vagga 1",
-      titlePali: "Sambodhavagga",
-      titleVi: "01. Phẩm Chánh Giác",
-      titleEn: "Enlightenment Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an9_v2",
-      code: "AN 9 – Vagga 2",
-      titlePali: "Sīhanāda­vagga",
-      titleVi: "02. Phẩm Tiếng Rống Sư Tử",
-      titleEn: "The Lion’s Roar Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an9_v3",
-      code: "AN 9 – Vagga 3",
-      titlePali: "Sattāvāsa­vagga",
-      titleVi: "03. Phẩm Chỗ Cư Trú Của Chúng Hữu Tình",
-      titleEn: "Abodes of Beings Chapter"
-    },
-
-    {
-      type: "sutta",
-      id: "an9_v4",
-      code: "AN 9 – Vagga 4",
-      titlePali: "Mahā­vagga",
-      titleVi: "04. Đại Phẩm",
-      titleEn: "Great Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an9_v5",
-      code: "AN 9 – Vagga 5",
-      titlePali: "Pañcalā­vagga",
-      titleVi: "05. Phẩm Pañcāla",
-      titleEn: "Pañcāla Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an9_v6",
-      code: "AN 9 – Vagga 6",
-      titlePali: "Ānisaṃsa­vagga",
-      titleVi: "06. Phẩm Ân Ơn",
-      titleEn: "Benefits Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an9_v7",
-      code: "AN 9 – Vagga 7",
-      titlePali: "Satipaṭṭhāna­vagga",
-      titleVi: "07. Phẩm Niệm Xứ",
-      titleEn: "Foundations of Mindfulness Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an9_v8",
-      code: "AN 9 – Vagga 8",
-      titlePali: "Sammappadhāna­vagga",
-      titleVi: "08. Phẩm Chánh Cần",
-      titleEn: "Right Effort Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an9_v9",
-      code: "AN 9 – Vagga 9",
-      titlePali: "Cittāvāsa­vagga",
-      titleVi: "09. Phẩm Bổn Như Ý Túc",
-      titleEn: "Bases of Psychic Power Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an9_v10",
-      code: "AN 9 – Vagga 10",
-      titlePali: "Tanhā­vagga",
-      titleVi: "10. Phẩm Tham",
-      titleEn: "Craving Chapter"
-    }
+{ type: "sutta", id: "an9_v1", code: "AN 9 – Vagga 1", titlePali: "Sambodhavagga", titleVi: "01. Phẩm Chánh Giác", titleEn: "Enlightenment Chapter" },
+ { type: "sutta", id: "an9_v2", code: "AN 9 – Vagga 2", titlePali: "Sīhanāda­vagga", titleVi: "02. Phẩm Tiếng Rống Sư Tử", titleEn: "The Lion’s Roar Chapter" },
+ { type: "sutta", id: "an9_v3", code: "AN 9 – Vagga 3", titlePali: "Sattāvāsa­vagga", titleVi: "03. Phẩm Chỗ Cư Trú Của Chúng Hữu Tình", titleEn: "Abodes of Beings Chapter" },
+ { type: "sutta", id: "an9_v4", code: "AN 9 – Vagga 4", titlePali: "Mahā­vagga", titleVi: "04. Đại Phẩm", titleEn: "Great Chapter" },
+ { type: "sutta", id: "an9_v5", code: "AN 9 – Vagga 5", titlePali: "Pañcalā­vagga", titleVi: "05. Phẩm Pañcāla", titleEn: "Pañcāla Chapter" },
+ { type: "sutta", id: "an9_v6", code: "AN 9 – Vagga 6", titlePali: "Ānisaṃsa­vagga", titleVi: "06. Phẩm Ân Ơn", titleEn: "Benefits Chapter" },
+ { type: "sutta", id: "an9_v7", code: "AN 9 – Vagga 7", titlePali: "Satipaṭṭhāna­vagga", titleVi: "07. Phẩm Niệm Xứ", titleEn: "Foundations of Mindfulness Chapter" },
+ { type: "sutta", id: "an9_v8", code: "AN 9 – Vagga 8", titlePali: "Sammappadhāna­vagga", titleVi: "08. Phẩm Chánh Cần", titleEn: "Right Effort Chapter" },
+ { type: "sutta", id: "an9_v9", code: "AN 9 – Vagga 9", titlePali: "Cittāvāsa­vagga", titleVi: "09. Phẩm Bổn Như Ý Túc", titleEn: "Bases of Psychic Power Chapter" },
+ { type: "sutta", id: "an9_v10", code: "AN 9 – Vagga 10", titlePali: "Tanhā­vagga", titleVi: "10. Phẩm Tham", titleEn: "Craving Chapter" }
+    
 
   ]
   },
@@ -2252,31 +1531,9 @@ window.SUTRA_INDEX = [
     labelEn: "Ekādasakanipāta (The Book of the Elevens)",
     children:[
 
-    {
-      type: "sutta",
-      id: "an11_v1",
-      code: "AN 11 – Vagga 1",
-      titlePali: "Yasavagga",
-      titleVi: "01. Phẩm Y Chỉ",
-      titleEn: "Reliance Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an11_v2",
-      code: "AN 11 – Vagga 2",
-      titlePali: "Anussativagga",
-      titleVi: "02. Phẩm Tùy Niệm",
-      titleEn: "Recollections Chapter"
-    },
-    {
-      type: "sutta",
-      id: "an11_v3",
-      code: "AN 11 – Vagga 3",
-      titlePali: "Sāmaggīvagga",
-      titleVi: "03. Phẩm Tổng Kết",
-      titleEn: "Harmony / Recapitulation Chapter"
-    }
-
+  { type: "sutta", id: "an11_v1", code: "AN 11 – Vagga 1", titlePali: "Yasavagga", titleVi: "01. Phẩm Y Chỉ", titleEn: "Reliance Chapter" },
+ { type: "sutta", id: "an11_v2", code: "AN 11 – Vagga 2", titlePali: "Anussativagga", titleVi: "02. Phẩm Tùy Niệm", titleEn: "Recollections Chapter" },
+ { type: "sutta", id: "an11_v3", code: "AN 11 – Vagga 3", titlePali: "Sāmaggīvagga", titleVi: "03. Phẩm Tổng Kết", titleEn: "Harmony / Recapitulation Chapter" }
   ]
   }
 ]
@@ -2289,62 +1546,13 @@ window.SUTRA_INDEX = [
     labelVi: "Khuddaka Nikāya - Tiểu Bộ Kinh",
     labelEn: "Khuddaka Nikāya - Minor Collection",
     children: [
-      {
-        type: "sutta",
-        id: "kn-khp",
-        code: "Khp",
-        href: "kn-khuddakapatha.html",
-        titlePali: "Khp – Khuddakapāṭha (Short Passages)",
-        titleVi: "Khp – Khuddakapāṭha — Kinh Tiểu Tụng"
-      },
-      {
-        type: "sutta",
-        id: "kn-dhp",
-        code: "Dhp",
-        href: "kn-dhammapada.html",
-        titlePali: "Dhp – Dhammapada (The Dhamma Verses)",
-        titleVi: "Dhp – Dhammapada — Kinh Pháp Cú"
-      },
-      {
-        type: "sutta",
-        id: "kn-ud",
-        code: "Ud",
-        href: "kn-udana.html",
-        titlePali: "Ud – Udāna (Inspired Utterances)",
-        titleVi: "Ud – Udāna — Kinh Cảm Hứng Ngữ"
-      },
-      {
-        type: "sutta",
-        id: "kn-it",
-        code: "It",
-        href: "kn-itivuttaka.html",
-        titlePali: "It – Itivuttaka (This Was Said)",
-        titleVi: "It – Itivuttaka — Kinh Như Thị Ngữ"
-      },
-      {
-        type: "sutta",
-        id: "kn-sn",
-        code: "Sn",
-        href: "kn-suttanipata.html",
-        titlePali: "Sn – Sutta Nipāta (Collection of Discourses)",
-        titleVi: "Sn – Sutta Nipāta — Kinh Tập"
-      },
-      {
-        type: "sutta",
-        id: "kn-thag",
-        code: "Thag",
-        href: "kn-theragatha.html",
-        titlePali: "Thag – Theragāthā (Verses of the Elder Monks)",
-        titleVi: "Thag – Theragāthā — Kinh Trưởng Lão Tăng Kệ"
-      },
-      {
-        type: "sutta",
-        id: "kn-thig",
-        code: "Thig",
-        href: "kn-therigatha.html",
-        titlePali: "Thig – Therīgāthā (Verses of the Elder Nuns)",
-        titleVi: "Thig – Therīgāthā — Kinh Trưởng Lão Ni Kệ"
-      }
+   { type: "sutta", id: "kn-khp", code: "Khp", href: "kn-khuddakapatha.html", titlePali: "Khp – Khuddakapāṭha (Short Passages)", titleVi: "Khp – Khuddakapāṭha — Kinh Tiểu Tụng" },
+ { type: "sutta", id: "kn-dhp", code: "Dhp", href: "kn-dhammapada.html", titlePali: "Dhp – Dhammapada (The Dhamma Verses)", titleVi: "Dhp – Dhammapada — Kinh Pháp Cú" },
+ { type: "sutta", id: "kn-ud", code: "Ud", href: "kn-udana.html", titlePali: "Ud – Udāna (Inspired Utterances)", titleVi: "Ud – Udāna — Kinh Cảm Hứng Ngữ" },
+ { type: "sutta", id: "kn-it", code: "It", href: "kn-itivuttaka.html", titlePali: "It – Itivuttaka (This Was Said)", titleVi: "It – Itivuttaka — Kinh Như Thị Ngữ" },
+ { type: "sutta", id: "kn-sn", code: "Sn", href: "kn-suttanipata.html", titlePali: "Sn – Sutta Nipāta (Collection of Discourses)", titleVi: "Sn – Sutta Nipāta — Kinh Tập" },
+ { type: "sutta", id: "kn-thag", code: "Thag", href: "kn-theragatha.html", titlePali: "Thag – Theragāthā (Verses of the Elder Monks)", titleVi: "Thag – Theragāthā — Kinh Trưởng Lão Tăng Kệ" },
+ { type: "sutta", id: "kn-thig", code: "Thig", href: "kn-therigatha.html", titlePali: "Thig – Therīgāthā (Verses of the Elder Nuns)", titleVi: "Thig – Therīgāthā — Kinh Trưởng Lão Ni Kệ" }
     ]
   }
 
