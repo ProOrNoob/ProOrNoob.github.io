@@ -714,28 +714,32 @@
           `;
 
           (child.children || []).forEach((s) => {
-            const codePrefix = s.code ? s.code + ' – ' : '';
-            const mainText =
-              codePrefix + (s.titlePali || s.titleVi || s.titleEn || s.id);
+                        const codePrefix = s.code ? s.code + ' – ' : '';
 
-            const viLabel = s.titleVi || '';
-            const enLabel = s.titleEn || '';
-            const subText =
-              uiLang === 'en'
-                ? enLabel || viLabel
-                : viLabel || enLabel;
+              const viLabel   = s.titleVi   || '';
+              const enLabel   = s.titleEn   || '';
+              const paliLabel = s.titlePali || '';
 
-            const htmlLabel = `
-              <div class="sutra-label">
-                <div class="sutra-label-main">${mainText}</div>
-                ${
-                  subText
-                    ? `<div class="sutra-label-sub">${subText}</div>`
-                    : ''
-                }
-              </div>
-            `;
-            const flatLabel = `${mainText} ${viLabel} ${enLabel}`.trim();
+              let mainText, subText;
+
+              if (uiLang === 'en') {
+                // UI tiếng Anh: ưu tiên EN trên, Pali/Việt xuống dưới
+                mainText = codePrefix + (enLabel || viLabel || paliLabel || s.id);
+                subText  = paliLabel || viLabel || '';
+              } else {
+                // UI tiếng Việt: ưu tiên VI trên, Pali/Anh xuống dưới
+                mainText = codePrefix + (viLabel || enLabel || paliLabel || s.id);
+                subText  = paliLabel || enLabel || '';
+              }
+
+              const htmlLabel = `
+                <div class="sutra-label">
+                  <div class="sutra-label-main">${mainText}</div>
+                  ${subText ? `<div class="sutra-label-sub">${subText}</div>` : ''}
+                </div>
+              `;
+              const flatLabel = `${mainText} ${viLabel} ${enLabel} ${paliLabel}`.trim();
+
 
             html += `
               <a href="#" class="menu-sutta-link" data-id="${s.id}">
@@ -752,29 +756,30 @@
 
           html += `</div></div>`;
         } else if (child.type === 'sutta') {
-          const codePrefix = child.code ? child.code + ' – ' : '';
-          const mainText =
-            codePrefix +
-            (child.titlePali || child.titleVi || child.titleEn || child.id);
+                  const codePrefix = child.code ? child.code + ' – ' : '';
 
-          const viLabel = child.titleVi || '';
-          const enLabel = child.titleEn || '';
-          const subText =
-            uiLang === 'en'
-              ? enLabel || viLabel
-              : viLabel || enLabel;
+          const viLabel   = child.titleVi   || '';
+          const enLabel   = child.titleEn   || '';
+          const paliLabel = child.titlePali || '';
+
+          let mainText, subText;
+
+          if (uiLang === 'en') {
+            mainText = codePrefix + (enLabel || viLabel || paliLabel || child.id);
+            subText  = paliLabel || viLabel || '';
+          } else {
+            mainText = codePrefix + (viLabel || enLabel || paliLabel || child.id);
+            subText  = paliLabel || enLabel || '';
+          }
 
           const htmlLabel = `
             <div class="sutra-label">
               <div class="sutra-label-main">${mainText}</div>
-              ${
-                subText
-                  ? `<div class="sutra-label-sub">${subText}</div>`
-                  : ''
-              }
+              ${subText ? `<div class="sutra-label-sub">${subText}</div>` : ''}
             </div>
           `;
-          const flatLabel = `${mainText} ${viLabel} ${enLabel}`.trim();
+          const flatLabel = `${mainText} ${viLabel} ${enLabel} ${paliLabel}`.trim();
+
 
           html += `
             <a href="#" class="menu-sutta-link" data-id="${child.id}">
