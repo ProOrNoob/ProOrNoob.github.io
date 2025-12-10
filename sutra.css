@@ -289,26 +289,48 @@ html,body{
   left:auto;
 }
 
-/* Panel danh sách bài kinh – dưới header, không che hàng nút */
+/* Panel danh sách bài kinh – kéo dài tới sát bottom-controls */
 #sutraMenuPanel{
-  position:absolute;
+ position:absolute;
+  top:90px;              /* bắt đầu dưới header */
+  bottom:58px;           /* chạm sát hàng nút gạch ngang dưới */
   left:12px;
   right:auto;
-  top:90px;              /* neo phía dưới header */
-  bottom:auto;
+
   min-width:260px;
   max-width:320px;
-  max-height:60vh;       /* panel không cao quá 60% màn hình */
+  max-height:none;       /* 👈 OVERRIDE max-height:60vh của .panel */
+
   display:flex;
   flex-direction:column;
-  overflow:hidden;       /* bo cong + cắt gọn phần cuộn bên trong */
+  overflow:hidden;      /* giữ bo góc khi scroll */
+
+  background:#ffffff;
+  border-radius:12px;
+  border:1px solid rgba(148,163,184,0.7);
+  box-shadow:var(--shadow-panel);
+  padding:8px 10px;
+  font-size:12px;
+
+  opacity:0;
+  transform:translateY(6px);
+  pointer-events:none;
+  z-index:20;
+  transition:opacity .2s ease, transform .2s ease;
 }
 
+#sutraMenuPanel.open{
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
+}
 @media (max-width:500px){
   #sutraMenuPanel{
     left:8px;
     right:8px;
     max-width:none;
+    bottom:58px;
+    max-height:none;   /* 👈 thêm dòng này */
   }
 }
 
@@ -468,7 +490,11 @@ html,body{
 
 /* KHÔNG sticky nữa để tránh bug chèn nội dung */
 #sutraMenuPanel .menu-block > .menu-toggle:not(.nested){
-  position:static;
+ position:sticky;
+  top:0;
+  z-index:1;
+  background:#ffffff;
+  box-shadow:0 1px 0 #e5e7eb; /* gạch mảnh bên dưới */
 }
 
 /* Cấp 2: nhóm nhỏ */
@@ -808,6 +834,7 @@ html,body{
     grid-template-columns:1fr;
   }
 }
+
 /* ==== CĂN GIỮA CHUẨN CHO NÚT BIỂU TƯỢNG (ĐẶC BIỆT NÚT SÁCH 📖) ==== */
 
 #btnSutraMenu{
