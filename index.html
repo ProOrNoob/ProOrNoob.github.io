@@ -2,28 +2,30 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8">
-  <title>Trình đọc Kinh Nikāya</title>
+  <title>Nikāya</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- CSS tách riêng -->
   <link rel="stylesheet" href="sutra.css">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-JYT2R1TWMR"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-JYT2R1TWMR');
+  </script>
 </head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-JYT2R1TWMR"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-JYT2R1TWMR');
-</script>
 <body>
 
 <div class="app">
   <div class="card" id="card">
     <div class="top-note">
-     NAMO TASSA BHAGAVATO ARAHATO SAMMĀSAMBUDDHASSA
+      NAMO TASSA BHAGAVATO ARAHATO SAMMĀSAMBUDDHASSA
     </div>
-    <!-- HEADER cố định -->
+
+    <!-- HEADER -->
     <div class="header">
       <h1 id="title">Chưa chọn bài</h1>
       <div id="subtitle">—</div>
@@ -34,9 +36,57 @@
 
     <!-- HÀNG NÚT DƯỚI PHẦN KINH -->
     <div class="bottom-controls">
-      <button id="btnSutraMenu" class="btn-circle" title="Danh mục bài kinh / Sutta Index">📖</button>
-         <!-- <button id="btnSettings"  class="btn-circle" title="Cài đặt / Settings ">⚙</button> -->
-<button id="btnSettings" class="btn-circle" aria-label="Settings" title="Cài đặt / Settings ">
+      <!-- Menu kinh -->
+<button
+  id="btnSutraMenu"
+  class="btn-circle">
+  📖
+</button>
+
+
+
+
+
+      <!-- Nút Cài đặt -->
+      <button
+        id="btnSettings"
+        class="btn-circle"
+        aria-label="Settings">
+        <svg viewBox="0 0 24 24"
+             width="17" height="17"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="1.7"
+             stroke-linecap="round"
+             stroke-linejoin="round"
+             aria-hidden="true">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 3v2.0"></path>
+          <path d="M18.364 5.636 16.95 7.05"></path>
+          <path d="M21 12h-2.0"></path>
+          <path d="M18.364 18.364 16.95 16.95"></path>
+          <path d="M12 21v-2.0"></path>
+          <path d="M5.636 18.364 7.05 16.95"></path>
+          <path d="M3 12h2.0"></path>
+          <path d="M5.636 5.636 7.05 7.05"></path>
+        </svg>
+      </button>
+
+      <div class="bottom-controls-spacer"></div>
+
+      <!-- Nút đổi ngôn ngữ giao diện VI/EN -->
+    <button
+  id="btnUiLang"
+  class="btn-circle btn-flag">
+  <!-- SVG cờ sẽ được JS chèn vào -->
+</button>
+
+
+      <!-- Nút hướng dẫn -->
+     <button
+  id="btnGuide"
+  class="btn-circle"
+  aria-label="Hướng dẫn">
   <svg viewBox="0 0 24 24"
        width="17" height="17"
        fill="none"
@@ -45,76 +95,63 @@
        stroke-linecap="round"
        stroke-linejoin="round"
        aria-hidden="true">
-    <!-- Vòng tròn giữa -->
-    <circle cx="12" cy="12" r="4"></circle>
-
-    <!-- 8 răng gear (giống emoji ⚙) -->
-    <path d="M12 3v2.0"></path>
-    <path d="M18.364 5.636 16.95 7.05"></path>
-    <path d="M21 12h-2.0"></path>
-    <path d="M18.364 18.364 16.95 16.95"></path>
-    <path d="M12 21v-2.0"></path>
-    <path d="M5.636 18.364 7.05 16.95"></path>
-    <path d="M3 12h2.0"></path>
-    <path d="M5.636 5.636 7.05 7.05"></path>
+    <!-- Vòng tròn ngoài cho giống nút info iOS -->
+    <circle cx="12" cy="12" r="9"></circle>
+    <!-- Thân dấu hỏi -->
+    <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.4-.9 2-1.6 2.4-.7.4-1.1.7-1.1 1.6v.4"></path>
+    <!-- Chấm dưới -->
+    <path d="M12 16.2h.01"></path>
   </svg>
 </button>
 
 
-  <!-- Nút Dark/Light -->
-      <div class="bottom-controls-spacer"></div>
-      <button id="btnGuide"     class="btn-circle" title="Hướng dẫn sử dụng / User guide">?</button>
-      <button id="btnBackTop"   class="btn-circle" title="Lên đầu trang /Scroll to Top">↑</button>
+      <!-- Nút lên đầu -->
+      <button
+        id="btnBackTop"
+        class="btn-circle">
+        ↑
+      </button>
     </div>
 
-   
-
     <!-- PANEL CÀI ĐẶT (có TTS) -->
-    <div id="settingsPanel" class="panel" aria-hidden="true">
-      <div class="panel-title">
-  Cài đặt hiển thị / Display Settings
-</div>
+   <div id="settingsPanel" class="panel" aria-hidden="true">
+  <div class="panel-title" id="settingsTitle">
+    Cài đặt hiển thị / Display settings
+  </div>
 
-<div class="panel-row">
-  <span class="panel-label">Ngôn ngữ / Language:</span>
-  <button id="btnPali" class="active">PLI</button>
-  <button id="btnEng"  class="active">EN</button>
-  <button id="btnVie"  class="active">VI</button>
-</div>
+  <div class="panel-row">
+    <span class="panel-label" id="settingsLangLabel">Ngôn ngữ / Language:</span>
+    <button id="btnPali" class="active">PLI</button>
+    <button id="btnEng"  class="active">EN</button>
+    <button id="btnVie"  class="active">VI</button>
+  </div>
 
-<div class="panel-row">
-  <span class="panel-label">Bố cục / Layout:</span>
-  <button id="btnLayout">3 cột / Dọc – 3 Col / Stack</button>
-</div>
+  <div class="panel-row">
+    <span class="panel-label" id="settingsLayoutLabel">Bố cục / Layout:</span>
+    <button id="btnLayout">3 cột / Dọc – 3 Col / Stack</button>
+  </div>
 
-<div class="panel-title" style="margin-top:4px;">
-  Đọc kinh (TTS) / Text To Speech
-</div>
+  <div class="panel-title" id="settingsTtsTitle" style="margin-top:4px;">
+    Đọc kinh (TTS) / Text-to-speech
+  </div>
 
-<div class="panel-row tts-group">
-  <span class="panel-label">Tiếng Việt:</span>
-  <button id="btnReadVi">▶</button>
-  <button id="btnPauseVi" disabled>⏸</button>
-  <button id="btnStopVi" disabled>⏹</button>
-</div>
+  <div class="panel-row tts-group">
+    <span class="panel-label" id="settingsTtsUiLabel">
+      Theo giao diện / UI language:
+    </span>
+    <button id="btnReadTts">▶</button>
+    <button id="btnPauseTts" disabled>⏸</button>
+    <button id="btnStopTts" disabled>⏹</button>
+  </div>
 
-<div class="panel-row tts-group">
-  <span class="panel-label">English:</span>
-  <button id="btnReadEn">▶</button>
-  <button id="btnPauseEn" disabled>⏸</button>
-  <button id="btnStopEn" disabled>⏹</button>
-</div>
+  <div style="font-size:11px;color:#9ca3af;margin-top:2px;" id="settingsTtsNote">
+    * TTS dùng giọng có sẵn của trình duyệt, có thể khác nhau giữa thiết bị.<br>
+    * Uses browser built-in voices, quality may vary by device.
+  </div>
 
-<div style="font-size:11px;color:#9ca3af;margin-top:2px;">
-  * TTS dùng giọng có sẵn của trình duyệt, có thể khác nhau giữa thiết bị.
-  <br>
-  * Uses browser built-in voices, quality may vary by device.
-</div>
-
-<div class="color-settings">
-  <h3>Màu cột ngôn ngữ / Language Colors</h3>
-
-  <div class="color-row">
+  <div class="color-settings">
+    <h3 id="settingsColorTitle">Màu cột ngôn ngữ / Language colors</h3>
+      <div class="color-row">
     <span class="color-lang-label">Pāli</span>
     <label>
       Nền / BG
@@ -152,42 +189,40 @@
     </label>
     <button type="button" id="btnResetVieColor">Reset</button>
   </div>
-</div>
+    
+  </div>
 
-<div class="panel-row">
-  <div class="panel-label">Cỡ chữ / Font size:</div>
-  <div class="tts-group">
-    <button type="button" id="btnZoomOut">A-</button>
-    <button type="button" id="btnZoomReset">A</button>
-    <button type="button" id="btnZoomIn">A+</button>
+  <div class="panel-row">
+    <div class="panel-label" id="settingsFontSizeLabel">Cỡ chữ / Font size:</div>
+    <div class="tts-group">
+      <button type="button" id="btnZoomOut">A-</button>
+      <button type="button" id="btnZoomReset">A</button>
+      <button type="button" id="btnZoomIn">A+</button>
+    </div>
+  </div>
+
+  <div class="panel-row">
+    <span class="panel-label">Giãn toàn màn hình / Font size</span>
+    <button id="btnFullWidth" type="button">⤢</button>
   </div>
 </div>
 
-<div class="panel-row">
-  <span class="panel-label">Toàn màn hình / Full width:</span>
-  <button id="btnFullWidth" type="button">
-    ⤢
-  </button>
-</div>
-
-
-    </div>
-     
 
     <!-- PANEL DANH MỤC KINH (ACCORDION + SEARCH) -->
-      <div id="sutraMenuPanel" class="panel" aria-hidden="true">
-      <div class="panel-title">Danh sách bài kinh</div>
+    <div id="sutraMenuPanel" class="panel" aria-hidden="true">
+     
 
       <!-- Ô tìm kiếm -->
       <div class="search-box">
-        <input id="sutraSearch"
-              type="text"
-              placeholder="Nhập tên bài kinh cần tìm...">
+        <input
+          id="sutraSearch"
+          type="text"
+          placeholder="Nhập tên bài kinh cần tìm...">
       </div>
 
       <!-- KẾT QUẢ TÌM KIẾM -->
       <div id="sutraSearchResults" class="search-results"></div>
-      
+
       <hr class="menu-divider">
 
       <!-- MỤC LỤC ACCORDION -->
@@ -196,102 +231,9 @@
   </div>
 </div>
 
-<!-- OVERLAY HƯỚNG DẪN -->
+<!-- OVERLAY HƯỚNG DẪN – nội dung sẽ được app.js render theo ngôn ngữ -->
 <div id="guideOverlay">
-  <div class="guide-dialog">
-   <h2>Hướng dẫn nhanh / Quick guide</h2>
-<ul>
-  <li>
-    📖 <strong>Danh mục bài kinh / Sutta Index</strong>:
-    chọn bài kinh muốn xem.
-    <br>
-    <em>Select a sutta from the list to view its content.</em>
-  </li>
-
-  <li>
-    🔎 <strong>Tìm kiếm / Search</strong>:
-    gõ tên, mã số hoặc từ khóa để lọc nhanh bài kinh.
-    <br>
-    <em>Type a title, code, or keyword to quickly find a sutta.</em>
-  </li>
-
-  <li>
-    ⚙ <strong>Cài đặt hiển thị / Display Settings</strong>:
-    <ul>
-      <li>
-        Ngôn ngữ / Language:
-        bật tắt các cột PLI – EN – VI.
-        <br>
-        <em>Show or hide Pāli, English, and Vietnamese columns.</em>
-      </li>
-
-      <li>
-        Bố cục / Layout:
-        3 cột hoặc xếp dọc (stacked view).
-        <br>
-        <em>Switch between 3-column view or stacked vertical view.</em>
-      </li>
-
-      <li>
-        Đọc kinh (TTS):
-        ▶ ⏸ ⏹ để nghe / tạm dừng / dừng đọc.
-        <br>
-        <em>
-          Use ▶ to play, ⏸ to pause, and ⏹ to stop text-to-speech reading.
-        </em>
-      </li>
-
-      <li>
-        Màu cột / Colors:
-        chỉnh màu nền & chữ cho từng ngôn ngữ.
-        <br>
-        <em>
-          Customize background and text colors for each language column.
-        </em>
-      </li>
-
-      <li>
-        Cỡ chữ / Font Size:
-        A− A A+ để thu nhỏ / mặc định / phóng to.
-        <br>
-        <em>
-          Decrease, reset, or increase the text size for comfortable reading.
-        </em>
-      </li>
-
-      <li>
-        Toàn màn hình / Full Width:
-        giãn khung đọc chiếm hết chiều ngang màn hình.
-        <br>
-        <em>
-          Expand the reading area to use the full screen width.
-        </em>
-      </li>
-    </ul>
-  </li>
-
-  <li>
-    ↔ <strong>Vuốt / kéo ngang / Swipe left–right</strong>:
-    trên nội dung kinh để chuyển sang bài trước hoặc bài sau.
-    <br>
-    <em>
-      Swipe left or right inside the content area to go to the previous or next sutta.
-    </em>
-  </li>
-
-  <li>
-    ↑ <strong>Lên đầu / Back to Top</strong>:
-    cuộn nhanh về đầu bài kinh.
-    <br>
-    <em>
-      Instantly scroll back to the top of the current sutta.
-    </em>
-  </li>
-</ul>
-
-
-    <button id="btnCloseGuide">Đóng / Close</button>
-  </div>
+  <div class="guide-dialog"></div>
 </div>
 
 <!-- TOC / INDEX (data mục lục) -->
