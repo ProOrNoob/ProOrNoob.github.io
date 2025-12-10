@@ -461,9 +461,9 @@ html,body{
   align-items:center;
   cursor:pointer;
 
-  font-weight:700;
-  font-size:14px;
-  color:#111827;
+  font-weight:600;      
+  font-size:13px;      
+  color:#374151; 
 }
 
 /* KHÔNG sticky nữa để tránh bug chèn nội dung */
