@@ -217,13 +217,25 @@ html,body{
   cursor:pointer;
   padding:0;
   box-shadow:var(--shadow-btn);
-  transition:background .12s ease, box-shadow .12s ease, transform .08s ease;
+  transition:transform .08s ease, box-shadow .08s ease;
 }
 
 .btn-circle:hover{
-  background:#e5e7eb;
-  transform:translateY(-1px);
-  box-shadow:0 3px 8px rgba(15,23,42,0.2);
+  background:#f8fafc !important;   /* giữ nguyên màu nền */
+  transform:none !important;       /* bỏ nhấc lên */
+  box-shadow:var(--shadow-btn) !important;
+}
+.btn-circle:active{
+  transform:scale(0.96);                 /* chìm nhẹ */
+  box-shadow:0 1px 3px rgba(0,0,0,0.2);  /* bóng nhỏ lại */
+  border-color:var(--accent-soft);      /* viền nhạt */
+}
+
+/* Khi đã click xong (focus) – vẫn giữ cảm giác là từng bấm */
+.btn-circle:focus,
+.btn-circle:focus-visible{
+  outline:none !important;
+  box-shadow:0 0 0 1px var(--accent-soft);  /* viền mảnh 1px */
 }
 
 /* Nút lên đầu */
