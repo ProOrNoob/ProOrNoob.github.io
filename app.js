@@ -25,8 +25,8 @@
 
   // Map id -> tên file JS (không .js) – TUỲ BẠN CHỈNH
   function getPackBySutraId(id) {
-  if (!/^[a-z0-9-]+$/.test(id)) return null;
-  return 'sutra-' + id;
+ // if (!/^[a-z0-9-]+$/.test(id)) return null;
+  return 'sutta/sutra-' + id;
   }
 
   /* ========== BIẾN & DOM ========== */
