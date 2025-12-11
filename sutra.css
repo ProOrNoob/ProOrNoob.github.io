@@ -309,7 +309,7 @@ html,body{
   left:12px;
   right:auto;
 
-  min-width:369px;
+  min-width:350px;
   max-width:320px;
   max-height:none;       /* OVERRIDE max-height:60vh của .panel */
 
