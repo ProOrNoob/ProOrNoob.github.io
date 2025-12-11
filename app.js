@@ -25,10 +25,11 @@
 
 function getPackBySutraId(id) {
   if (!id) return null;
-  // chỉ cho phép chữ thường, số, gạch ngang, gạch dưới
+
+  // Ngăn injection vào script URL
   if (!/^[a-z0-9_-]+$/.test(id)) return null;
-  // optional: đảm bảo tồn tại trong dữ liệu (allowlist)
-  if (!(window.SUTRA_DATA && window.SUTRA_DATA[id])) return null;
+
+  // OK → trả về file pack
   return 'sutta/sutra-' + id;
 }
 
