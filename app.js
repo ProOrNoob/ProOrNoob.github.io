@@ -30,7 +30,7 @@ function getPackBySutraId(id) {
   if (!/^[a-z0-9_-]+$/.test(id)) return null;
 
   // OK → trả về file pack
-  return 'sutta/sutra-' + id;
+  return './sutta/sutra-' + id;
 }
 
 
