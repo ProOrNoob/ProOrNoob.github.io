@@ -309,7 +309,7 @@ html,body{
   left:12px;
   right:auto;
 
-  min-width:340px;
+  min-width:369px;
   max-width:320px;
   max-height:none;       /* OVERRIDE max-height:60vh của .panel */
 
@@ -965,4 +965,61 @@ html,body{
   display:flex;
   align-items:center;
   justify-content:center;
+}
+/* ===== TẮT TAP-HIGHLIGHT / FOCUS RING TRÊN MOBILE (Android/Chrome) ===== */
+
+/* Tắt hiệu ứng highlight khi chạm (Android / iOS) */
+*,
+button,
+a,
+input,
+label {
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Loại bỏ outline mặc định khi focus (không ảnh hưởng keyboard a11y nếu cần) */
+button,
+.menu-toggle,
+.menu-sutta-link,
+.btn-circle,
+.panel button,
+#sutraSearch {
+  outline: none !important;
+  -webkit-focus-ring-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Cố giữ background không đổi khi nhấn (đã tắt màu đè) */
+button:active,
+.menu-sutta-link:active,
+.menu-toggle:active,
+.btn-circle:active {
+  background: transparent !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Nếu vẫn còn sự cố trong WebView (một số webview vẫn show overlay),
+   thêm pseudo-selector để vô hiệu hóa ảnh hưởng của -webkit-appearance */
+button,
+.btn-circle {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+/* ================= Sticky heading cho Nikāya khi cuộn ================= */
+/* Áp sticky cho tiêu đề cấp 1 (menu-toggle không .nested) */
+#sutraMenuPanel .menu-block > .menu-toggle:not(.nested){
+  position: -webkit-sticky; /* safari */
+  position: sticky;
+  top: 0px;                 /* khoảng cách từ đỉnh panel; chỉnh nếu cần */
+  z-index: 5;               /* cao hơn nội dung con để che phủ */
+ background: linear-gradient(to right, rgba(255,255,255,1), rgba(255,255,255,1));     /* giữ nền giống panel */
+  /* thêm 1 bóng mảnh để tách phần sticky với nội dung bên dưới */
+  box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+  /* đảm bảo không làm thay đổi layout text */
+  display: block;
+}
+
+/* Nếu muốn làm mỏng đường phân tách khi sticky */
+#sutraMenuPanel .menu-block > .menu-toggle:not(.nested).sticky-divider{
+  box-shadow: 0 1px 0 rgba(148,163,184,0.08);
 }
