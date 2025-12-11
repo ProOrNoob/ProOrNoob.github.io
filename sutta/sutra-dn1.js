@@ -1,6 +1,6 @@
 window.SUTRA_DATA = window.SUTRA_DATA || {};
 
-window.SUTRA_DATA['sn1_v1'] = {
+window.SUTRA_DATA['dn1'] = {
   titleVi: 'Brahmajālasutta',
   titleEn: 'Brahmajālasutta',
 
