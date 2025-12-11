@@ -660,7 +660,19 @@
       if (e.target === guideOverlay) guideOverlay.classList.remove('show');
     });
   }
-
+  /* ========== DOUBLE CLICK ĐỂ ĐÓNG MENU BÀI KINH ========== */
+  if (grid && sutraMenuPanel) {
+    grid.addEventListener('dblclick', (e) => {
+      if (e.target === grid) {
+        if (sutraMenuPanel.classList.contains('open')) {
+          togglePanel(sutraMenuPanel, false);
+        }
+        if (settingsPanel && settingsPanel.classList.contains('open')) {
+          togglePanel(settingsPanel, false);
+        }
+      }
+    });
+  }
   /* ========== MENU ACCORDION TỪ SUTRA_INDEX ========== */
 
   // Tạo HTML cho 1 link sutta + push vào FLAT_SUTTAS (dùng cho search)
