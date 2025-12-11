@@ -1024,10 +1024,10 @@ function getPackBySutraId(id) {
           ? 'Sutta data not found'
           : 'Không tìm thấy dữ liệu bài kinh';
 
-      // subtitleEl.textContent =
-      //   uiLang === 'en'
-      //     ? `ID: ${id}`
-      //     : `Mã bài: ${id}`;
+      subtitleEl.textContent =
+        uiLang === 'en'
+          ? `ID: ${id}`
+          : `Mã bài: ${id}`;
 
       grid.innerHTML = '';
       currentSutraId = id;
