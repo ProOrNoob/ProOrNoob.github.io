@@ -3,24 +3,36 @@
 
   /* ========== LAZY LOAD PACK JS ========== */
   const LOADED_PACKS = new Set();
+  const PACK_PROMISES = new Map();
 
   function loadPackIfNeeded(pack) {
-    return new Promise((resolve, reject) => {
-      if (!pack) {
-        resolve();
-        return;
-      }
-      if (LOADED_PACKS.has(pack)) return resolve();
+    if (!pack) return Promise.resolve();
+    if (LOADED_PACKS.has(pack)) return Promise.resolve();
+    if (PACK_PROMISES.has(pack)) return PACK_PROMISES.get(pack);
 
-      const s = document.createElement('script');
-      s.src = pack + '.js';
-      s.onload = () => {
-        LOADED_PACKS.add(pack);
-        resolve();
-      };
-      s.onerror = reject;
-      document.body.appendChild(s);
+    const p = new Promise((res, rej) => {
+      try {
+        const s = document.createElement('script');
+        s.src = pack + '.js';
+        s.async = true;
+        s.onload = () => {
+          LOADED_PACKS.add(pack);
+          PACK_PROMISES.delete(pack);
+          res();
+        };
+        s.onerror = (err) => {
+          PACK_PROMISES.delete(pack);
+          rej(err);
+        };
+        document.body.appendChild(s);
+      } catch (err) {
+        PACK_PROMISES.delete(pack);
+        rej(err);
+      }
     });
+
+    PACK_PROMISES.set(pack, p);
+    return p;
   }
 
 function getPackBySutraId(id) {
