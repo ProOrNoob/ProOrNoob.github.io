@@ -1011,11 +1011,9 @@ function getPackBySutraId(id) {
     resetTts(true, false);
 
    const pack = getPackBySutraId(id);
-  try {
+  
     await loadPackIfNeeded(pack);
-  } catch (err) {
-    console.warn('Không load được file:', pack, err);
-  }
+
 
     const data = (window.SUTRA_DATA || {})[id];
     if (!data) {
