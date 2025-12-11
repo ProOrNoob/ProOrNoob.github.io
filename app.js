@@ -23,11 +23,15 @@
     });
   }
 
-  // Map id -> tên file JS (không .js) – TUỲ BẠN CHỈNH
-  function getPackBySutraId(id) {
- // if (!/^[a-z0-9-]+$/.test(id)) return null;
+function getPackBySutraId(id) {
+  if (!id) return null;
+  // chỉ cho phép chữ thường, số, gạch ngang, gạch dưới
+  if (!/^[a-z0-9_-]+$/.test(id)) return null;
+  // optional: đảm bảo tồn tại trong dữ liệu (allowlist)
+  if (!(window.SUTRA_DATA && window.SUTRA_DATA[id])) return null;
   return 'sutta/sutra-' + id;
-  }
+}
+
 
   /* ========== BIẾN & DOM ========== */
   const card = document.getElementById('card');
