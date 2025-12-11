@@ -25,10 +25,8 @@
 
   // Map id -> tên file JS (không .js) – TUỲ BẠN CHỈNH
   function getPackBySutraId(id) {
-    if (id === 'mn131') return 'sutra-mn131';
-    if (id === 'mn132') return 'sutra-mn132';
-    // ... thêm mapping khác ở đây ...
-    return null;
+  if (!/^[a-z0-9-]+$/.test(id)) return null;
+  return 'sutra-' + id;
   }
 
   /* ========== BIẾN & DOM ========== */
@@ -141,12 +139,12 @@
       uiLang === 'en'
         ? 'User guide'
         : 'Hướng dẫn sử dụng';
-      if (!btnSutraMenu) return;
+    if (!btnSutraMenu) return;
     btnSutraMenu.title =
       uiLang === 'en'
         ? 'Sutta Index'
         : 'Danh mục bài kinh';
-        if (!btnSettings) return;
+    if (!btnSettings) return;
     btnSettings.title =
       uiLang === 'en'
         ? 'Display settings'
@@ -156,9 +154,9 @@
       uiLang === 'en'
         ? 'Back to top'
         : 'Lên đầu nội dung';
-
   }
-    function applyUiLanguageToSettingsPanel() {
+
+  function applyUiLanguageToSettingsPanel() {
     const isEn = uiLang === 'en';
 
     const settingsTitle = document.getElementById('settingsTitle');
@@ -212,7 +210,8 @@
     if (fontSizeLabel) {
       fontSizeLabel.textContent = isEn ? 'Font size:' : 'Cỡ chữ:';
     }
-        // Full width
+
+    // Full width
     const fullWidthLabel = btnFullWidth
       ? btnFullWidth.previousElementSibling
       : null;
@@ -228,9 +227,7 @@
         ? 'Toggle full width reading mode'
         : 'Bật / tắt chế độ giãn toàn màn hình';
     }
-
   }
-
 
   function renderWelcomeScreen() {
     if (!grid || currentSutraId) return;
@@ -381,7 +378,7 @@
     // lần đầu
     renderUiLangFlag();
     applyUiLanguageToSearchUi();
-     applyUiLanguageToSettingsPanel(); 
+    applyUiLanguageToSettingsPanel();
     renderGuideDialog();
 
     btnUiLang.addEventListener('click', () => {
@@ -390,15 +387,15 @@
       window.SUTRA_UI_LANG = uiLang;
       renderUiLangFlag();
       applyUiLanguageToSearchUi();
-       applyUiLanguageToSettingsPanel(); 
+      applyUiLanguageToSettingsPanel();
       renderGuideDialog();
       buildSutraMenuFromIndex();
       highlightActiveInMenu();
-        if (currentSutraId) {
-      renderSutra(currentSutraId); // render lại để đổi title/subtitle theo UI
-    } else {
-      renderWelcomeScreen();
-}
+      if (currentSutraId) {
+        renderSutra(currentSutraId); // render lại để đổi title/subtitle theo UI
+      } else {
+        renderWelcomeScreen();
+      }
     });
   }
 
@@ -666,6 +663,82 @@
 
   /* ========== MENU ACCORDION TỪ SUTRA_INDEX ========== */
 
+  // Tạo HTML cho 1 link sutta + push vào FLAT_SUTTAS (dùng cho search)
+  function buildSuttaLinkHtml(s) {
+    const codePrefix = s.code ? s.code + ' – ' : '';
+
+    const viLabel = s.titleVi || '';
+    const enLabel = s.titleEn || '';
+    const paliLabel = s.titlePali || '';
+
+    let mainText, subText;
+
+    if (uiLang === 'en') {
+      // UI tiếng Anh: ưu tiên EN trên, Pali/Việt xuống dưới
+      mainText = codePrefix + (enLabel || viLabel || paliLabel || s.id);
+      subText = paliLabel || viLabel || '';
+    } else {
+      // UI tiếng Việt: ưu tiên VI trên, Pali/Anh xuống dưới
+      mainText = codePrefix + (viLabel || enLabel || paliLabel || s.id);
+      subText = paliLabel || enLabel || '';
+    }
+
+    const htmlLabel = `
+      <div class="sutra-label">
+        <div class="sutra-label-main">${mainText}</div>
+        ${subText ? `<div class="sutra-label-sub">${subText}</div>` : ''}
+      </div>
+    `;
+    const flatLabel = `${mainText} ${viLabel} ${enLabel} ${paliLabel}`.trim();
+
+    FLAT_SUTTAS.push({
+      id: s.id,
+      main: mainText,
+      sub: subText,
+      flat: flatLabel,
+    });
+
+    return `
+      <a href="#" class="menu-sutta-link" data-id="${s.id}">
+        ${htmlLabel}
+      </a>
+    `;
+  }
+
+  // Đệ quy render children (group + sutta), hỗ trợ nhiều cấp group lồng nhau
+  function buildMenuChildren(children, parentId) {
+    if (!children || !children.length) return '';
+    let html = '';
+
+    children.forEach((child) => {
+      if (child.type === 'group') {
+        const grpId = `${parentId}-${child.key}`;
+        const grpLabel =
+          uiLang === 'en'
+            ? child.labelEn || child.labelVi || child.key
+            : child.labelVi || child.labelEn || child.key;
+
+        const innerHtml = buildMenuChildren(child.children || [], grpId);
+
+        html += `
+          <div class="menu-subblock">
+            <button class="menu-toggle nested" type="button" data-target="${grpId}">
+              <span>${grpLabel}</span>
+              <span class="chevron">▸</span>
+            </button>
+            <div id="${grpId}" class="menu-list collapsed">
+              ${innerHtml}
+            </div>
+          </div>
+        `;
+      } else if (child.type === 'sutta') {
+        html += buildSuttaLinkHtml(child);
+      }
+    });
+
+    return html;
+  }
+
   function buildSutraMenuFromIndex() {
     const index = window.SUTRA_INDEX || [];
     FLAT_SUTTAS = [];
@@ -687,6 +760,8 @@
           ? section.labelEn || section.labelVi || section.key
           : section.labelVi || section.labelEn || section.key;
 
+      const childrenHtml = buildMenuChildren(section.children || [], secId);
+
       html += `
         <li class="menu-block">
           <button class="menu-toggle" type="button" data-target="${secId}">
@@ -694,108 +769,10 @@
             <span class="chevron">▸</span>
           </button>
           <div id="${secId}" class="menu-list collapsed">
+            ${childrenHtml}
+          </div>
+        </li>
       `;
-
-      (section.children || []).forEach((child) => {
-        if (child.type === 'group') {
-          const grpId = `${secId}-${child.key}`;
-          const grpLabel =
-            uiLang === 'en'
-              ? child.labelEn || child.labelVi || child.key
-              : child.labelVi || child.labelEn || child.key;
-
-          html += `
-            <div class="menu-subblock">
-              <button class="menu-toggle nested" type="button" data-target="${grpId}">
-                <span>${grpLabel}</span>
-                <span class="chevron">▸</span>
-              </button>
-              <div id="${grpId}" class="menu-list collapsed">
-          `;
-
-          (child.children || []).forEach((s) => {
-                        const codePrefix = s.code ? s.code + ' – ' : '';
-
-              const viLabel   = s.titleVi   || '';
-              const enLabel   = s.titleEn   || '';
-              const paliLabel = s.titlePali || '';
-
-              let mainText, subText;
-
-              if (uiLang === 'en') {
-                // UI tiếng Anh: ưu tiên EN trên, Pali/Việt xuống dưới
-                mainText = codePrefix + (enLabel || viLabel || paliLabel || s.id);
-                subText  = paliLabel || viLabel || '';
-              } else {
-                // UI tiếng Việt: ưu tiên VI trên, Pali/Anh xuống dưới
-                mainText = codePrefix + (viLabel || enLabel || paliLabel || s.id);
-                subText  = paliLabel || enLabel || '';
-              }
-
-              const htmlLabel = `
-                <div class="sutra-label">
-                  <div class="sutra-label-main">${mainText}</div>
-                  ${subText ? `<div class="sutra-label-sub">${subText}</div>` : ''}
-                </div>
-              `;
-              const flatLabel = `${mainText} ${viLabel} ${enLabel} ${paliLabel}`.trim();
-
-
-            html += `
-              <a href="#" class="menu-sutta-link" data-id="${s.id}">
-                ${htmlLabel}
-              </a>
-            `;
-            FLAT_SUTTAS.push({
-              id: s.id,
-              main: mainText,
-              sub: subText,
-              flat: flatLabel,
-            });
-          });
-
-          html += `</div></div>`;
-        } else if (child.type === 'sutta') {
-                  const codePrefix = child.code ? child.code + ' – ' : '';
-
-          const viLabel   = child.titleVi   || '';
-          const enLabel   = child.titleEn   || '';
-          const paliLabel = child.titlePali || '';
-
-          let mainText, subText;
-
-          if (uiLang === 'en') {
-            mainText = codePrefix + (enLabel || viLabel || paliLabel || child.id);
-            subText  = paliLabel || viLabel || '';
-          } else {
-            mainText = codePrefix + (viLabel || enLabel || paliLabel || child.id);
-            subText  = paliLabel || enLabel || '';
-          }
-
-          const htmlLabel = `
-            <div class="sutra-label">
-              <div class="sutra-label-main">${mainText}</div>
-              ${subText ? `<div class="sutra-label-sub">${subText}</div>` : ''}
-            </div>
-          `;
-          const flatLabel = `${mainText} ${viLabel} ${enLabel} ${paliLabel}`.trim();
-
-
-          html += `
-            <a href="#" class="menu-sutta-link" data-id="${child.id}">
-              ${htmlLabel}
-            </a>
-          `;
-          FLAT_SUTTAS.push({
-            id: child.id,
-            main: mainText,
-            sub: subText,
-            flat: flatLabel,
-          });
-        }
-      });
-
-      html += `</div></li>`;
     });
 
     if (!sutraMenuList) return;
@@ -832,30 +809,39 @@
         const isCollapsed = panel.classList.contains('collapsed');
         const isNested = btn.classList.contains('nested');
 
-        if (isCollapsed) {
-          const selector = isNested
-            ? '.menu-toggle.nested'
-            : '.menu-toggle:not(.nested)';
-
-          sutraMenuList
-            .querySelectorAll(selector)
-            .forEach((other) => {
-              if (other === btn) return;
-              const oId = other.dataset.target;
-              const oPanel = document.getElementById(oId);
-              if (
-                oPanel &&
-                !oPanel.classList.contains('collapsed')
-              ) {
-                if (!other.classList.contains('nested')) {
+       if (isCollapsed) {
+          if (isNested) {
+            // Nested: chỉ đóng các group anh em trong cùng .menu-list
+            const parentList = btn.closest('.menu-list');
+            if (parentList) {
+              parentList
+                .querySelectorAll('.menu-toggle.nested')
+                .forEach((other) => {
+                  if (other === btn) return;
+                  const oId = other.dataset.target;
+                  const oPanel = document.getElementById(oId);
+                  if (oPanel && !oPanel.classList.contains('collapsed')) {
+                    oPanel.classList.add('collapsed');
+                    const ch2 = other.querySelector('.chevron');
+                    if (ch2) ch2.textContent = '▸';
+                  }
+                });
+            }
+          } else {
+            // Cấp 1: vẫn giữ behavior cũ – chỉ mở 1 block nikaya / tập lớn
+            sutraMenuList
+              .querySelectorAll('.menu-toggle:not(.nested)')
+              .forEach((other) => {
+                if (other === btn) return;
+                const oId = other.dataset.target;
+                const oPanel = document.getElementById(oId);
+                if (oPanel && !oPanel.classList.contains('collapsed')) {
                   collapsePanelWithChildren(oPanel);
-                } else {
-                  oPanel.classList.add('collapsed');
+                  const ch2 = other.querySelector('.chevron');
+                  if (ch2) ch2.textContent = '▸';
                 }
-                const ch2 = other.querySelector('.chevron');
-                if (ch2) ch2.textContent = '▸';
-              }
-            });
+              });
+          }
         }
 
         if (isNested) {
@@ -1005,10 +991,14 @@
       localStorage.setItem('scroll_' + currentSutraId, grid.scrollTop || 0);
     }
 
-     resetTts(true, false);
+    resetTts(true, false);
 
-    const pack = getPackBySutraId(id);
+   const pack = getPackBySutraId(id);
+  try {
     await loadPackIfNeeded(pack);
+  } catch (err) {
+    console.warn('Không load được file:', pack, err);
+  }
 
     const data = (window.SUTRA_DATA || {})[id];
     if (!data) {
@@ -1241,7 +1231,7 @@
     });
   }
 
-    /* ========== TTS (Web Speech) – đọc theo ngôn ngữ giao diện ========== */
+  /* ========== TTS (Web Speech) – đọc theo ngôn ngữ giao diện ========== */
 
   const synthSupported = 'speechSynthesis' in window;
   const synth = synthSupported ? window.speechSynthesis : null;
@@ -1506,7 +1496,6 @@
   if (btnPauseTts) btnPauseTts.onclick = pauseTtsByUiLang;
   if (btnStopTts) btnStopTts.onclick = stopTtsByUiLang;
 
-
   /* ========== INIT ========== */
 
   function init() {
@@ -1528,14 +1517,13 @@
     initZoomControls();
     initLayoutWideControls();
 
-       if (!synthSupported) {
+    if (!synthSupported) {
       [btnReadTts, btnPauseTts, btnStopTts].forEach((b) => {
         if (b) b.disabled = true;
       });
     } else {
       setTtsUiState('idle');
     }
-
   }
 
   init();
