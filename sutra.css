@@ -291,15 +291,15 @@ html,body{
 
 /* Panel danh sách bài kinh – kéo dài tới sát bottom-controls */
 #sutraMenuPanel{
- position:absolute;
+  position:absolute;
   top:90px;              /* bắt đầu dưới header */
   bottom:58px;           /* chạm sát hàng nút gạch ngang dưới */
   left:12px;
   right:auto;
 
-  min-width:260px;
+  min-width:340px;
   max-width:320px;
-  max-height:none;       /* 👈 OVERRIDE max-height:60vh của .panel */
+  max-height:none;       /* OVERRIDE max-height:60vh của .panel */
 
   display:flex;
   flex-direction:column;
@@ -324,13 +324,14 @@ html,body{
   transform:translateY(0);
   pointer-events:auto;
 }
+
 @media (max-width:500px){
   #sutraMenuPanel{
     left:8px;
     right:8px;
     max-width:none;
     bottom:58px;
-    max-height:none;   /* 👈 thêm dòng này */
+    max-height:none;
   }
 }
 
@@ -362,7 +363,7 @@ html,body{
   justify-content:center;
 }
 
-/* ----- Hàng TTS: label + 3 nút trên một hàng, label có thể xuống dòng ----- */
+/* ----- Hàng TTS: label + 3 nút trên một hàng ----- */
 
 .panel-row.tts-group{
   display:grid; /* override display:flex */
@@ -430,13 +431,42 @@ html,body{
 
 /* ========== MENU BÀI KINH – ACCORDION ========== */
 
+/* Font thống nhất cho menu mục lục – tránh lỗi font lạ */
+.menu-block > .menu-toggle,
+.menu-toggle.nested,
+.menu-subblock .chapter-toggle,
+.menu-sutta-link,
+.sutra-label-main,
+.sutra-label-sub{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+
 /* Panel menu là cột, phần trên cố định, chỉ danh sách kinh cuộn */
 #sutraMenuPanel .search-box,
-#sutraMenuPanel .search-results,
-#sutraMenuPanel .menu-divider{
+#sutraMenuPanel .search-results{
   flex:0 0 auto;
 }
 
+/* Ô search */
+.search-box{
+  margin-top:4px;
+  margin-bottom:3px;
+}
+
+#sutraSearch{
+  width:100%;
+  padding:4px 8px;
+  font-size:12px;
+  border-radius:8px;
+  border:1px solid var(--border-strong);
+  outline:none;
+}
+#sutraSearch:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 1px var(--accent-soft);
+}
+
+/* Danh sách Nikāya + các cấp con */
 #sutraMenuPanel .sutra-list{
   list-style:none;
   margin:4px 0 0;
@@ -445,6 +475,23 @@ html,body{
   min-height:0;
   overflow-y:auto;
   position:relative;
+  border-top:1px solid #e5e7eb;   /* gạch ngay dưới ô search */
+}
+
+/* Gạch chia 5 Nikāya chính */
+.menu-block{
+  padding:4px 0;
+  border-bottom:1px solid #e5e7eb;
+}
+.menu-block:last-child{
+  border-bottom:none;
+}
+
+/* Reset li top-level */
+#sutraMenuPanel .sutra-list > li,
+#sutraMenuPanel .sutra-list > .menu-block{
+  margin-left:0;
+  padding-left:0;
 }
 
 /* Scrollbar gọn, nằm trong bo cong */
@@ -459,102 +506,181 @@ html,body{
   border-radius:999px;
 }
 
-/* Block bộ kinh */
-.menu-block{
-  margin-bottom:4px;
-}
-.menu-block + .menu-block{
-  margin-top:6px;
-  padding-top:4px;
+/* ==== CẤP 1 – NIKĀYA (Digha / Majjhima / Samyutta...) ==== */
 
-}
-
-/* Tiêu đề cấp 1: Trường Bộ, Trung Bộ... */
-.menu-toggle{
+/* nút Nikāya */
+.menu-block > .menu-toggle:not(.nested){
+  position:relative;
   width:100%;
   background:transparent;
   border:none;
   border-radius:0;
-  padding:4px 0;
   text-align:left;
-
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
   cursor:pointer;
 
-  font-weight:600;      
-  font-size:13px;      
-  color:#374151; 
-}
+  white-space:nowrap;        /* không cho xuống dòng */
+  overflow:hidden;           /* ẩn phần tràn */
+  text-overflow:clip;
 
-/* KHÔNG sticky nữa để tránh bug chèn nội dung */
-#sutraMenuPanel .menu-block > .menu-toggle:not(.nested){
- position:sticky;
-  top:0;
-  z-index:1;
-  background:#ffffff;
-  box-shadow:0 1px 0 #e5e7eb; /* gạch mảnh bên dưới */
-}
+  padding-top:7px;
+  padding-bottom:7px;
+  padding-left:10px;
+  padding-right:60px;        /* chừa rộng cho chevron */
 
-/* Cấp 2: nhóm nhỏ */
-.menu-toggle.nested{
-  font-size:13px;
-  font-weight:600;
+  font-weight:700;
+  line-height:1.45;
+  font-size:11.5px;
+  text-transform:uppercase;
+  letter-spacing:.02em;
   color:#374151;
-  padding:4px 0 4px 8px;
 }
 
-.menu-toggle:hover{
-  background:#f9fafb;
-}
-
-.menu-toggle:focus-visible{
-  outline:none;
-  box-shadow:0 0 0 1px #e5e7eb;
-}
-
-/* icon tam giác */
+/* Chevron chung */
 .chevron{
   font-size:10px;
-  margin-left:6px;
+  line-height:1;
+  opacity:0.7;
+  display:inline-block;
 }
 
-/* danh sách con */
+/* chevron ▸ bên phải – tuyệt đối, không chiếm chỗ của text */
+.menu-block > .menu-toggle:not(.nested) .chevron{
+  position:absolute;
+  right:14px;
+  top:50%;
+  transform:translateY(-50%);
+}
+
+/* ==== CẤP 2 – TẬP (Tập I, Tập II...) ==== */
+
+.menu-toggle.nested{
+  width:100%;
+  background:transparent;
+  border:none;
+  border-radius:0;
+  text-align:left;
+  cursor:pointer;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:relative;
+
+  padding-top:7px;
+  padding-bottom:7px;
+  padding-left:18px;          /* thụt vào so với Nikāya */
+  padding-right:44px;         /* chừa chỗ cho chevron */
+
+  font-weight:600;
+  font-size:13px;
+  color:#374151;
+
+  border-bottom:1px dashed #e5e7eb;   /* gạch ngăn giữa các Tập */
+}
+
+.menu-toggle.nested:last-child{
+  border-bottom:none;
+}
+
+/* icon ▸ trước Tập */
+.menu-toggle.nested::before{
+  content:"▸";
+  position:absolute;
+  left:4px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:9px;
+  opacity:0.75;
+}
+
+/* Chevron ở cấp 2 – Tập */
+.menu-toggle.nested .chevron{
+  position:absolute;
+  right:14px;
+  top:50%;
+  transform:translateY(-50%);
+}
+
+/* Khi list con mở (nếu JS có thêm class .open cho toggle) */
+.menu-toggle.nested.open::before{
+  content:"▾";
+}
+
+/* ==== CẤP 3 – NHÓM / CHƯƠNG ==== */
+
+.menu-subblock{
+  margin:3px 0;
+  padding-left:22px;   /* thụt thêm một nấc */
+}
+
+/* Nếu JS gán .chapter-toggle cho Chương */
+.menu-subblock .chapter-toggle{
+  font-weight:500;
+  font-size:12.5px;
+  color:#4b5563;
+  padding:3px 0 3px 14px;
+  position:relative;
+}
+
+/* icon – cho Chương */
+.menu-subblock .chapter-toggle::before{
+  content:"–";
+  position:absolute;
+  left:0;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:12px;
+  opacity:0.7;
+}
+
+/* ==== DANH SÁCH CON CHỨA BÀI KINH ==== */
+
 .menu-list{
   margin-left:0;
   padding-left:0;
   margin-bottom:3px;
 }
+
 .menu-list.collapsed{
   display:none;
 }
 
-/* khối group con */
-.menu-subblock{
-  margin-bottom:3px;
-  margin-top:2px;
-  padding-left:12px;
-}
-
-/* ITEM BÀI KINH */
+/* ==== CẤP 4 – BÀI KINH (SN 45 – Vagga 1...) ==== */
 
 .menu-sutta-link{
+  position:relative;
   display:flex;
   flex-direction:column;
   gap:2px;
-  padding:6px 6px 6px 20px;
+
+  padding:5px 6px 6px 34px;   /* chừa chỗ cho dấu • */
   margin-bottom:2px;
+
   border-radius:6px;
   cursor:pointer;
   text-decoration:none;
   background:transparent;
   color:#0f172a;
+
+  border-bottom:1px dashed rgba(148,163,184,0.25);
+}
+.menu-sutta-link:last-child{
+  border-bottom:none;
 }
 
-/* hover nhẹ */
+/* dấu • phía trước bài kinh */
+.menu-sutta-link::before{
+  content:"•";
+  position:absolute;
+  left:18px;
+  top:9px;
+  font-size:10px;
+  opacity:0.6;
+}
+
+/* hover nhẹ, không quá chói */
 .menu-sutta-link:hover{
-  background:#f1f5f9;
+  background:#f3f4f6;
 }
 
 /* trạng thái được chọn */
@@ -576,7 +702,7 @@ html,body{
   color:#111827;
 }
 
-/* Dòng phụ: tiếng Việt */
+/* Dòng phụ: tiếng Việt / EN */
 .sutra-label-sub{
   font-size:12px;
   font-weight:400;
@@ -589,31 +715,6 @@ html,body{
 }
 .menu-sutta-link.active .sutra-label-sub{
   color:rgba(239,246,255,0.9);
-}
-
-/* Ô tìm kiếm trong menu */
-.search-box{
-  margin-bottom:6px;
-}
-
-#sutraSearch{
-  width:100%;
-  padding:4px 8px;
-  font-size:12px;
-  border-radius:8px;
-  border:1px solid var(--border-strong);
-  outline:none;
-}
-#sutraSearch:focus{
-  border-color:var(--accent);
-  box-shadow:0 0 0 1px var(--accent-soft);
-}
-
-/* gạch ngang ngăn cách search & mục lục */
-.menu-divider{
-  border:none;
-  border-top:1px solid #e5e7eb;
-  margin:4px 0;
 }
 
 /* ================== SEARCH RESULTS ================== */
@@ -842,7 +943,7 @@ html,body{
   align-items:center;
   justify-content:center;
   font-size:17px;      /* chỉnh riêng cho icon sách */
-  line-height:1;      /* tránh bị lệch do line-height mặc định */
+  line-height:1;       /* tránh bị lệch do line-height mặc định */
   padding:0;
 }
 
