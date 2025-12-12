@@ -989,22 +989,6 @@ button,
   box-shadow: none !important;
 }
 
-/* Cố giữ background không đổi khi nhấn (đã tắt màu đè) */
-button:active,
-.menu-sutta-link:active,
-.menu-toggle:active,
-.btn-circle:active {
-  background: transparent !important;
-  -webkit-tap-highlight-color: transparent !important;
-}
-
-/* Nếu vẫn còn sự cố trong WebView (một số webview vẫn show overlay),
-   thêm pseudo-selector để vô hiệu hóa ảnh hưởng của -webkit-appearance */
-button,
-.btn-circle {
-  -webkit-appearance: none !important;
-  appearance: none !important;
-}
 /* ================= Sticky heading cho Nikāya khi cuộn ================= */
 /* Áp sticky cho tiêu đề cấp 1 (menu-toggle không .nested) */
 #sutraMenuPanel .menu-block > .menu-toggle:not(.nested){
