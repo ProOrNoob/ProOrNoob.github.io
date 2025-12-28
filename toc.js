@@ -1535,24 +1535,24 @@ window.SUTRA_INDEX = [
   ]
   }
 ]
-  },
+ //  },
 
-  /* ====================== KHUDDAKA NIKĀYA (KN) ====================== */
-  {
-    type: "nikaya",
-    key: "KN",
-    labelVi: "Khuddaka Nikāya - Tiểu Bộ Kinh",
-    labelEn: "Khuddaka Nikāya - Minor Collection",
-    children: [
-   { type: "sutta", id: "kn-khp", code: "Khp", href: "kn-khuddakapatha.html", titlePali: "Khp – Khuddakapāṭha (Short Passages)", titleVi: "Khp – Khuddakapāṭha — Kinh Tiểu Tụng" },
- { type: "sutta", id: "kn-dhp", code: "Dhp", href: "kn-dhammapada.html", titlePali: "Dhp – Dhammapada (The Dhamma Verses)", titleVi: "Dhp – Dhammapada — Kinh Pháp Cú" },
- { type: "sutta", id: "kn-ud", code: "Ud", href: "kn-udana.html", titlePali: "Ud – Udāna (Inspired Utterances)", titleVi: "Ud – Udāna — Kinh Cảm Hứng Ngữ" },
- { type: "sutta", id: "kn-it", code: "It", href: "kn-itivuttaka.html", titlePali: "It – Itivuttaka (This Was Said)", titleVi: "It – Itivuttaka — Kinh Như Thị Ngữ" },
- { type: "sutta", id: "kn-sn", code: "Sn", href: "kn-suttanipata.html", titlePali: "Sn – Sutta Nipāta (Collection of Discourses)", titleVi: "Sn – Sutta Nipāta — Kinh Tập" },
- { type: "sutta", id: "kn-thag", code: "Thag", href: "kn-theragatha.html", titlePali: "Thag – Theragāthā (Verses of the Elder Monks)", titleVi: "Thag – Theragāthā — Kinh Trưởng Lão Tăng Kệ" },
- { type: "sutta", id: "kn-thig", code: "Thig", href: "kn-therigatha.html", titlePali: "Thig – Therīgāthā (Verses of the Elder Nuns)", titleVi: "Thig – Therīgāthā — Kinh Trưởng Lão Ni Kệ" }
-    ]
-  }
+ //  /* ====================== KHUDDAKA NIKĀYA (KN) ====================== */
+ //  {
+ //    type: "nikaya",
+ //    key: "KN",
+ //    labelVi: "Khuddaka Nikāya - Tiểu Bộ Kinh",
+ //    labelEn: "Khuddaka Nikāya - Minor Collection",
+ //    children: [
+ //   { type: "sutta", id: "kn-khp", code: "Khp", href: "kn-khuddakapatha.html", titlePali: "Khp – Khuddakapāṭha (Short Passages)", titleVi: "Khp – Khuddakapāṭha — Kinh Tiểu Tụng" },
+ // { type: "sutta", id: "kn-dhp", code: "Dhp", href: "kn-dhammapada.html", titlePali: "Dhp – Dhammapada (The Dhamma Verses)", titleVi: "Dhp – Dhammapada — Kinh Pháp Cú" },
+ // { type: "sutta", id: "kn-ud", code: "Ud", href: "kn-udana.html", titlePali: "Ud – Udāna (Inspired Utterances)", titleVi: "Ud – Udāna — Kinh Cảm Hứng Ngữ" },
+ // { type: "sutta", id: "kn-it", code: "It", href: "kn-itivuttaka.html", titlePali: "It – Itivuttaka (This Was Said)", titleVi: "It – Itivuttaka — Kinh Như Thị Ngữ" },
+ // { type: "sutta", id: "kn-sn", code: "Sn", href: "kn-suttanipata.html", titlePali: "Sn – Sutta Nipāta (Collection of Discourses)", titleVi: "Sn – Sutta Nipāta — Kinh Tập" },
+ // { type: "sutta", id: "kn-thag", code: "Thag", href: "kn-theragatha.html", titlePali: "Thag – Theragāthā (Verses of the Elder Monks)", titleVi: "Thag – Theragāthā — Kinh Trưởng Lão Tăng Kệ" },
+ // { type: "sutta", id: "kn-thig", code: "Thig", href: "kn-therigatha.html", titlePali: "Thig – Therīgāthā (Verses of the Elder Nuns)", titleVi: "Thig – Therīgāthā — Kinh Trưởng Lão Ni Kệ" }
+ //    ]
+ //  }
 
   
 ];
