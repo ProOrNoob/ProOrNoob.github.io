@@ -36,10 +36,80 @@
     return p;
   }
 
+  // (Giữ lại để không mất tính năng cũ / tương thích nếu bạn còn pack kiểu sutra-<id>.js)
   function getPackBySutraId(id) {
-   if (!id) return null;
-  if (!/^[A-Za-z0-9_-]+$/.test(id)) return null;
-  return './sutta/sutra-' + id;
+    if (!id) return null;
+    if (!/^[A-Za-z0-9_-]+$/.test(id)) return null;
+    return './sutta/sutra-' + id;
+  }
+
+  /* ========== OFFLINE BILARA LOADER (3 LANGS via .js) ========== */
+  // Yêu cầu format file:
+  //  ./sutta/pli/<id>.js => window.BILARA[id].pli = { "dn01:0.1": "...", ... }
+  //  ./sutta/en/<id>.js  => window.BILARA[id].en  = { ... }
+  //  ./sutta/vi/<id>.js  => window.BILARA[id].vi  = { ... }
+  window.BILARA = window.BILARA || {};
+
+  const BILARA_BASE_DIR = './sutta';
+  function getBilaraPack(lang, id) {
+    if (!id) return null;
+    if (!/^[A-Za-z0-9_-]+$/.test(id)) return null;
+    return `${BILARA_BASE_DIR}/${lang}/${id}`; // loadPackIfNeeded sẽ + ".js"
+  }
+
+  // Cache merged result for fast back/forward
+  const BILARA_MERGED_CACHE = new Map(); // id -> merged
+  const BILARA_MERGED_PROMISES = new Map();
+
+  function unionKeys3(a, b, c) {
+    const set = new Set();
+    if (a) Object.keys(a).forEach((k) => set.add(k));
+    if (b) Object.keys(b).forEach((k) => set.add(k));
+    if (c) Object.keys(c).forEach((k) => set.add(k));
+    return Array.from(set);
+  }
+
+  function sortBilaraKeys(keys) {
+    // Sort ổn cho "dn01:0.1", "dn01:0.2", "dn01:1.10"...
+    return keys.sort((x, y) => x.localeCompare(y, 'en', { numeric: true }));
+  }
+
+  async function loadBilara3LangMerged(id) {
+    if (!id) return null;
+    if (BILARA_MERGED_CACHE.has(id)) return BILARA_MERGED_CACHE.get(id);
+    if (BILARA_MERGED_PROMISES.has(id)) return BILARA_MERGED_PROMISES.get(id);
+
+    const p = (async () => {
+      await Promise.all([
+        loadPackIfNeeded(getBilaraPack('pli', id)),
+        loadPackIfNeeded(getBilaraPack('en', id)),
+        loadPackIfNeeded(getBilaraPack('vi', id)),
+      ]);
+
+      const entry = window.BILARA && window.BILARA[id] ? window.BILARA[id] : {};
+      const paliMap = entry.pli || {};
+      const engMap = entry.en || {};
+      const vieMap = entry.vi || {};
+
+      const keys = sortBilaraKeys(unionKeys3(paliMap, engMap, vieMap));
+      const rows = keys.map((k) => ({
+        key: k,
+        pali: paliMap[k] || '',
+        eng: engMap[k] || '',
+        vie: vieMap[k] || '',
+      }));
+
+      const merged = { paliMap, engMap, vieMap, keys, rows };
+      BILARA_MERGED_CACHE.set(id, merged);
+      BILARA_MERGED_PROMISES.delete(id);
+      return merged;
+    })().catch((err) => {
+      BILARA_MERGED_PROMISES.delete(id);
+      throw err;
+    });
+
+    BILARA_MERGED_PROMISES.set(id, p);
+    return p;
   }
 
   /* ========== BIẾN & DOM ========== */
@@ -141,26 +211,26 @@
   `;
 
   function renderUiLangFlag() {
-   if (!btnUiLang) return;
-  btnUiLang.innerHTML = uiLang === 'en' ? FLAG_EN : FLAG_VI;
-  btnUiLang.title =
-    uiLang === 'en'
-      ? 'Interface: English (click to switch to Vietnamese)'
-      : 'Giao diện: Tiếng Việt (bấm để chuyển sang English)';
+    if (!btnUiLang) return;
+    btnUiLang.innerHTML = uiLang === 'en' ? FLAG_EN : FLAG_VI;
+    btnUiLang.title =
+      uiLang === 'en'
+        ? 'Interface: English (click to switch to Vietnamese)'
+        : 'Giao diện: Tiếng Việt (bấm để chuyển sang English)';
 
-  if (btnGuide) {
-    btnGuide.title = uiLang === 'en' ? 'User guide' : 'Hướng dẫn sử dụng';
+    if (btnGuide) {
+      btnGuide.title = uiLang === 'en' ? 'User guide' : 'Hướng dẫn sử dụng';
+    }
+    if (btnSutraMenu) {
+      btnSutraMenu.title = uiLang === 'en' ? 'Sutta Index' : 'Danh mục bài kinh';
+    }
+    if (btnSettings) {
+      btnSettings.title = uiLang === 'en' ? 'Display settings' : 'Cài đặt hiển thị';
+    }
+    if (btnBackTop) {
+      btnBackTop.title = uiLang === 'en' ? 'Back to top' : 'Lên đầu nội dung';
+    }
   }
-  if (btnSutraMenu) {
-    btnSutraMenu.title = uiLang === 'en' ? 'Sutta Index' : 'Danh mục bài kinh';
-  }
-  if (btnSettings) {
-    btnSettings.title = uiLang === 'en' ? 'Display settings' : 'Cài đặt hiển thị';
-  }
-  if (btnBackTop) {
-    btnBackTop.title = uiLang === 'en' ? 'Back to top' : 'Lên đầu nội dung';
-  }
-}
 
   function applyUiLanguageToSettingsPanel() {
     const isEn = uiLang === 'en';
@@ -181,9 +251,7 @@
     }
 
     if (btnLayout) {
-      btnLayout.textContent = isEn
-        ? '3 columns / Stacked'
-        : '3 cột / Xếp dọc';
+      btnLayout.textContent = isEn ? '3 columns / Stacked' : '3 cột / Xếp dọc';
     }
 
     const ttsTitle = document.getElementById('settingsTtsTitle');
@@ -218,14 +286,10 @@
     }
 
     // Full width
-    const fullWidthLabel = btnFullWidth
-      ? btnFullWidth.previousElementSibling
-      : null;
+    const fullWidthLabel = btnFullWidth ? btnFullWidth.previousElementSibling : null;
 
     if (fullWidthLabel) {
-      fullWidthLabel.textContent = isEn
-        ? 'Full width:'
-        : 'Giãn toàn màn hình:';
+      fullWidthLabel.textContent = isEn ? 'Full width:' : 'Giãn toàn màn hình:';
     }
 
     if (btnFullWidth) {
@@ -244,21 +308,18 @@
         subtitleEl.textContent =
           'Welcome! Tap 📖 to select a sutta, or ❓ for the guide.';
 
-      // keep HTML content as-is (you said you'll move it out later)
       grid.innerHTML = `
       <div class="welcome-screen">
-  <div class="welcome-box">
-    <strong>Welcome!</strong> This seems to be your first time using the app.<br><br>
-
-    <em>
-      👉 First, you may choose the <strong>display language (VI / EN)</strong> using the 🇻🇳 / 🇬🇧 button at the bottom.
-    </em>
-    <br><br>
-
-    • Tap 📖 <strong>Sutta Index</strong> to choose a sutta to read.<br>
-    • Tap ❓ <strong>Guide</strong> to see detailed instructions.
-  </div>
-</div>
+        <div class="welcome-box">
+          <strong>Welcome!</strong> This seems to be your first time using the app.<br><br>
+          <em>
+            👉 First, you may choose the <strong>display language (VI / EN)</strong> using the 🇻🇳 / 🇬🇧 button at the bottom.
+          </em>
+          <br><br>
+          • Tap 📖 <strong>Sutta Index</strong> to choose a sutta to read.<br>
+          • Tap ❓ <strong>Guide</strong> to see detailed instructions.
+        </div>
+      </div>
       `;
     } else {
       if (titleEl) titleEl.textContent = 'Chào mừng bạn đến với trang lưu trữ kinh';
@@ -266,17 +327,14 @@
         subtitleEl.textContent =
           'Xin chào! Hãy bấm 📖 để chọn bài kinh, hoặc ❓ để xem hướng dẫn.';
 
-      // keep HTML content as-is (you said you'll move it out later)
       grid.innerHTML = `
-            <div class="welcome-screen">
+      <div class="welcome-screen">
         <div class="welcome-box">
           <strong>Xin chào!</strong> Có vẻ đây là lần đầu bạn dùng ứng dụng này.<br><br>
-
           <em>
             👉 Trước tiên, bạn có thể chọn <strong>ngôn ngữ hiển thị (VI / EN)</strong> bằng nút 🇻🇳 / 🇬🇧 ở góc dưới.
           </em>
           <br><br>
-
           • Bấm 📖 <strong>Danh mục bài kinh</strong> để chọn bài muốn đọc.<br>
           • Bấm ❓ <strong>Hướng dẫn</strong> để xem cách sử dụng chi tiết.
         </div>
@@ -295,24 +353,23 @@
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   }
-function escapeAttr(val) {
-  if (val === undefined || val === null) return '';
-  return String(val)
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-    .replace(/</g, '&lt;')
-    .replace(/`/g, '&#96;')
-    .replace(/>/g, '&gt;');
-    
-}
+  function escapeAttr(val) {
+    if (val === undefined || val === null) return '';
+    return String(val)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;')
+      .replace(/</g, '&lt;')
+      .replace(/`/g, '&#96;')
+      .replace(/>/g, '&gt;');
+  }
+
   // safe DOM id
   function safeDomId(base) {
     return String(base).replace(/[^a-z0-9_-]/gi, '-');
   }
 
   function renderGuideDialog() {
-    // keep using innerHTML for guide content (you'll move it later)
     if (!guideOverlay) return;
     const dlg = guideOverlay.querySelector('.guide-dialog');
     if (!dlg) return;
@@ -324,12 +381,8 @@ function escapeAttr(val) {
         <div class="guide-body">
           <em>Short instructions on how to use the sutta reader.</em>
           <ul>
-            <li>
-              📖 <strong>Sutta Index</strong>: open the catalogue and choose a sutta to display.
-            </li>
-            <li>
-              🔎 <strong>Search</strong>: type name, ID or keyword to quickly filter suttas.
-            </li>
+            <li>📖 <strong>Sutta Index</strong>: open the catalogue and choose a sutta to display.</li>
+            <li>🔎 <strong>Search</strong>: type name, ID or keyword to quickly filter suttas.</li>
             <li>
               ⚙ <strong>Display settings</strong>:
               <ul>
@@ -341,12 +394,8 @@ function escapeAttr(val) {
                 <li>Full width: expand the reading area to full screen width.</li>
               </ul>
             </li>
-            <li>
-              ↔ <strong>Swipe left–right</strong> on the text to go to the previous / next sutta.
-            </li>
-            <li>
-              ↑ <strong>Back to top</strong>: scroll quickly to the top of the current sutta.
-            </li>
+            <li>↔ <strong>Swipe left–right</strong> on the text to go to the previous / next sutta.</li>
+            <li>↑ <strong>Back to top</strong>: scroll quickly to the top of the current sutta.</li>
           </ul>
         </div>
         <button id="btnCloseGuide" type="button">Close</button>
@@ -357,14 +406,8 @@ function escapeAttr(val) {
         <div class="guide-body">
           <em>Một số hướng dẫn cơ bản để bạn sử dụng trang đọc kinh.</em>
           <ul>
-            <li>
-              📖 <strong>Danh mục bài kinh</strong>:
-              mở mục lục và chọn bài kinh muốn hiển thị.
-            </li>
-            <li>
-              🔎 <strong>Tìm kiếm</strong>:
-              gõ tên, mã số hoặc từ khóa để lọc nhanh bài kinh.
-            </li>
+            <li>📖 <strong>Danh mục bài kinh</strong>: mở mục lục và chọn bài kinh muốn hiển thị.</li>
+            <li>🔎 <strong>Tìm kiếm</strong>: gõ tên, mã số hoặc từ khóa để lọc nhanh bài kinh.</li>
             <li>
               ⚙ <strong>Cài đặt hiển thị</strong>:
               <ul>
@@ -376,14 +419,8 @@ function escapeAttr(val) {
                 <li>Toàn màn hình: giãn khung đọc chiếm hết chiều ngang màn hình.</li>
               </ul>
             </li>
-            <li>
-              ↔ <strong>Vuốt / kéo ngang</strong> trên nội dung kinh
-              để chuyển sang bài trước hoặc bài sau.
-            </li>
-            <li>
-              ↑ <strong>Lên đầu</strong>:
-              cuộn nhanh về đầu bài kinh hiện tại.
-            </li>
+            <li>↔ <strong>Vuốt / kéo ngang</strong> trên nội dung kinh để chuyển sang bài trước hoặc bài sau.</li>
+            <li>↑ <strong>Lên đầu</strong>: cuộn nhanh về đầu bài kinh hiện tại.</li>
           </ul>
         </div>
         <button id="btnCloseGuide" type="button">Đóng</button>
@@ -401,10 +438,7 @@ function escapeAttr(val) {
 
   function applyUiLanguageToSearchUi() {
     if (!searchInput) return;
-    searchInput.placeholder =
-      uiLang === 'en'
-        ? 'Search sutta...'
-        : 'Tìm bài kinh ...';
+    searchInput.placeholder = uiLang === 'en' ? 'Search sutta...' : 'Tìm bài kinh ...';
   }
 
   function initUiLangFlag() {
@@ -610,10 +644,7 @@ function escapeAttr(val) {
   }
 
   function applyZoom() {
-    document.documentElement.style.setProperty(
-      '--sutra-font-scale',
-      String(zoomLevel)
-    );
+    document.documentElement.style.setProperty('--sutra-font-scale', String(zoomLevel));
   }
 
   function loadZoom() {
@@ -662,10 +693,7 @@ function escapeAttr(val) {
   /* ========== PANEL ========== */
   function togglePanel(panel, force) {
     if (!panel) return;
-    const isOpen =
-      typeof force === 'boolean'
-        ? force
-        : !panel.classList.contains('open');
+    const isOpen = typeof force === 'boolean' ? force : !panel.classList.contains('open');
     panel.classList.toggle('open', isOpen);
     panel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
   }
@@ -695,6 +723,7 @@ function escapeAttr(val) {
       if (e.target === guideOverlay) guideOverlay.classList.remove('show');
     });
   }
+
   /* ========== DOUBLE CLICK ĐỂ ĐÓNG MENU BÀI KINH ========== */
   if (grid && sutraMenuPanel) {
     grid.addEventListener('dblclick', (e) => {
@@ -708,48 +737,49 @@ function escapeAttr(val) {
       }
     });
   }
+
   /* ========== MENU ACCORDION TỪ SUTRA_INDEX ========== */
 
   // Tạo HTML cho 1 link sutta + push vào FLAT_SUTTAS (dùng cho search)
   function buildSuttaLinkHtml(s) {
-const codePrefix = s.code ? s.code + ' – ' : '';
-  const viLabel = s.titleVi || '';
-  const enLabel = s.titleEn || '';
-  const paliLabel = s.titlePali || '';
+    const codePrefix = s.code ? s.code + ' – ' : '';
+    const viLabel = s.titleVi || '';
+    const enLabel = s.titleEn || '';
+    const paliLabel = s.titlePali || '';
 
-  let mainText, subText;
-  if (uiLang === 'en') {
-    mainText = codePrefix + (enLabel || viLabel || paliLabel || s.id);
-    subText = paliLabel || viLabel || '';
-  } else {
-    mainText = codePrefix + (viLabel || enLabel || paliLabel || s.id);
-    subText = paliLabel || enLabel || '';
+    let mainText, subText;
+    if (uiLang === 'en') {
+      mainText = codePrefix + (enLabel || viLabel || paliLabel || s.id);
+      subText = paliLabel || viLabel || '';
+    } else {
+      mainText = codePrefix + (viLabel || enLabel || paliLabel || s.id);
+      subText = paliLabel || enLabel || '';
+    }
+
+    // Push a plain-text flat string (no HTML entities) for reliable search
+    const flatLabel = `${mainText} ${viLabel} ${enLabel} ${paliLabel}`.trim();
+
+    FLAT_SUTTAS.push({
+      id: s.id,
+      main: mainText,
+      sub: subText,
+      flat: flatLabel,
+    });
+
+    // Return HTML string only for rendering; ensure attribute is safe by encoding quotes
+    const safeIdAttr = escapeAttr(s.id);
+    const mainHtml = escapeHtml(mainText);
+    const subHtml = subText ? `<div class="sutra-label-sub">${escapeHtml(subText)}</div>` : '';
+
+    return `
+      <a href="#" class="menu-sutta-link" data-id="${safeIdAttr}">
+        <div class="sutra-label">
+          <div class="sutra-label-main">${mainHtml}</div>
+          ${subHtml}
+        </div>
+      </a>
+    `;
   }
-
-  // Push a plain-text flat string (no HTML entities) for reliable search
-  const flatLabel = `${mainText} ${viLabel} ${enLabel} ${paliLabel}`.trim();
-
-  FLAT_SUTTAS.push({
-    id: s.id,
-    main: mainText,
-    sub: subText,
-    flat: flatLabel,
-  });
-
-  // Return HTML string only for rendering; ensure attribute is safe by encoding quotes
-  const safeIdAttr = escapeAttr(s.id);
-  const mainHtml = escapeHtml(mainText);
-  const subHtml = subText ? `<div class="sutra-label-sub">${escapeHtml(subText)}</div>` : '';
-
-  return `
-    <a href="#" class="menu-sutta-link" data-id="${safeIdAttr}">
-      <div class="sutra-label">
-        <div class="sutra-label-main">${mainHtml}</div>
-        ${subHtml}
-      </div>
-    </a>
-  `;
-}
 
   // Đệ quy render children (group + sutta), hỗ trợ nhiều cấp group lồng nhau
   function buildMenuChildren(children, parentId) {
@@ -768,7 +798,9 @@ const codePrefix = s.code ? s.code + ' – ' : '';
 
         html += `
           <div class="menu-subblock">
-           <button class="menu-toggle nested" type="button" data-target="${escapeHtml(grpId)}" aria-controls="${escapeHtml(grpId)}" aria-expanded="false">
+            <button class="menu-toggle nested" type="button" data-target="${escapeHtml(
+              grpId
+            )}" aria-controls="${escapeHtml(grpId)}" aria-expanded="false">
               <span>${escapeHtml(grpLabel)}</span>
               <span class="chevron">▸</span>
             </button>
@@ -810,7 +842,9 @@ const codePrefix = s.code ? s.code + ' – ' : '';
 
       html += `
         <li class="menu-block">
-         <button class="menu-toggle" type="button" data-target="${escapeHtml(secId)}" aria-controls="${escapeHtml(secId)}" aria-expanded="false">
+          <button class="menu-toggle" type="button" data-target="${escapeHtml(
+            secId
+          )}" aria-controls="${escapeHtml(secId)}" aria-expanded="false">
             <span>${escapeHtml(secLabel)}</span>
             <span class="chevron">▸</span>
           </button>
@@ -824,20 +858,18 @@ const codePrefix = s.code ? s.code + ' – ' : '';
     if (!sutraMenuList) return;
     sutraMenuList.innerHTML = html;
 
-  
-    SUTRA_ORDER = Array.from(sutraMenuList.querySelectorAll('.menu-sutta-link')).map(a => a.getAttribute('data-id'));
-
+    SUTRA_ORDER = Array.from(sutraMenuList.querySelectorAll('.menu-sutta-link')).map((a) =>
+      a.getAttribute('data-id')
+    );
 
     highlightActiveInMenu();
   }
 
   function highlightActiveInMenu() {
     if (!sutraMenuList) return;
-    sutraMenuList
-      .querySelectorAll('.menu-sutta-link')
-      .forEach((a) => {
-        a.classList.toggle('active', a.getAttribute('data-id') === currentSutraId);
-      });
+    sutraMenuList.querySelectorAll('.menu-sutta-link').forEach((a) => {
+      a.classList.toggle('active', a.getAttribute('data-id') === currentSutraId);
+    });
   }
 
   /* ========== SEARCH ========== */
@@ -870,10 +902,7 @@ const codePrefix = s.code ? s.code + ' – ' : '';
     }
 
     if (!matches.length) {
-      const msg =
-        uiLang === 'en'
-          ? 'No matching sutta found.'
-          : 'Không tìm thấy kinh phù hợp.';
+      const msg = uiLang === 'en' ? 'No matching sutta found.' : 'Không tìm thấy kinh phù hợp.';
       searchResultsEl.innerHTML =
         '<div class="search-result-empty">' + escapeHtml(msg) + '</div>';
       return;
@@ -895,9 +924,6 @@ const codePrefix = s.code ? s.code + ' – ' : '';
       .join('');
 
     searchResultsEl.innerHTML = html;
-
-
-  
   }
 
   function applySearch(query) {
@@ -907,112 +933,200 @@ const codePrefix = s.code ? s.code + ' – ' : '';
       return;
     }
 
-    const matches = FLAT_SUTTAS.filter((item) =>
-      item.flat.toLowerCase().includes(q)
-    );
-
+    const matches = FLAT_SUTTAS.filter((item) => item.flat.toLowerCase().includes(q));
     renderSearchResults(matches, query);
   }
 
   if (searchInput) {
-    searchInput.addEventListener('input', debounce((e) => {
-      applySearch(e.target.value);
-    }, 200));
+    searchInput.addEventListener(
+      'input',
+      debounce((e) => {
+        applySearch(e.target.value);
+      }, 200)
+    );
   }
 
   /* ========== RENDER BÀI ========== */
 
-  async function renderSutra(id) {
-    if (!id || !grid) return;
+  // Helper: tìm meta trong SUTRA_INDEX (để title/subtitle đẹp, vẫn giữ tính năng cũ)
+  function findMetaById(id) {
+    const index = window.SUTRA_INDEX || [];
+    let found = null;
 
-    if (currentSutraId) {
-      try {
-        localStorage.setItem('scroll_' + currentSutraId, grid.scrollTop || 0);
-      } catch (e) {
-        // ignore storage errors
+    function walk(children) {
+      if (!children || !children.length || found) return;
+      for (const ch of children) {
+        if (found) return;
+        if (ch.type === 'sutta' && ch.id === id) {
+          found = ch;
+          return;
+        }
+        if (ch.type === 'group') walk(ch.children || []);
       }
     }
 
-    resetTts(true, false);
-
-    const pack = getPackBySutraId(id);
-    try {
-      await loadPackIfNeeded(pack);
-    } catch (err) {
-      console.warn('Không load được file:', pack, err);
+    for (const sec of index) {
+      walk(sec.children || []);
+      if (found) break;
     }
-
-    const data = (window.SUTRA_DATA || {})[id];
-    if (!data) {
-      if (titleEl) titleEl.textContent =
-        uiLang === 'en'
-          ? 'Sutta data not found'
-          : 'Không tìm thấy dữ liệu bài kinh';
-
-      if (subtitleEl) subtitleEl.textContent =
-        uiLang === 'en'
-          ? `ID: ${id}`
-          : `Mã bài: ${id}`;
-
-      if (grid) grid.innerHTML = '';
-      currentSutraId = id;
-      highlightActiveInMenu();
-      return;
-    }
-
-    currentSutraId = id;
-    try {
-      localStorage.setItem('lastSutraId', id);
-    } catch (e) {
-      // ignore storage errors
-    }
-
-    const title =
-      uiLang === 'en'
-        ? data.titleEn || data.titleVi || data.title || id
-        : data.titleVi || data.titleEn || data.title || id;
-
-    const subtitle =
-      uiLang === 'en'
-        ? data.subtitleEn || data.subtitleVi || data.subtitle || ''
-        : data.subtitleVi || data.subtitleEn || data.subtitle || '';
-
-    if (titleEl) titleEl.textContent = title;
-    if (subtitleEl) subtitleEl.textContent = subtitle;
-
-    // build rows safely but keep HTML-like structure (escape cell texts)
-    let html = '';
-    (data.rows || []).forEach((r) => {
-      html += `
-        <div class="sutra-row">
-          <div class="sutra-col pali-col">
-            <div class="pali">${escapeHtml(r.pali || '')}</div>
-          </div>
-          <div class="sutra-col eng-col">
-            <div class="eng">${escapeHtml(r.eng || '')}</div>
-          </div>
-          <div class="sutra-col vie-col">
-            <div class="vie">${escapeHtml(r.vie || '')}</div>
-          </div>
-        </div>
-      `;
-    });
-
-    if (grid) grid.innerHTML = html;
-
-    applyVisibility();
-    highlightActiveInMenu();
-
-    try {
-      const saved = localStorage.getItem('scroll_' + id);
-      if (grid) grid.scrollTop = saved ? parseInt(saved, 10) : 0;
-    } catch (e) {
-      // ignore
-    }
-    toggleBackTop(grid && grid.scrollTop > 0);
-
-    restoreTtsStateForCurrentSutra();
+    return found;
   }
+
+async function renderSutra(id) {
+  if (!id || !grid) return;
+
+  // save scroll of previous sutra
+  if (currentSutraId) {
+    try {
+      localStorage.setItem('scroll_' + currentSutraId, grid.scrollTop || 0);
+    } catch (e) {}
+  }
+
+  // stop / reset TTS when switching
+  resetTts(true, false);
+
+  // load 3-language offline packs and merge by key
+  let merged = null;
+  try {
+    merged = await loadBilara3LangMerged(id);
+  } catch (err) {
+    console.warn('Không load được bilara data:', id, err);
+  }
+
+  if (!merged || !merged.rows || !merged.rows.length) {
+    if (titleEl)
+      titleEl.textContent =
+        uiLang === 'en' ? 'Sutta data not found' : 'Không tìm thấy dữ liệu bài kinh';
+    if (subtitleEl) subtitleEl.textContent = uiLang === 'en' ? `ID: ${id}` : `Mã bài: ${id}`;
+    if (grid) grid.innerHTML = '';
+    currentSutraId = id;
+    highlightActiveInMenu();
+    return;
+  }
+
+  // set current and remember last opened
+  currentSutraId = id;
+  try {
+    localStorage.setItem('lastSutraId', id);
+  } catch (e) {}
+
+  // ---------- Title = :0.2, Subtitle = :0.1 (robust suffix lookup) ----------
+  function getByExactOrSuffix(map, exactKey, suffix) {
+    if (!map) return '';
+    if (exactKey && map[exactKey]) return map[exactKey];
+
+    const keys = Object.keys(map);
+    // 1) exact match
+    let k = exactKey ? keys.find((x) => x === exactKey) : null;
+    // 2) endsWith suffix like ":0.2"
+    if (!k && suffix) k = keys.find((x) => String(x).endsWith(suffix));
+    return k ? map[k] || '' : '';
+  }
+
+  function pickTextForUiLangSuffix(suffix) {
+    const exactKey = id + suffix; // try exact first, then suffix match
+
+    if (uiLang === 'en') {
+      return (
+        getByExactOrSuffix(merged.engMap, exactKey, suffix) ||
+        getByExactOrSuffix(merged.vieMap, exactKey, suffix) ||
+        getByExactOrSuffix(merged.paliMap, exactKey, suffix) ||
+        ''
+      );
+    }
+    return (
+      getByExactOrSuffix(merged.vieMap, exactKey, suffix) ||
+      getByExactOrSuffix(merged.engMap, exactKey, suffix) ||
+      getByExactOrSuffix(merged.paliMap, exactKey, suffix) ||
+      ''
+    );
+  }
+
+  const titleFromBilara = (pickTextForUiLangSuffix(':0.2') || '').trim();
+  const subtitleFromBilara = (pickTextForUiLangSuffix(':0.1') || '').trim();
+
+  // ---------- Remove all ":0.*" segments from displayed content ----------
+  // Works even if the prefix differs (dn1 vs dn01), because it removes by pattern ":0."
+  const rowsForView = merged.rows.filter((r) => {
+    const key = String(r.key || '');
+    return !key.includes(':0.');
+  });
+
+  // ---------- Meta fallback from SUTRA_INDEX (if bilara header missing) ----------
+  const meta = findMetaById(id) || {};
+  const titleFallback =
+    uiLang === 'en'
+      ? meta.titleEn || meta.titleVi || meta.titlePali || meta.title || id
+      : meta.titleVi || meta.titleEn || meta.titlePali || meta.title || id;
+
+  const subtitleFallback =
+    uiLang === 'en'
+      ? meta.subtitleEn || meta.subtitleVi || meta.subtitle || ''
+      : meta.subtitleVi || meta.subtitleEn || meta.subtitle || '';
+
+  const finalTitle = titleFromBilara || titleFallback;
+  const finalSubtitle = subtitleFromBilara || subtitleFallback;
+
+  if (titleEl) titleEl.textContent = finalTitle;
+  if (subtitleEl) subtitleEl.textContent = finalSubtitle;
+
+  // ---------- Render rows (optimized join; keep same structure + escape) ----------
+  const parts = [];
+  (rowsForView || []).forEach((r) => {
+    parts.push(`
+      <div class="sutra-row">
+        <div class="sutra-col pali-col">
+          <div class="pali">${escapeHtml(r.pali || '')}</div>
+        </div>
+        <div class="sutra-col eng-col">
+          <div class="eng">${escapeHtml(r.eng || '')}</div>
+        </div>
+        <div class="sutra-col vie-col">
+          <div class="vie">${escapeHtml(r.vie || '')}</div>
+        </div>
+      </div>
+    `);
+  });
+  grid.innerHTML = parts.join('');
+
+  applyVisibility();
+  highlightActiveInMenu();
+
+  // preload prev/next (non-breaking; improves swipe)
+  try {
+    const idx = SUTRA_ORDER.indexOf(id);
+    if (idx !== -1) {
+      const prevId = SUTRA_ORDER[idx - 1];
+      const nextId = SUTRA_ORDER[idx + 1];
+      if (prevId) loadBilara3LangMerged(prevId).catch(() => {});
+      if (nextId) loadBilara3LangMerged(nextId).catch(() => {});
+    }
+  } catch (e) {}
+
+  // restore scroll for this sutra
+// ===== FIX: restore scroll AFTER layout is stable =====
+try {
+  const saved = localStorage.getItem('scroll_' + id);
+  const y = saved ? parseInt(saved, 10) : 0;
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (grid) {
+        grid.scrollTop = y;
+        toggleBackTop(grid.scrollTop > 0);
+      }
+    });
+  });
+} catch (e) {
+  if (grid) grid.scrollTop = 0;
+}
+
+
+
+  // your existing behavior: reset TTS state per sutra (no auto resume)
+  restoreTtsStateForCurrentSutra();
+}
+
 
   function openSutra(id) {
     renderSutra(id);
@@ -1075,10 +1189,7 @@ const codePrefix = s.code ? s.code + ' – ' : '';
   if (btnLayout) {
     btnLayout.onclick = () => {
       if (card) card.classList.toggle('stack');
-      btnLayout.classList.toggle(
-        'active',
-        card && card.classList.contains('stack')
-      );
+      btnLayout.classList.toggle('active', card && card.classList.contains('stack'));
       adjustRowColumns();
     };
   }
@@ -1103,19 +1214,19 @@ const codePrefix = s.code ? s.code + ' – ' : '';
   }
 
   if (grid) {
-    grid.addEventListener('scroll', throttle(() => {
-      toggleBackTop(grid.scrollTop > 0);
-      if (currentSutraId) {
-        try {
-          localStorage.setItem(
-            'scroll_' + currentSutraId,
-            grid.scrollTop
-          );
-        } catch (e) {
-          // ignore storage error
+    grid.addEventListener(
+      'scroll',
+      throttle(() => {
+        toggleBackTop(grid.scrollTop > 0);
+        if (currentSutraId) {
+          try {
+            localStorage.setItem('scroll_' + currentSutraId, grid.scrollTop);
+          } catch (e) {
+            // ignore storage error
+          }
         }
-      }
-    }, 250));
+      }, 100)
+    );
   }
 
   if (btnBackTop && grid) {
@@ -1125,85 +1236,55 @@ const codePrefix = s.code ? s.code + ' – ' : '';
     };
   }
 
-  /* ========== SWIPE & MOUSE DRAG TRÁI/PHẢI ========== */
+  /* ========== SWIPE (MOBILE ONLY) TRÁI/PHẢI ========== */
 
-  const SWIPE_THRESHOLD = 60;
+const SWIPE_THRESHOLD = 60;
 
-  function goPrevNext(direction) {
-    const idx = SUTRA_ORDER.indexOf(currentSutraId);
-    if (idx === -1) return;
-    if (direction === 'next' && idx < SUTRA_ORDER.length - 1) {
-      openSutra(SUTRA_ORDER[idx + 1]);
-    } else if (direction === 'prev' && idx > 0) {
-      openSutra(SUTRA_ORDER[idx - 1]);
-    }
+function goPrevNext(direction) {
+  const idx = SUTRA_ORDER.indexOf(currentSutraId);
+  if (idx === -1) return;
+  if (direction === 'next' && idx < SUTRA_ORDER.length - 1) {
+    openSutra(SUTRA_ORDER[idx + 1]);
+  } else if (direction === 'prev' && idx > 0) {
+    openSutra(SUTRA_ORDER[idx - 1]);
   }
+}
 
-  if (grid) {
-    let touchStartX = 0,
-      touchStartY = 0,
-      touchEndX = 0,
-      touchEndY = 0;
+if (grid) {
+  let touchStartX = 0,
+    touchStartY = 0,
+    touchEndX = 0,
+    touchEndY = 0;
 
-    grid.addEventListener(
-      'touchstart',
-      (e) => {
-        if (e.touches.length > 0) {
-          touchStartX = e.touches[0].clientX;
-          touchStartY = e.touches[0].clientY;
-        }
-      },
-      { passive: true }
-    );
-
-    grid.addEventListener(
-      'touchend',
-      (e) => {
-        if (e.changedTouches.length > 0) {
-          touchEndX = e.changedTouches[0].clientX;
-          touchEndY = e.changedTouches[0].clientY;
-          const dx = touchEndX - touchStartX;
-          const dy = touchEndY - touchStartY;
-          if (
-            Math.abs(dx) > Math.abs(dy) &&
-            Math.abs(dx) >= SWIPE_THRESHOLD
-          ) {
-            if (dx < 0) goPrevNext('next');
-            else goPrevNext('prev');
-          }
-        }
-      },
-      { passive: true }
-    );
-
-    let mouseDown = false;
-    let mouseStartX = 0;
-    let mouseStartY = 0;
-
-    grid.addEventListener('mousedown', (e) => {
-      if (e.button !== 0) return;
-      mouseDown = true;
-      mouseStartX = e.clientX;
-      mouseStartY = e.clientY;
-    });
-
-    grid.addEventListener('mouseup', (e) => {
-     if (!mouseDown) return;
-  mouseDown = false;
-
-  // nếu đang có selection → bỏ qua swipe
-  if (window.getSelection && window.getSelection().toString().length > 0) return;
-      const dx = e.clientX - mouseStartX;
-      const dy = e.clientY - mouseStartY;
-      if (
-        Math.abs(dx) > Math.abs(dy) &&
-        Math.abs(dx) >= SWIPE_THRESHOLD
-      ) {
-        if (dx < 0) goPrevNext('next');
-        else goPrevNext('prev');
+  grid.addEventListener(
+    'touchstart',
+    (e) => {
+      if (e.touches.length > 0) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
       }
-    });
-  }
+    },
+    { passive: true }
+  );
+
+  grid.addEventListener(
+    'touchend',
+    (e) => {
+      if (e.changedTouches.length > 0) {
+        touchEndX = e.changedTouches[0].clientX;
+        touchEndY = e.changedTouches[0].clientY;
+        const dx = touchEndX - touchStartX;
+        const dy = touchEndY - touchStartY;
+
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) >= SWIPE_THRESHOLD) {
+          if (dx < 0) goPrevNext('next');
+          else goPrevNext('prev');
+        }
+      }
+    },
+    { passive: true }
+  );
+}
 
   /* ========== TTS (Web Speech) – đọc theo ngôn ngữ giao diện (improved voices handling) ========== */
 
@@ -1211,19 +1292,23 @@ const codePrefix = s.code ? s.code + ' – ' : '';
   const synth = synthSupported ? window.speechSynthesis : null;
 
   // cache voices and update onvoiceschanged
-let cachedVoices = [];
-let _sutra_onVoices = null;
-if (synthSupported) {
-  cachedVoices = synth.getVoices() || [];
-  _sutra_onVoices = () => {
-    try { cachedVoices = synth.getVoices() || []; } catch(e){}
-  };
-  synth.addEventListener('voiceschanged', _sutra_onVoices);
-  // cleanup on unload
-  window.addEventListener('unload', () => {
-    try { synth.removeEventListener && synth.removeEventListener('voiceschanged', _sutra_onVoices); } catch (e) {}
-  });
-}
+  let cachedVoices = [];
+  let _sutra_onVoices = null;
+  if (synthSupported) {
+    cachedVoices = synth.getVoices() || [];
+    _sutra_onVoices = () => {
+      try {
+        cachedVoices = synth.getVoices() || [];
+      } catch (e) {}
+    };
+    synth.addEventListener('voiceschanged', _sutra_onVoices);
+    // cleanup on unload
+    window.addEventListener('unload', () => {
+      try {
+        synth.removeEventListener && synth.removeEventListener('voiceschanged', _sutra_onVoices);
+      } catch (e) {}
+    });
+  }
 
   function ensureVoicesLoaded(timeout = 1200) {
     return new Promise((resolve) => {
@@ -1243,7 +1328,7 @@ if (synthSupported) {
             cachedVoices = v2;
             resolve(v2);
           }
-        } catch(e){}
+        } catch (e) {}
       };
       synth.addEventListener('voiceschanged', onChange);
       setTimeout(() => {
@@ -1256,8 +1341,8 @@ if (synthSupported) {
   }
 
   const ttsState = {
-    activeLang: null,   // 'vi' | 'en' – dựa trên uiLang
-    index: 0,           // dòng đang/chuẩn bị đọc
+    activeLang: null, // 'vi' | 'en' – dựa trên uiLang
+    index: 0, // dòng đang/chuẩn bị đọc
     isPlaying: false,
     isPaused: false,
     currentUtter: null,
@@ -1265,9 +1350,7 @@ if (synthSupported) {
 
   function clearRowHighlight() {
     if (!grid) return;
-    grid
-      .querySelectorAll('.sutra-row.reading')
-      .forEach((r) => r.classList.remove('reading'));
+    grid.querySelectorAll('.sutra-row.reading').forEach((r) => r.classList.remove('reading'));
   }
 
   function highlightRowAt(index) {
@@ -1350,10 +1433,13 @@ if (synthSupported) {
   }
 
   function pickVoice(langPrefix) {
-  const lp = (langPrefix || '').toLowerCase();
-  const list = (cachedVoices || []).filter(v => v.lang && v.lang.toLowerCase().startsWith(lp));
-  return list[0] || null;
-}
+    const lp = (langPrefix || '').toLowerCase();
+    const list = (cachedVoices || []).filter(
+      (v) => v.lang && v.lang.toLowerCase().startsWith(lp)
+    );
+    return list[0] || null;
+  }
+
   function speakNextRow() {
     if (!synthSupported || !synth) return;
     if (!ttsState.activeLang) return;
@@ -1394,7 +1480,6 @@ if (synthSupported) {
     try {
       utter = new SpeechSynthesisUtterance(text);
     } catch (e) {
-      // cannot create utterance
       resetTts(true, false);
       return;
     }
@@ -1420,17 +1505,14 @@ if (synthSupported) {
       }
 
       if (ttsState.isPaused) {
-        // Pause: giữ nguyên index, không nhảy dòng
         return;
       }
 
       if (!ttsState.isPlaying) {
-        // Bị stop ở chỗ khác
         clearRowHighlight();
         return;
       }
 
-      // Chuyển sang dòng tiếp theo
       ttsState.index++;
       speakNextRow();
     };
@@ -1448,29 +1530,22 @@ if (synthSupported) {
     try {
       synth.speak(utter);
     } catch (e) {
-      // speak error
       resetTts(true, false);
     }
   }
 
   async function startTtsByUiLang() {
     if (!synthSupported) {
-      alert(
-        uiLang === 'en'
-          ? 'Your browser does not support TTS.'
-          : 'Trình duyệt không hỗ trợ đọc TTS.'
-      );
+      alert(uiLang === 'en' ? 'Your browser does not support TTS.' : 'Trình duyệt không hỗ trợ đọc TTS.');
       return;
     }
 
     const targetLang = uiLang === 'en' ? 'en' : 'vi';
 
-    // Đang phát cùng lang → không làm gì
     if (ttsState.activeLang === targetLang && ttsState.isPlaying) {
       return;
     }
 
-    // Đang pause cùng lang → tiếp tục từ dòng hiện tại
     if (ttsState.activeLang === targetLang && ttsState.isPaused) {
       ttsState.isPaused = false;
       ttsState.isPlaying = true;
@@ -1479,14 +1554,11 @@ if (synthSupported) {
       return;
     }
 
-    // Đổi lang hoặc bắt đầu mới
     resetTts(true, false);
     ttsState.activeLang = targetLang;
 
-    // ensure voices loaded (avoid empty voice lists)
     await ensureVoicesLoaded();
 
-    // Thử khôi phục index đã lưu cho bài này & lang này
     if (currentSutraId) {
       try {
         const raw = localStorage.getItem('tts_state_' + currentSutraId);
@@ -1501,7 +1573,6 @@ if (synthSupported) {
       }
     }
 
-    // Nếu chưa có, mặc định từ dòng 0
     if (!Number.isInteger(ttsState.index) || ttsState.index < 0) {
       ttsState.index = 0;
     }
@@ -1511,18 +1582,15 @@ if (synthSupported) {
 
   function pauseTtsByUiLang() {
     if (!synthSupported || !synth) return;
-    if (!ttsState.activeLang || !ttsState.isPlaying || !ttsState.currentUtter)
-      return;
+    if (!ttsState.activeLang || !ttsState.isPlaying || !ttsState.currentUtter) return;
 
     ttsState.isPaused = true;
     ttsState.isPlaying = false;
 
-    // Cancel hiện tại → trigger onend nhưng sẽ không nhảy dòng vì isPaused = true
     try {
       synth.cancel();
-    } catch (e) {
-      // ignore
-    }
+    } catch (e) {}
+
     ttsState.currentUtter = null;
 
     saveTtsState();
@@ -1533,124 +1601,144 @@ if (synthSupported) {
 
   function stopTtsByUiLang() {
     if (!synthSupported || !synth) return;
-    // Stop thực sự: về đầu bài, xoá highlight & state
     resetTts(true, true);
   }
 
-  // Gán handler cho TTS UI
   if (btnReadTts) btnReadTts.onclick = () => startTtsByUiLang();
   if (btnPauseTts) btnPauseTts.onclick = pauseTtsByUiLang;
   if (btnStopTts) btnStopTts.onclick = stopTtsByUiLang;
-// Gắn event delegation **một lần** cho menu và search results
-function initDelegations() {
-  // sutraMenuList delegation (attach once)
-  if (sutraMenuList && sutraMenuList.dataset.delegateAttached !== '1') {
-    sutraMenuList.addEventListener('click', (ev) => {
-      const btn = ev.target.closest('.menu-toggle');
-      if (btn && sutraMenuList.contains(btn)) {
-        ev.preventDefault();
-        const targetId = btn.dataset.target;
-        const panel = document.getElementById(targetId);
-        if (!panel) return;
 
-        const isCollapsed = panel.classList.contains('collapsed');
-        const isNested = btn.classList.contains('nested');
+  // Gắn event delegation **một lần** cho menu và search results
+  function initDelegations() {
+    // sutraMenuList delegation (attach once)
+    if (sutraMenuList && sutraMenuList.dataset.delegateAttached !== '1') {
+      sutraMenuList.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('.menu-toggle');
+        if (btn && sutraMenuList.contains(btn)) {
+          ev.preventDefault();
+          const targetId = btn.dataset.target;
+          const panel = document.getElementById(targetId);
+          if (!panel) return;
 
-        if (isCollapsed) {
-          if (isNested) {
-            const parentList = btn.closest('.menu-list');
-            if (parentList) {
-              parentList
-                .querySelectorAll('.menu-toggle.nested')
-                .forEach((other) => {
+          const isCollapsed = panel.classList.contains('collapsed');
+          const isNested = btn.classList.contains('nested');
+
+          if (isCollapsed) {
+            if (isNested) {
+              const parentList = btn.closest('.menu-list');
+              if (parentList) {
+                parentList.querySelectorAll('.menu-toggle.nested').forEach((other) => {
                   if (other === btn) return;
                   const oId = other.dataset.target;
                   const oPanel = document.getElementById(oId);
-                 if (oPanel && !oPanel.classList.contains('collapsed')) {
-                  oPanel.classList.add('collapsed');
-                  try { other.setAttribute('aria-expanded', 'false'); } catch(e){}
-                  const ch2 = other.querySelector('.chevron');
-                  if (ch2) ch2.textContent = '▸';
-}
+                  if (oPanel && !oPanel.classList.contains('collapsed')) {
+                    oPanel.classList.add('collapsed');
+                    try {
+                      other.setAttribute('aria-expanded', 'false');
+                    } catch (e) {}
+                    const ch2 = other.querySelector('.chevron');
+                    if (ch2) ch2.textContent = '▸';
+                  }
                 });
-            }
-          } else {
-            sutraMenuList
-              .querySelectorAll('.menu-toggle:not(.nested)')
-              .forEach((other) => {
+              }
+            } else {
+              sutraMenuList.querySelectorAll('.menu-toggle:not(.nested)').forEach((other) => {
                 if (other === btn) return;
                 const oId = other.dataset.target;
                 const oPanel = document.getElementById(oId);
-              if (oPanel && !oPanel.classList.contains('collapsed')) {
-              oPanel.classList.add('collapsed');
-              try { other.setAttribute('aria-expanded', 'false'); } catch(e){}
-              oPanel
-                .querySelectorAll('.menu-toggle.nested')
-                .forEach((nestedBtn) => {
-                  const nestedId = nestedBtn.dataset.target;
-                  const nestedPanel = document.getElementById(nestedId);
-                  if (nestedPanel && !nestedPanel.classList.contains('collapsed')) {
-                    nestedPanel.classList.add('collapsed');
-                  }
-                  try { nestedBtn.setAttribute('aria-expanded', 'false'); } catch(e){}
-                  const ch = nestedBtn.querySelector('.chevron');
-                  if (ch) ch.textContent = '▸';
-                });
-              const ch2 = other.querySelector('.chevron');
-              if (ch2) ch2.textContent = '▸';
-            }
-
+                if (oPanel && !oPanel.classList.contains('collapsed')) {
+                  oPanel.classList.add('collapsed');
+                  try {
+                    other.setAttribute('aria-expanded', 'false');
+                  } catch (e) {}
+                  oPanel.querySelectorAll('.menu-toggle.nested').forEach((nestedBtn) => {
+                    const nestedId = nestedBtn.dataset.target;
+                    const nestedPanel = document.getElementById(nestedId);
+                    if (nestedPanel && !nestedPanel.classList.contains('collapsed')) {
+                      nestedPanel.classList.add('collapsed');
+                    }
+                    try {
+                      nestedBtn.setAttribute('aria-expanded', 'false');
+                    } catch (e) {}
+                    const ch = nestedBtn.querySelector('.chevron');
+                    if (ch) ch.textContent = '▸';
+                  });
+                  const ch2 = other.querySelector('.chevron');
+                  if (ch2) ch2.textContent = '▸';
+                }
               });
+            }
+          }
+
+          panel.classList.toggle('collapsed', !isCollapsed);
+          try {
+            btn.setAttribute('aria-expanded', String(!panel.classList.contains('collapsed')));
+          } catch (e) {}
+
+          const chev = btn.querySelector('.chevron');
+          if (chev) {
+            chev.textContent = panel.classList.contains('collapsed') ? '▸' : '▾';
+          }
+
+          return;
+        }
+
+        // menu-sutta-link handling (open sutra)
+        const a = ev.target.closest('.menu-sutta-link');
+        if (a && sutraMenuList.contains(a)) {
+          ev.preventDefault();
+          const id = a.getAttribute('data-id');
+          if (id) {
+            openSutra(id);
+            togglePanel(sutraMenuPanel, false);
+            if (searchInput) searchInput.value = '';
+            if (searchResultsEl) searchResultsEl.innerHTML = '';
           }
         }
+      });
+      sutraMenuList.dataset.delegateAttached = '1';
+    }
 
-        panel.classList.toggle('collapsed', !isCollapsed);
-        try {
-  btn.setAttribute('aria-expanded', String(!panel.classList.contains('collapsed')));
-} catch(e) {}
-
-        const chev = btn.querySelector('.chevron');
-        if (chev) {
-          chev.textContent = panel.classList.contains('collapsed') ? '▸' : '▾';
+    // searchResultsEl delegation (attach once)
+    if (searchResultsEl && searchResultsEl.dataset.delegateAttached !== '1') {
+      searchResultsEl.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('.search-result-item');
+        if (btn && searchResultsEl.contains(btn)) {
+          const id = btn.getAttribute('data-id');
+          if (id) {
+            openSutra(id);
+            togglePanel(sutraMenuPanel, false);
+            if (searchInput) searchInput.value = '';
+            searchResultsEl.innerHTML = '';
+          }
         }
-
-        return;
-      }
-
-      // menu-sutta-link handling (open sutra)
-      const a = ev.target.closest('.menu-sutta-link');
-      if (a && sutraMenuList.contains(a)) {
-        ev.preventDefault();
-         const id = a.getAttribute('data-id');
-        if (id) {
-          openSutra(id);
-          togglePanel(sutraMenuPanel, false);
-          if (searchInput) searchInput.value = '';
-          if (searchResultsEl) searchResultsEl.innerHTML = '';
-        }
-      }
-    });
-    sutraMenuList.dataset.delegateAttached = '1';
+      });
+      searchResultsEl.dataset.delegateAttached = '1';
+    }
   }
-
-  // searchResultsEl delegation (attach once)
-  if (searchResultsEl && searchResultsEl.dataset.delegateAttached !== '1') {
-    searchResultsEl.addEventListener('click', (ev) => {
-      const btn = ev.target.closest('.search-result-item');
-      if (btn && searchResultsEl.contains(btn)) {
-         const id = btn.getAttribute('data-id');
-        if (id) {
-          openSutra(id);
-          togglePanel(sutraMenuPanel, false);
-          if (searchInput) searchInput.value = '';
-          searchResultsEl.innerHTML = '';
-        }
-      }
-    });
-    searchResultsEl.dataset.delegateAttached = '1';
-  }
+// ===== FIX: always save scroll position before reload / tab hide =====
+function saveCurrentScrollNow() {
+  if (!grid || !currentSutraId) return;
+  try {
+    localStorage.setItem(
+      'scroll_' + currentSutraId,
+      String(grid.scrollTop || 0)
+    );
+  } catch (e) {}
 }
 
+// khi F5 / reload / đóng tab
+window.addEventListener('beforeunload', saveCurrentScrollNow);
+
+// iOS / Safari / mobile
+window.addEventListener('pagehide', saveCurrentScrollNow);
+
+// khi chuyển tab (background)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    saveCurrentScrollNow();
+  }
+});
 
   /* ========== INIT ========== */
 
@@ -1665,7 +1753,8 @@ function initDelegations() {
 
     // menu + search data
     buildSutraMenuFromIndex();
-initDelegations()
+    initDelegations();
+
     let startId = null;
     try {
       startId = localStorage.getItem('lastSutraId');
@@ -1691,9 +1780,9 @@ initDelegations()
       setTtsUiState('idle');
     }
     if (card && card.classList.contains('stack')) {
-  btnLayout?.classList.add('active');
-}
+      btnLayout?.classList.add('active');
+    }
   }
-  
+
   init();
 })();
