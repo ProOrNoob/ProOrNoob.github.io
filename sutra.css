@@ -117,6 +117,7 @@ html,body{
   flex:1 1 auto;
   min-height:0;                 /* chống bug không cuộn được */
   overflow:auto;
+  overflow-x: hidden; 
   padding:8px 4px 4px;
   display:flex;
   flex-direction:column;
@@ -147,6 +148,7 @@ html,body{
   line-height:1.7;
   padding:4px 6px;
   border-radius:8px;
+    min-width: 0;
 }
 
 /* Màu cột ngôn ngữ */
