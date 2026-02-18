@@ -146,7 +146,7 @@ html, body {
 
 #title {
   margin: 0;
-  font-family: 'Cinzel', serif;
+  font-family: 'Crimson Pro', serif;
   font-size: calc(1rem * var(--sutra-font-scale));
   font-weight: 600;
   letter-spacing: .12em;
