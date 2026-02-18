@@ -664,4 +664,4 @@ window.BILARA["dn01"]["en"] = {
   "dn1:3.74.6": "And while this discourse was being spoken, the ten-thousandfold galaxy shook. "
 };
 window.BILARA["dn01"]["en"]["dn01:source"] =
-  "Nguồn: ... (tên bản dịch, tác giả, năm, link...)";
+  "SOURCE: https://suttacentral.net/  TRANSLATE BY SUJATO";
