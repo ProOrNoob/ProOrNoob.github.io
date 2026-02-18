@@ -665,4 +665,4 @@ window.BILARA["dn01"]["pli"] = {
   "dn1:3.74.7": "Brahmajālasuttaṁ niṭṭhitaṁ paṭhamaṁ. "
 };
 window.BILARA["dn01"]["pli"]["dn01:source"] =
-  "Nguồn: ... (tên bản dịch, tác giả, năm, link...)";
+  "SOURCE: https://suttacentral.net/ ";
