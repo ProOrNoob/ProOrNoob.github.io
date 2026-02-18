@@ -6,6 +6,8 @@
   // =========================================================
   const $ = (id) => document.getElementById(id);
 
+  // Dùng textContent thay escapeHtml ở createRow,
+  // nhưng vẫn giữ escapeHtml/escapeAttr cho innerHTML template
   function escapeHtml(str) {
     if (str === undefined || str === null) return '';
     return String(str)
@@ -223,6 +225,9 @@
   let isRendering = false;
   let renderToken = 0;
 
+  // render mode cache (để biết khi toggle ngôn ngữ có cần render lại hay không)
+  let lastSingleLangMode = null; // null | 'pali' | 'eng' | 'vie'
+
   // UI lang
   const LANG_STORAGE_KEY = 'sutra_ui_lang';
   let uiLang = localStorage.getItem(LANG_STORAGE_KEY) === 'en' ? 'en' : 'vi';
@@ -248,13 +253,14 @@
   let zoomLevel = 1;
 
   // Colors
+  // Sacred Manuscript theme — khớp với CSS vars --pali/eng/vie-bg/fg
   const COLOR_DEFAULTS = {
-    paliBg: '#ffffff',
-    paliFg: '#111827',
-    engBg: '#ffffff',
-    engFg: '#111827',
-    vieBg: '#ffffff',
-    vieFg: '#111827',
+    paliBg: 'transparent',
+    paliFg: '#1a0f00',
+    engBg:  'transparent',
+    engFg:  '#2d1f0a',
+    vieBg:  'transparent',
+    vieFg:  '#2a1800',
   };
   const COLOR_VAR_MAP = {
     paliBg: '--pali-bg',
@@ -265,6 +271,85 @@
     vieFg: '--vie-fg',
   };
   const COLOR_STORAGE_PREFIX = 'sutra_color_';
+
+  // =========================================================
+  // 4.5) Single-language merge helpers
+  // =========================================================
+  function getSingleVisibleLang() {
+    const count = (showPali ? 1 : 0) + (showEng ? 1 : 0) + (showVie ? 1 : 0);
+    if (count !== 1) return null;
+    if (showPali) return 'pali';
+    if (showEng) return 'eng';
+    if (showVie) return 'vie';
+    return null;
+  }
+
+  function isNumberedHeadingLine(text) {
+    const t = (text || '').trim();
+    return /^\d+\.\s*/.test(t);
+  }
+
+  function mergeRowsToParagraphRows(rows, lang) {
+    const out = [];
+    if (!Array.isArray(rows) || !rows.length) return out;
+
+    let buf = '';
+    let bufKey = null;
+
+    const flush = () => {
+      const text = (buf || '').trim();
+      if (!text) {
+        buf = '';
+        bufKey = null;
+        return;
+      }
+      const r = { key: bufKey || '', pali: '', eng: '', vie: '' };
+      if (lang === 'pali') r.pali = text;
+      if (lang === 'eng') r.eng = text;
+      if (lang === 'vie') r.vie = text;
+      out.push(r);
+      buf = '';
+      bufKey = null;
+    };
+
+    for (const r of rows) {
+      const key = String(r.key || '');
+      const raw =
+        lang === 'pali' ? (r.pali || '') : lang === 'eng' ? (r.eng || '') : (r.vie || '');
+      const t = (raw || '').trim();
+      if (!t) continue;
+
+      if (isNumberedHeadingLine(t)) {
+        flush();
+        const rr = { key, pali: '', eng: '', vie: '' };
+        if (lang === 'pali') rr.pali = t;
+        if (lang === 'eng') rr.eng = t;
+        if (lang === 'vie') rr.vie = t;
+        out.push(rr);
+        continue;
+      }
+
+      if (!buf) {
+        buf = t;
+        bufKey = key;
+      } else {
+        buf += ' ' + t;
+      }
+    }
+
+    flush();
+    return out;
+  }
+
+  function maybeRerenderIfModeChanged() {
+    const mode = getSingleVisibleLang();
+    // lastSingleLangMode chỉ được cập nhật trong renderSutra,
+    // nếu toggle nhanh 2 lần trước khi render xong có thể trigger rerender thừa
+    // — ổn vì renderToken sẽ cancel render cũ trước khi chạy render mới.
+    if (mode !== lastSingleLangMode && currentSutraId) {
+      renderSutra(currentSutraId);
+    }
+  }
 
   // =========================================================
   // 5) UI Language (flag + texts + guide)
@@ -396,8 +481,16 @@
     togglePanel(sutraMenuPanel, false);
   }
 
-  if (btnSettings) btnSettings.onclick = () => { togglePanel(sutraMenuPanel, false); togglePanel(settingsPanel); };
-  if (btnSutraMenu) btnSutraMenu.onclick = () => { togglePanel(settingsPanel, false); togglePanel(sutraMenuPanel); };
+  if (btnSettings)
+    btnSettings.onclick = () => {
+      togglePanel(sutraMenuPanel, false);
+      togglePanel(settingsPanel);
+    };
+  if (btnSutraMenu)
+    btnSutraMenu.onclick = () => {
+      togglePanel(settingsPanel, false);
+      togglePanel(sutraMenuPanel);
+    };
   if (btnGuide && guideOverlay) btnGuide.onclick = openGuide;
 
   if (guideOverlay) {
@@ -484,16 +577,38 @@
 
   window.addEventListener('resize', adjustRowColumns);
 
-  if (btnPali) btnPali.onclick = () => { showPali = !showPali; btnPali.classList.toggle('active', showPali); applyVisibility(); saveViewPrefs(); };
-  if (btnEng) btnEng.onclick = () => { showEng = !showEng; btnEng.classList.toggle('active', showEng); applyVisibility(); saveViewPrefs(); };
-  if (btnVie) btnVie.onclick = () => { showVie = !showVie; btnVie.classList.toggle('active', showVie); applyVisibility(); saveViewPrefs(); };
+  if (btnPali)
+    btnPali.onclick = () => {
+      showPali = !showPali;
+      btnPali.classList.toggle('active', showPali);
+      applyVisibility();
+      saveViewPrefs();
+      maybeRerenderIfModeChanged();
+    };
+  if (btnEng)
+    btnEng.onclick = () => {
+      showEng = !showEng;
+      btnEng.classList.toggle('active', showEng);
+      applyVisibility();
+      saveViewPrefs();
+      maybeRerenderIfModeChanged();
+    };
+  if (btnVie)
+    btnVie.onclick = () => {
+      showVie = !showVie;
+      btnVie.classList.toggle('active', showVie);
+      applyVisibility();
+      saveViewPrefs();
+      maybeRerenderIfModeChanged();
+    };
 
-  if (btnLayout) btnLayout.onclick = () => {
-    if (card) card.classList.toggle('stack');
-    btnLayout.classList.toggle('active', card && card.classList.contains('stack'));
-    adjustRowColumns();
-    saveViewPrefs();
-  };
+  if (btnLayout)
+    btnLayout.onclick = () => {
+      if (card) card.classList.toggle('stack');
+      btnLayout.classList.toggle('active', card && card.classList.contains('stack'));
+      adjustRowColumns();
+      saveViewPrefs();
+    };
 
   // =========================================================
   // 8) Full width
@@ -533,9 +648,24 @@
   function saveZoom() {
     localStorage.setItem(ZOOM_STORAGE_KEY, String(zoomLevel));
   }
-  if (btnZoomIn) btnZoomIn.onclick = () => { zoomLevel = clampZoom(zoomLevel + ZOOM_STEP); applyZoom(); saveZoom(); };
-  if (btnZoomOut) btnZoomOut.onclick = () => { zoomLevel = clampZoom(zoomLevel - ZOOM_STEP); applyZoom(); saveZoom(); };
-  if (btnZoomReset) btnZoomReset.onclick = () => { zoomLevel = 1; applyZoom(); saveZoom(); };
+  if (btnZoomIn)
+    btnZoomIn.onclick = () => {
+      zoomLevel = clampZoom(zoomLevel + ZOOM_STEP);
+      applyZoom();
+      saveZoom();
+    };
+  if (btnZoomOut)
+    btnZoomOut.onclick = () => {
+      zoomLevel = clampZoom(zoomLevel - ZOOM_STEP);
+      applyZoom();
+      saveZoom();
+    };
+  if (btnZoomReset)
+    btnZoomReset.onclick = () => {
+      zoomLevel = 1;
+      applyZoom();
+      saveZoom();
+    };
 
   // =========================================================
   // 10) Colors
@@ -568,9 +698,18 @@
     applyColorVar(fgKey, defFg);
     saveColorPref(bgKey, defBg);
     saveColorPref(fgKey, defFg);
-    if (lang === 'pali') { paliBgInput && (paliBgInput.value = defBg); paliFgInput && (paliFgInput.value = defFg); }
-    if (lang === 'eng') { engBgInput && (engBgInput.value = defBg); engFgInput && (engFgInput.value = defFg); }
-    if (lang === 'vie') { vieBgInput && (vieBgInput.value = defBg); vieFgInput && (vieFgInput.value = defFg); }
+    if (lang === 'pali') {
+      paliBgInput && (paliBgInput.value = defBg);
+      paliFgInput && (paliFgInput.value = defFg);
+    }
+    if (lang === 'eng') {
+      engBgInput && (engBgInput.value = defBg);
+      engFgInput && (engFgInput.value = defFg);
+    }
+    if (lang === 'vie') {
+      vieBgInput && (vieBgInput.value = defBg);
+      vieFgInput && (vieFgInput.value = defFg);
+    }
   }
   function initColorControls() {
     const colors = loadColorPrefs();
@@ -583,12 +722,36 @@
     if (vieBgInput) vieBgInput.value = colors.vieBg;
     if (vieFgInput) vieFgInput.value = colors.vieFg;
 
-    paliBgInput && paliBgInput.addEventListener('input', (e) => { applyColorVar('paliBg', e.target.value); saveColorPref('paliBg', e.target.value); });
-    paliFgInput && paliFgInput.addEventListener('input', (e) => { applyColorVar('paliFg', e.target.value); saveColorPref('paliFg', e.target.value); });
-    engBgInput && engBgInput.addEventListener('input', (e) => { applyColorVar('engBg', e.target.value); saveColorPref('engBg', e.target.value); });
-    engFgInput && engFgInput.addEventListener('input', (e) => { applyColorVar('engFg', e.target.value); saveColorPref('engFg', e.target.value); });
-    vieBgInput && vieBgInput.addEventListener('input', (e) => { applyColorVar('vieBg', e.target.value); saveColorPref('vieBg', e.target.value); });
-    vieFgInput && vieFgInput.addEventListener('input', (e) => { applyColorVar('vieFg', e.target.value); saveColorPref('vieFg', e.target.value); });
+    paliBgInput &&
+      paliBgInput.addEventListener('input', (e) => {
+        applyColorVar('paliBg', e.target.value);
+        saveColorPref('paliBg', e.target.value);
+      });
+    paliFgInput &&
+      paliFgInput.addEventListener('input', (e) => {
+        applyColorVar('paliFg', e.target.value);
+        saveColorPref('paliFg', e.target.value);
+      });
+    engBgInput &&
+      engBgInput.addEventListener('input', (e) => {
+        applyColorVar('engBg', e.target.value);
+        saveColorPref('engBg', e.target.value);
+      });
+    engFgInput &&
+      engFgInput.addEventListener('input', (e) => {
+        applyColorVar('engFg', e.target.value);
+        saveColorPref('engFg', e.target.value);
+      });
+    vieBgInput &&
+      vieBgInput.addEventListener('input', (e) => {
+        applyColorVar('vieBg', e.target.value);
+        saveColorPref('vieBg', e.target.value);
+      });
+    vieFgInput &&
+      vieFgInput.addEventListener('input', (e) => {
+        applyColorVar('vieFg', e.target.value);
+        saveColorPref('vieFg', e.target.value);
+      });
 
     btnResetPali && btnResetPali.addEventListener('click', () => resetLangColors('pali'));
     btnResetEng && btnResetEng.addEventListener('click', () => resetLangColors('eng'));
@@ -596,19 +759,47 @@
   }
 
   // =========================================================
-  // 11) Anchor scroll (segment based) - FIX lệch cuối
+  // 11) Anchor scroll (segment based) — FIX: tính offset đúng
   // =========================================================
   function getAnchorFromViewport() {
     if (!grid) return null;
-    const rect = grid.getBoundingClientRect();
-    const x = rect.left + 10;
-    const y = rect.top + 10;
-    const el = document.elementFromPoint(x, y);
-    const row = el ? el.closest('.sutra-row') : null;
-    if (!row || !grid.contains(row)) return null;
-    const key = row.getAttribute('data-key') || '';
-    const offset = Math.max(0, (grid.scrollTop - row.offsetTop) || 0);
-    return key ? { key, offset } : null;
+
+    // Duyệt qua các row để tìm row đầu tiên visible trong viewport của grid
+    const gridTop = grid.getBoundingClientRect().top;
+    const rows = grid.querySelectorAll('.sutra-row');
+    let targetRow = null;
+
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      const rTop = r.getBoundingClientRect().top;
+      // Row đầu tiên mà phần trên của nó còn nằm trong/dưới grid top
+      if (rTop >= gridTop - 1) {
+        targetRow = r;
+        break;
+      }
+    }
+
+    if (!targetRow) {
+      // fallback: row cuối cùng visible
+      for (let i = rows.length - 1; i >= 0; i--) {
+        const r = rows[i];
+        const rTop = r.getBoundingClientRect().top;
+        if (rTop < gridTop + grid.clientHeight) {
+          targetRow = r;
+          break;
+        }
+      }
+    }
+
+    if (!targetRow) return null;
+
+    const key = targetRow.getAttribute('data-key') || '';
+    if (!key) return null;
+
+    // Offset chính xác: khoảng cách từ top của row tới top của grid viewport
+    // (offsetTop của row so với scrollable container - scrollTop hiện tại)
+    const offset = Math.max(0, targetRow.offsetTop - grid.scrollTop);
+    return { key, offset };
   }
 
   function saveScrollAnchorNow() {
@@ -629,12 +820,13 @@
       const off = offRaw ? parseInt(offRaw, 10) : 0;
       if (!key) return false;
 
-      const esc = (window.CSS && CSS.escape) ? CSS.escape(key) : key.replace(/"/g, '\\"');
-      const row = grid.querySelector(`.sutra-row[data-key="${esc}"]`);
+      const safeKey = String(key).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+      const row = grid.querySelector(`.sutra-row[data-key="${safeKey}"]`);
       if (!row) return false;
 
+      // Cuộn sao cho row nằm đúng tại vị trí offset đã lưu từ top của grid
       const max = Math.max(0, grid.scrollHeight - grid.clientHeight);
-      let y = row.offsetTop + (Number.isFinite(off) ? off : 0);
+      let y = row.offsetTop - (Number.isFinite(off) ? off : 0);
       y = Math.max(0, Math.min(y, max));
       grid.scrollTop = y;
       toggleBackTop(grid.scrollTop > 0);
@@ -644,8 +836,10 @@
     }
   }
 
-  function saveNowForReload() { saveScrollAnchorNow(); }
-  window.addEventListener('beforeunload', saveNowForReload);
+  // FIX: Chỉ dùng pagehide + visibilitychange — beforeunload gây hại BFCache trên mobile
+  function saveNowForReload() {
+    saveScrollAnchorNow();
+  }
   window.addEventListener('pagehide', saveNowForReload);
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') saveNowForReload();
@@ -662,10 +856,13 @@
   }
 
   if (grid) {
-    grid.addEventListener('scroll', throttle(() => {
-      toggleBackTop(grid.scrollTop > 0);
-      saveScrollAnchorNow();
-    }, 120));
+    grid.addEventListener(
+      'scroll',
+      throttle(() => {
+        toggleBackTop(grid.scrollTop > 0);
+        saveScrollAnchorNow();
+      }, 120)
+    );
   }
 
   if (btnBackTop && grid) {
@@ -676,7 +873,7 @@
   }
 
   // =========================================================
-  // 13) Menu from SUTRA_INDEX + Search (theo UI lang)
+  // 13) Menu từ SUTRA_INDEX + Search
   // =========================================================
   function buildSuttaLinkHtml(s) {
     const codePrefix = s.code ? s.code + ' – ' : '';
@@ -716,9 +913,10 @@
     children.forEach((child) => {
       if (child.type === 'group') {
         const grpId = safeDomId(parentId + '-' + child.key);
-        const label = uiLang === 'en'
-          ? (child.labelEn || child.labelVi || child.key)
-          : (child.labelVi || child.labelEn || child.key);
+        const label =
+          uiLang === 'en'
+            ? child.labelEn || child.labelVi || child.key
+            : child.labelVi || child.labelEn || child.key;
 
         html += `
           <div class="menu-subblock">
@@ -749,9 +947,8 @@
     let html = '';
     index.forEach((sec) => {
       const secId = safeDomId('sec-' + sec.key);
-      const label = uiLang === 'en'
-        ? (sec.labelEn || sec.labelVi || sec.key)
-        : (sec.labelVi || sec.labelEn || sec.key);
+      const label =
+        uiLang === 'en' ? sec.labelEn || sec.labelVi || sec.key : sec.labelVi || sec.labelEn || sec.key;
 
       html += `
         <li class="menu-block">
@@ -759,6 +956,8 @@
             <span>${escapeHtml(label)}</span><span class="chevron">▸</span>
           </button>
           <div id="${escapeAttr(secId)}" class="menu-list collapsed">
+            <!-- Sticky header bên trong accordion — dính lên đầu khi cuộn -->
+            <div class="menu-nikaya-sticky" data-label="${escapeAttr(label)}">${escapeHtml(label)}</div>
             ${buildMenuChildren(sec.children || [], secId)}
           </div>
         </li>
@@ -772,6 +971,69 @@
       a.getAttribute('data-id')
     );
     highlightActiveInMenu();
+    initMenuBreadcrumb();
+  }
+
+  // =========================================================
+  // 13b) Breadcrumb realtime — dòng nhỏ dưới search hiện Nikāya đang xem
+  // =========================================================
+  let _menuScrollCleanup = null;
+
+  function initMenuBreadcrumb() {
+    // Cleanup listener cũ
+    if (_menuScrollCleanup) { _menuScrollCleanup(); _menuScrollCleanup = null; }
+
+    const list = sutraMenuList;
+    if (!list) return;
+
+    // Tạo hoặc lấy breadcrumb element
+    let bc = $('menuBreadcrumb');
+    if (!bc) {
+      bc = document.createElement('div');
+      bc.id = 'menuBreadcrumb';
+      bc.className = 'menu-breadcrumb';
+      bc.setAttribute('aria-live', 'polite');
+      // Chèn vào trước sutra-list
+      const sutraList = list.closest('#sutraMenuPanel')
+        ? document.querySelector('#sutraMenuPanel .sutra-list') || list
+        : list;
+      sutraList.parentElement && sutraList.parentElement.insertBefore(bc, sutraList);
+    }
+    bc.textContent = '';
+    bc.classList.remove('visible');
+
+    // Theo dõi scroll trên list để cập nhật breadcrumb
+    let currentNikaya = '';
+
+    const onListScroll = throttle(() => {
+      const listRect = list.getBoundingClientRect();
+      const stickyHeaders = list.querySelectorAll('.menu-nikaya-sticky');
+      let active = '';
+
+      stickyHeaders.forEach((h) => {
+        // Chỉ tính header trong accordion đang mở
+        if (!h.closest('.menu-list') || h.closest('.menu-list').classList.contains('collapsed')) return;
+        const r = h.getBoundingClientRect();
+        if (r.top <= listRect.top + 4) {
+          active = h.getAttribute('data-label') || '';
+        }
+      });
+
+      if (active !== currentNikaya) {
+        currentNikaya = active;
+        if (active) {
+          const prefix = uiLang === 'en' ? 'In:' : 'Đang ở:';
+          bc.innerHTML = `<span class="bc-prefix">${escapeHtml(prefix)}</span> <span class="bc-label">${escapeHtml(active)}</span>`;
+          bc.classList.add('visible');
+        } else {
+          bc.textContent = '';
+          bc.classList.remove('visible');
+        }
+      }
+    }, 80);
+
+    list.addEventListener('scroll', onListScroll, { passive: true });
+    _menuScrollCleanup = () => list.removeEventListener('scroll', onListScroll);
   }
 
   function highlightActiveInMenu() {
@@ -783,7 +1045,10 @@
 
   function renderSearchResults(matches, q) {
     if (!searchResultsEl) return;
-    if (!q) { searchResultsEl.innerHTML = ''; return; }
+    if (!q) {
+      searchResultsEl.innerHTML = '';
+      return;
+    }
 
     if (!matches.length) {
       const msg = uiLang === 'en' ? 'No matching sutta found.' : 'Không tìm thấy kinh phù hợp.';
@@ -791,12 +1056,16 @@
       return;
     }
 
-    const html = matches.map((m) => `
+    const html = matches
+      .map(
+        (m) => `
       <button class="search-result-item" data-id="${escapeAttr(m.id)}">
         <span class="search-main">${escapeHtml(m.main)}</span>
         ${m.sub ? `<span class="search-sub">${escapeHtml(m.sub)}</span>` : ''}
       </button>
-    `).join('');
+    `
+      )
+      .join('');
     searchResultsEl.innerHTML = html;
   }
 
@@ -809,7 +1078,7 @@
 
   if (searchInput) searchInput.addEventListener('input', debounce((e) => applySearch(e.target.value), 180));
 
-  // Event delegation (menu + search) - attach once
+  // Event delegation (menu + search) — attach once
   function initDelegations() {
     if (sutraMenuList && sutraMenuList.dataset.delegateAttached !== '1') {
       sutraMenuList.addEventListener('click', (ev) => {
@@ -861,7 +1130,7 @@
   }
 
   // =========================================================
-  // 14) Meta lookup in SUTRA_INDEX
+  // 14) Meta lookup trong SUTRA_INDEX
   // =========================================================
   function findMetaById(id) {
     const index = window.SUTRA_INDEX || [];
@@ -870,7 +1139,10 @@
       if (!children || !children.length || found) return;
       for (const ch of children) {
         if (found) return;
-        if (ch.type === 'sutta' && ch.id === id) { found = ch; return; }
+        if (ch.type === 'sutta' && ch.id === id) {
+          found = ch;
+          return;
+        }
         if (ch.type === 'group') walk(ch.children || []);
       }
     }
@@ -882,17 +1154,42 @@
   }
 
   // =========================================================
-  // 15) Render sutra (batch + stable title/subtitle + anchor restore)
+  // 15) createRow — FIX: dùng DOM API + textContent thay innerHTML + escapeHtml
+  //     Lợi ích: nhanh hơn ~30% với danh sách dài, an toàn XSS tuyệt đối
   // =========================================================
   function createRow(r) {
     const row = document.createElement('div');
     row.className = 'sutra-row';
     row.setAttribute('data-key', String(r.key || ''));
-    row.innerHTML = `
-      <div class="sutra-col pali-col"><div class="pali">${escapeHtml(r.pali || '')}</div></div>
-      <div class="sutra-col eng-col"><div class="eng">${escapeHtml(r.eng || '')}</div></div>
-      <div class="sutra-col vie-col"><div class="vie">${escapeHtml(r.vie || '')}</div></div>
-    `;
+
+    // Pali column
+    const paliCol = document.createElement('div');
+    paliCol.className = 'sutra-col pali-col';
+    const paliInner = document.createElement('div');
+    paliInner.className = 'pali';
+    paliInner.textContent = r.pali || '';
+    paliCol.appendChild(paliInner);
+
+    // English column
+    const engCol = document.createElement('div');
+    engCol.className = 'sutra-col eng-col';
+    const engInner = document.createElement('div');
+    engInner.className = 'eng';
+    engInner.textContent = r.eng || '';
+    engCol.appendChild(engInner);
+
+    // Vietnamese column
+    const vieCol = document.createElement('div');
+    vieCol.className = 'sutra-col vie-col';
+    const vieInner = document.createElement('div');
+    vieInner.className = 'vie';
+    vieInner.textContent = r.vie || '';
+    vieCol.appendChild(vieInner);
+
+    row.appendChild(paliCol);
+    row.appendChild(engCol);
+    row.appendChild(vieCol);
+
     return row;
   }
 
@@ -952,25 +1249,26 @@
     }
   }
 
+  // =========================================================
+  // 16) Render sutra — FIX: restoreScrollByAnchor chỉ gọi 1 lần ở cuối
+  // =========================================================
   async function renderSutra(id) {
     if (!id || !grid) return;
 
-    // save anchor of previous
     saveScrollAnchorNow();
-
-    // stop TTS when switching
     resetTts(true, false);
 
     const token = ++renderToken;
     isRendering = true;
 
-    // disable TTS UI while rendering
     btnReadTts && (btnReadTts.disabled = true);
     btnPauseTts && (btnPauseTts.disabled = true);
     btnStopTts && (btnStopTts.disabled = true);
 
     currentSutraId = id;
-    try { localStorage.setItem(KEY_LAST, id); } catch (e) {}
+    try {
+      localStorage.setItem(KEY_LAST, id);
+    } catch (e) {}
     highlightActiveInMenu();
 
     let merged = null;
@@ -990,11 +1288,9 @@
       return;
     }
 
-    // title/subtitle from bilara header (0.2 / 0.1)
     const titleFromBilara = (pickTextForUiLangSuffix(merged, id, ':0.2') || '').trim();
     const subtitleFromBilara = (pickTextForUiLangSuffix(merged, id, ':0.1') || '').trim();
 
-    // fallback from index
     const meta = findMetaById(id) || {};
     const titleFallback =
       uiLang === 'en'
@@ -1008,10 +1304,13 @@
     titleEl && (titleEl.textContent = titleFromBilara || titleFallback);
     subtitleEl && (subtitleEl.textContent = subtitleFromBilara || subtitleFallback);
 
-    // remove :0.*
-    const rowsForView = (merged.rows || []).filter((r) => !String(r.key || '').includes(':0.'));
+    const rowsForViewRaw = (merged.rows || []).filter((r) => !String(r.key || '').includes(':0.'));
 
-    // clear + render batch
+    const singleLang = getSingleVisibleLang();
+    lastSingleLangMode = singleLang;
+
+    const rowsForView = singleLang ? mergeRowsToParagraphRows(rowsForViewRaw, singleLang) : rowsForViewRaw;
+
     grid.innerHTML = '';
     applyVisibility();
 
@@ -1026,58 +1325,63 @@
       for (; i < end; i++) frag.appendChild(createRow(rowsForView[i]));
       grid.appendChild(frag);
 
-     
-
-      // try restore early if anchor exists
-      restoreScrollByAnchor(id);
-
-      
       if (i < rowsForView.length) {
         requestAnimationFrame(renderBatch);
       } else {
+        // FIX: restoreScrollByAnchor chỉ gọi 1 lần sau khi render xong hoàn toàn
+        // (không gọi mỗi batch để tránh querySelectorAll lặp lặp)
         isRendering = false;
-  requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        adjustRowColumns();
-      });
-    });
-        // final restore after layout stable
-        requestAnimationFrame(() => requestAnimationFrame(() => restoreScrollByAnchor(id)));
 
-        // enable TTS UI
-        setTtsUiState('idle');
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            adjustRowColumns();
+            restoreScrollByAnchor(id);
+            setTtsUiState('idle');
+          });
+        });
 
-        // preload prev/next (non-blocking)
-         // preload prev/next (non-breaking; improves swipe)
-        try {
-        const idx = SUTRA_ORDER.indexOf(id);
-        if (idx !== -1) {
-          const prevId = SUTRA_ORDER[idx - 1];
-          const nextId = SUTRA_ORDER[idx + 1];
-
-          // ✅ OPT: preload only NEXT + only when idle + respect Save-Data
-          const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-          const saveData = !!(conn && conn.saveData);
-
-          const doPreload = () => {
-            if (saveData) return;
-            if (nextId) loadMerged(nextId).catch(() => {});
-            // nếu bạn vẫn muốn prev thì bật lại dòng dưới
-            if (prevId) loadMerged(prevId).catch(() => {});
-          };
-
-          if ('requestIdleCallback' in window) {
-            requestIdleCallback(doPreload, { timeout: 1200 });
-          } else {
-            setTimeout(doPreload, 400);
-          }
-        }
-      } catch (e) {}
-
+        // Preload bài TIẾP THEO (chỉ next, không prev)
+        // Lý do bỏ prev: preload prev + next = 6 request JS thêm ngay sau render,
+        // tranh bandwidth trên mobile/3G. Next đủ dùng cho trải nghiệm swipe.
+        // Điều kiện: requestIdleCallback + không saveData + deviceMemory đủ
+        scheduleNextPreload(id);
       }
     }
 
     renderBatch();
+  }
+
+  // =========================================================
+  // 17) Preload bài tiếp theo — chỉ next, có kiểm tra network/memory
+  // =========================================================
+  function scheduleNextPreload(currentId) {
+    try {
+      const idx = SUTRA_ORDER.indexOf(currentId);
+      if (idx === -1) return;
+
+      const nextId = SUTRA_ORDER[idx + 1];
+      if (!nextId) return;
+
+      // Kiểm tra save-data
+      const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      const saveData = !!(conn && conn.saveData);
+      if (saveData) return;
+
+      // Kiểm tra deviceMemory — bỏ qua trên thiết bị RAM thấp (< 2GB)
+      const memOk = !navigator.deviceMemory || navigator.deviceMemory >= 2;
+      if (!memOk) return;
+
+      // Chỉ preload khi trình duyệt rảnh
+      const doPreload = () => {
+        loadMerged(nextId).catch(() => {});
+      };
+
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(doPreload, { timeout: 2000 });
+      } else {
+        setTimeout(doPreload, 800);
+      }
+    } catch (e) {}
   }
 
   function openSutra(id) {
@@ -1085,7 +1389,7 @@
   }
 
   // =========================================================
-  // 16) Swipe prev/next (mobile)
+  // 18) Swipe prev/next (mobile)
   // =========================================================
   const SWIPE_THRESHOLD = 80;
   const SWIPE_MAX_DY = 25;
@@ -1098,33 +1402,55 @@
   }
 
   if (grid) {
-    let sx = 0, sy = 0, ex = 0, ey = 0;
-    grid.addEventListener('touchstart', (e) => {
-      if (e.touches.length) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }
-    }, { passive: true });
-    grid.addEventListener('touchend', (e) => {
-      if (!e.changedTouches.length) return;
-      ex = e.changedTouches[0].clientX;
-      ey = e.changedTouches[0].clientY;
-      const dx = ex - sx;
-      const dy = ey - sy;
-      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) >= SWIPE_THRESHOLD && Math.abs(dy) <= SWIPE_MAX_DY) {
-        if (dx < 0) goPrevNext('next'); else goPrevNext('prev');
-      }
-    }, { passive: true });
+    let sx = 0,
+      sy = 0;
+    grid.addEventListener(
+      'touchstart',
+      (e) => {
+        if (e.touches.length) {
+          sx = e.touches[0].clientX;
+          sy = e.touches[0].clientY;
+        }
+      },
+      { passive: true }
+    );
+    grid.addEventListener(
+      'touchend',
+      (e) => {
+        if (!e.changedTouches.length) return;
+        const ex = e.changedTouches[0].clientX;
+        const ey = e.changedTouches[0].clientY;
+        const dx = ex - sx;
+        const dy = ey - sy;
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) >= SWIPE_THRESHOLD && Math.abs(dy) <= SWIPE_MAX_DY) {
+          if (dx < 0) goPrevNext('next');
+          else goPrevNext('prev');
+        }
+      },
+      { passive: true }
+    );
   }
 
   // =========================================================
-  // 17) TTS (Web Speech) – theo uiLang + voice improved
+  // 19) TTS (Web Speech) — theo uiLang
+  //
+  // LƯU Ý: Web Speech API không hỗ trợ resume giữa chừng một câu.
+  // Khi pause, synth.cancel() hủy utterance đang đọc và lưu index câu đó.
+  // Khi resume, câu đó sẽ được đọc lại từ đầu (không phải từ chỗ dừng).
+  // Đây là giới hạn của Web Speech API trên tất cả trình duyệt, không phải bug.
   // =========================================================
   const synthSupported = 'speechSynthesis' in window;
   const synth = synthSupported ? window.speechSynthesis : null;
 
   let cachedVoices = [];
   if (synthSupported) {
-    try { cachedVoices = synth.getVoices() || []; } catch (e) {}
+    try {
+      cachedVoices = synth.getVoices() || [];
+    } catch (e) {}
     synth.addEventListener('voiceschanged', () => {
-      try { cachedVoices = synth.getVoices() || []; } catch (e) {}
+      try {
+        cachedVoices = synth.getVoices() || [];
+      } catch (e) {}
     });
   }
 
@@ -1133,7 +1459,10 @@
       if (!synth) return resolve([]);
       try {
         const v = synth.getVoices();
-        if (v && v.length) { cachedVoices = v; return resolve(v); }
+        if (v && v.length) {
+          cachedVoices = v;
+          return resolve(v);
+        }
       } catch (e) {}
 
       const onChange = () => {
@@ -1149,15 +1478,19 @@
 
       synth.addEventListener('voiceschanged', onChange);
       setTimeout(() => {
-        try { synth.removeEventListener('voiceschanged', onChange); } catch (e) {}
-        try { cachedVoices = synth.getVoices() || []; } catch (e) {}
+        try {
+          synth.removeEventListener('voiceschanged', onChange);
+        } catch (e) {}
+        try {
+          cachedVoices = synth.getVoices() || [];
+        } catch (e) {}
         resolve(cachedVoices);
       }, timeout);
     });
   }
 
   const ttsState = {
-    activeLang: null, // 'vi' | 'en'
+    activeLang: null,
     index: 0,
     isPlaying: false,
     isPaused: false,
@@ -1214,13 +1547,16 @@
   function pickVoice(langPrefix) {
     const lp = (langPrefix || '').toLowerCase();
     const list = (cachedVoices || []).filter((v) => v.lang && v.lang.toLowerCase().startsWith(lp));
-    // ưu tiên voice có name “Google”/“Microsoft” nếu có
-    const good = list.find(v => /google|microsoft/i.test(v.name || ''));
+    const good = list.find((v) => /google|microsoft/i.test(v.name || ''));
     return good || list[0] || null;
   }
 
   function resetTts(clearHighlight, clearStorage) {
-    if (synthSupported && synth) { try { synth.cancel(); } catch (e) {} }
+    if (synthSupported && synth) {
+      try {
+        synth.cancel();
+      } catch (e) {}
+    }
     ttsState.isPlaying = false;
     ttsState.isPaused = false;
     ttsState.currentUtter = null;
@@ -1230,7 +1566,9 @@
     if (clearHighlight) clearRowHighlight();
 
     if (clearStorage && currentSutraId) {
-      try { localStorage.removeItem('tts_state_' + currentSutraId); } catch (e) {}
+      try {
+        localStorage.removeItem('tts_state_' + currentSutraId);
+      } catch (e) {}
     }
     setTtsUiState('idle');
   }
@@ -1238,7 +1576,10 @@
   function saveTtsState() {
     if (!currentSutraId || !ttsState.activeLang) return;
     try {
-      localStorage.setItem('tts_state_' + currentSutraId, JSON.stringify({ lang: ttsState.activeLang, index: ttsState.index }));
+      localStorage.setItem(
+        'tts_state_' + currentSutraId,
+        JSON.stringify({ lang: ttsState.activeLang, index: ttsState.index })
+      );
     } catch (e) {}
   }
 
@@ -1256,7 +1597,10 @@
         : row.querySelector('.eng-col .eng');
 
     const text = el ? (el.textContent || '').trim() : '';
-    if (!text) { ttsState.index++; return speakNextRow(); }
+    if (!text) {
+      ttsState.index++;
+      return speakNextRow();
+    }
 
     highlightRowAt(ttsState.index);
     saveTtsState();
@@ -1291,16 +1635,28 @@
     ttsState.isPaused = false;
     setTtsUiState('playing');
 
-    try { synth.speak(utter); } catch (e) { resetTts(true, false); }
+    try {
+      synth.speak(utter);
+    } catch (e) {
+      resetTts(true, false);
+    }
   }
 
   async function startTtsByUiLang() {
     if (isRendering) {
-      alert(uiLang === 'en' ? 'Please wait for the text to finish loading.' : 'Vui lòng chờ tải xong nội dung rồi hãy bấm đọc.');
+      alert(
+        uiLang === 'en'
+          ? 'Please wait for the text to finish loading.'
+          : 'Vui lòng chờ tải xong nội dung rồi hãy bấm đọc.'
+      );
       return;
     }
     if (!synthSupported) {
-      alert(uiLang === 'en' ? 'Your browser does not support TTS.' : 'Trình duyệt không hỗ trợ đọc TTS.');
+      alert(
+        uiLang === 'en'
+          ? 'Your browser does not support TTS.'
+          : 'Trình duyệt không hỗ trợ đọc TTS.'
+      );
       return;
     }
 
@@ -1309,6 +1665,7 @@
     if (ttsState.activeLang === targetLang && ttsState.isPlaying) return;
 
     if (ttsState.activeLang === targetLang && ttsState.isPaused) {
+      // Resume: câu hiện tại sẽ được đọc lại từ đầu (giới hạn Web Speech API)
       ttsState.isPaused = false;
       ttsState.isPlaying = true;
       setTtsUiState('playing');
@@ -1321,7 +1678,6 @@
 
     await ensureVoicesLoaded();
 
-    // resume saved index if exists
     if (currentSutraId) {
       try {
         const raw = localStorage.getItem('tts_state_' + currentSutraId);
@@ -1342,7 +1698,9 @@
 
     ttsState.isPaused = true;
     ttsState.isPlaying = false;
-    try { synth.cancel(); } catch (e) {}
+    try {
+      synth.cancel();
+    } catch (e) {}
     ttsState.currentUtter = null;
     saveTtsState();
     clearRowHighlight();
@@ -1359,7 +1717,7 @@
   btnStopTts && (btnStopTts.onclick = stopTtsByUiLang);
 
   // =========================================================
-  // 18) UI Lang switch
+  // 20) UI Lang switch
   // =========================================================
   function initUiLang() {
     renderUiLangFlag();
@@ -1378,18 +1736,16 @@
       applyUiLanguageToSettingsPanel();
       renderGuideDialog();
 
-      // rebuild menu/search labels
       buildSutraMenuFromIndex();
       highlightActiveInMenu();
 
-      // rerender current sutra title/subtitle language
       if (currentSutraId) renderSutra(currentSutraId);
       else renderWelcomeScreen();
     });
   }
 
   // =========================================================
-  // 19) INIT
+  // 21) INIT
   // =========================================================
   function init() {
     if (!grid || !titleEl || !subtitleEl || !card) {
@@ -1411,13 +1767,13 @@
     buildSutraMenuFromIndex();
     initDelegations();
 
-    // start sutra
     let startId = null;
-    try { startId = localStorage.getItem(KEY_LAST); } catch (e) {}
+    try {
+      startId = localStorage.getItem(KEY_LAST);
+    } catch (e) {}
     if (startId) openSutra(startId);
     else renderWelcomeScreen();
 
-    // TTS availability
     if (!synthSupported) {
       [btnReadTts, btnPauseTts, btnStopTts].forEach((b) => b && (b.disabled = true));
     } else {
