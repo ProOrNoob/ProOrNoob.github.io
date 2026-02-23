@@ -1329,20 +1329,7 @@ body {
                   <button type="button" id="guide-btn" class="tool-btn" title="Guide">
                     <i class="bi">?</i>
                   </button>
-					<div style="margin-top:18px; text-align:center;">
-  <button id="guide-reset-ui"
-          style="
-            padding:6px 14px;
-            border-radius:8px;
-            border:1px solid var(--border2);
-            background: var(--chip-bg);
-            font-family:'Cinzel',serif;
-            font-size:.6em;
-            letter-spacing:.12em;
-            cursor:pointer;">
-    RESET UI
-  </button>
-</div>
+	
                 </div>
               </div>
 
@@ -2826,16 +2813,25 @@ updateScrollTopBtn();
     else showWelcome();
   } catch(e) { showWelcome(); }
 })();
-	(function initGuideReset(){
-  const btn = document.getElementById('guide-reset-ui');
-  if(!btn) return;
+(function initRibbonReset(){
+  const ribbon = document.getElementById('ribbon');
+  if (!ribbon) return;
 
-  btn.addEventListener('click', () => {
-    try{
-      localStorage.clear();        // xoá toàn bộ cache app
-    }catch(e){}
+  ribbon.style.cursor = 'pointer';
+  ribbon.title = 'Double-click to reset UI (clear cache)';
 
-    location.reload();             // reload về mặc định
+  ribbon.addEventListener('dblclick', () => {
+    try {
+      // reset chọn lọc (khuyên dùng)
+      localStorage.removeItem('sutta-reader-layout');
+      localStorage.removeItem('sutta-reader-theme');
+      localStorage.removeItem('sutta-reader-ui-lang');
+      localStorage.removeItem('sutta-reader-view');
+      localStorage.removeItem('sutta-reader-last');
+      localStorage.removeItem('sutta-reader-scroll');
+    } catch (e) {}
+
+    location.reload();
   });
 })();
 </script>
