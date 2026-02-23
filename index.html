@@ -1329,6 +1329,20 @@ body {
                   <button type="button" id="guide-btn" class="tool-btn" title="Guide">
                     <i class="bi">?</i>
                   </button>
+					<div style="margin-top:18px; text-align:center;">
+  <button id="guide-reset-ui"
+          style="
+            padding:6px 14px;
+            border-radius:8px;
+            border:1px solid var(--border2);
+            background: var(--chip-bg);
+            font-family:'Cinzel',serif;
+            font-size:.6em;
+            letter-spacing:.12em;
+            cursor:pointer;">
+    RESET UI
+  </button>
+</div>
                 </div>
               </div>
 
@@ -2811,6 +2825,18 @@ updateScrollTopBtn();
     if (lastId) { hideWelcome(); openSutra(lastId); }
     else showWelcome();
   } catch(e) { showWelcome(); }
+})();
+	(function initGuideReset(){
+  const btn = document.getElementById('guide-reset-ui');
+  if(!btn) return;
+
+  btn.addEventListener('click', () => {
+    try{
+      localStorage.clear();        // xoá toàn bộ cache app
+    }catch(e){}
+
+    location.reload();             // reload về mặc định
+  });
 })();
 </script>
 </body>
