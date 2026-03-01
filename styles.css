@@ -2015,3 +2015,49 @@ button:not(:focus-visible),
   opacity: 0.7;
 }
 .pill.active .pill-icon { opacity: 1; }
+
+/* ============================================================
+   SAFARI iOS AUTO-ZOOM FIX
+   Safari zooms in when tapping inputs/selects/textareas with
+   font-size < 16px. Force 16px on all interactive elements
+   on mobile to prevent this.
+   ============================================================ */
+@media screen and (max-width: 768px) {
+  input[type="search"],
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  /* Touch target: tất cả button tối thiểu 44x44 (Apple HIG) */
+  button,
+  .btn-circle,
+  .btn-nav,
+  .nav-btn,
+  .toolbar-btn,
+  .pill,
+  .tts-btn,
+  .menu-sutta-link,
+  .menu-toggle,
+  .search-result-item {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Prevent double-tap zoom on interactive elements */
+  button,
+  a,
+  input,
+  select,
+  textarea,
+  .menu-sutta-link,
+  .menu-toggle {
+    touch-action: manipulation;
+  }
+}
