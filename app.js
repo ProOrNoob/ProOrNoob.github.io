@@ -1,56 +1,51 @@
 (function () {
   'use strict';
 
-  // =========================================================
-  // 0) Helpers
-  // =========================================================
   const $ = (id) => document.getElementById(id);
 
-  // Dùng textContent thay escapeHtml ở createRow,
-  // nhưng vẫn giữ escapeHtml/escapeAttr cho innerHTML template
   function escapeHtml(str) {
     if (str === undefined || str === null) return '';
     return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
   function escapeAttr(val) {
     if (val === undefined || val === null) return '';
     return String(val)
-      .replace(/&/g, '&amp;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;')
-      .replace(/</g, '&lt;')
-      .replace(/`/g, '&#96;')
-      .replace(/>/g, '&gt;');
+      .replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+      .replace(/</g, '&lt;').replace(/`/g, '&#96;').replace(/>/g, '&gt;');
   }
-  function safeDomId(base) {
-    return String(base).replace(/[^a-z0-9_-]/gi, '-');
-  }
+  function safeDomId(base) { return String(base).replace(/[^a-z0-9_-]/gi, '-'); }
   function debounce(fn, wait = 200) {
-    let t;
-    return (...args) => {
-      clearTimeout(t);
-      t = setTimeout(() => fn(...args), wait);
-    };
+    let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
   }
   function throttle(fn, wait = 120) {
     let last = 0;
-    return (...args) => {
-      const now = Date.now();
-      if (now - last >= wait) {
-        last = now;
-        fn(...args);
-      }
-    };
+    return (...args) => { const now = Date.now(); if (now - last >= wait) { last = now; fn(...args); } };
   }
 
-  // =========================================================
-  // 1) Lazy load packs (no duplicate)
-  // =========================================================
+  /* ============================================================
+     FIX: Safe localStorage wrapper — handles private browsing / quota errors
+     ============================================================ */
+  const storage = {
+    get(key) { try { return localStorage.getItem(key); } catch (e) { return null; } },
+    set(key, val) { try { localStorage.setItem(key, val); } catch (e) { /* ignore */ } },
+    remove(key) { try { localStorage.removeItem(key); } catch (e) { /* ignore */ } }
+  };
+
+  /* ============================================================
+     FIX: Safe CSS selector escape — handles colons in bilara keys like "sn1.1:1.1"
+     ============================================================ */
+  function safeCssEscape(str) {
+    if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
+      return CSS.escape(str);
+    }
+    return String(str).replace(/([^\w-])/g, '\\$1');
+  }
+
+  /* ============================================================
+     Lazy load packs
+     ============================================================ */
   const LOADED_PACKS = new Set();
   const PACK_PROMISES = new Map();
 
@@ -58,42 +53,29 @@
     if (!pack) return Promise.resolve();
     if (LOADED_PACKS.has(pack)) return Promise.resolve();
     if (PACK_PROMISES.has(pack)) return PACK_PROMISES.get(pack);
-
     const p = new Promise((res, rej) => {
       try {
         const s = document.createElement('script');
-        s.src = pack + '.js';
-        s.async = true;
-        s.onload = () => {
-          LOADED_PACKS.add(pack);
-          PACK_PROMISES.delete(pack);
-          res();
-        };
-        s.onerror = (e) => {
-          PACK_PROMISES.delete(pack);
-          rej(e);
-        };
+        s.src = pack + '.js'; s.async = true;
+        s.onload = () => { LOADED_PACKS.add(pack); PACK_PROMISES.delete(pack); res(); };
+        s.onerror = (e) => { PACK_PROMISES.delete(pack); rej(e); };
         document.body.appendChild(s);
-      } catch (e) {
-        PACK_PROMISES.delete(pack);
-        rej(e);
-      }
+      } catch (e) { PACK_PROMISES.delete(pack); rej(e); }
     });
-
     PACK_PROMISES.set(pack, p);
     return p;
   }
 
-  // =========================================================
-  // 2) Bilara loader (pli/en/vi) + merged cache (LRU)
-  // =========================================================
+  /* ============================================================
+     Bilara loader
+     ============================================================ */
   window.BILARA = window.BILARA || {};
   const BILARA_BASE_DIR = './sutta';
 
   function getBilaraPack(lang, id) {
     if (!id) return null;
     if (!/^[A-Za-z0-9_-]+$/.test(id)) return null;
-    return `${BILARA_BASE_DIR}/${lang}/${id}`;
+    return BILARA_BASE_DIR + '/' + lang + '/' + id;
   }
 
   const MERGED_CACHE = new Map();
@@ -113,170 +95,100 @@
 
   function unionKeys3(a, b, c) {
     const set = new Set();
-    if (a) Object.keys(a).forEach((k) => set.add(k));
-    if (b) Object.keys(b).forEach((k) => set.add(k));
-    if (c) Object.keys(c).forEach((k) => set.add(k));
+    if (a) Object.keys(a).forEach(function (k) { set.add(k); });
+    if (b) Object.keys(b).forEach(function (k) { set.add(k); });
+    if (c) Object.keys(c).forEach(function (k) { set.add(k); });
     return Array.from(set);
   }
 
   function sortBilaraKeys(keys) {
-    return keys.sort((x, y) => x.localeCompare(y, 'en', { numeric: true }));
+    return keys.sort(function (x, y) { return x.localeCompare(y, 'en', { numeric: true }); });
   }
 
   async function loadMerged(id) {
     if (!id) return null;
     if (MERGED_CACHE.has(id)) return MERGED_CACHE.get(id);
     if (MERGED_PROMISES.has(id)) return MERGED_PROMISES.get(id);
-
-    const p = (async () => {
+    var p = (async function () {
       await Promise.all([
         loadPackIfNeeded(getBilaraPack('pli', id)),
         loadPackIfNeeded(getBilaraPack('en', id)),
         loadPackIfNeeded(getBilaraPack('vi', id)),
       ]);
-
-      const entry = window.BILARA[id] || {};
-      const paliMap = entry.pli || {};
-      const engMap = entry.en || {};
-      const vieMap = entry.vi || {};
-
-      const keys = sortBilaraKeys(unionKeys3(paliMap, engMap, vieMap));
-      const rows = keys.map((k) => ({
-        key: k,
-        pali: paliMap[k] || '',
-        eng: engMap[k] || '',
-        vie: vieMap[k] || '',
-      }));
-
-      const merged = { paliMap, engMap, vieMap, keys, rows };
+      var entry = window.BILARA[id] || {};
+      var paliMap = entry.pli || {};
+      var engMap  = entry.en  || {};
+      var vieMap  = entry.vi  || {};
+      var keys = sortBilaraKeys(unionKeys3(paliMap, engMap, vieMap));
+      var rows = keys.map(function (k) { return { key: k, pali: paliMap[k]||'', eng: engMap[k]||'', vie: vieMap[k]||'' }; });
+      var merged = { paliMap: paliMap, engMap: engMap, vieMap: vieMap, keys: keys, rows: rows };
       MERGED_CACHE.set(id, merged);
       touchCache(id);
       MERGED_PROMISES.delete(id);
       return merged;
-    })().catch((e) => {
-      MERGED_PROMISES.delete(id);
-      throw e;
-    });
-
+    })().catch(function (e) { MERGED_PROMISES.delete(id); throw e; });
     MERGED_PROMISES.set(id, p);
     return p;
   }
 
-  // =========================================================
-  // 3) DOM
-  // =========================================================
-  const card = $('card');
-  const titleEl = $('title');
-  const subtitleEl = $('subtitle');
-  const grid = $('sutraGrid');
+  /* ============================================================
+     DOM refs
+     ============================================================ */
+  var card        = $('card');
+  var titleEl     = $('title');
+  var subtitleEl  = $('subtitle');
+  var grid        = $('sutraGrid');
 
-  const btnSutraMenu = $('btnSutraMenu');
-  const btnSettings = $('btnSettings');
-  const btnGuide = $('btnGuide');
-  const btnBackTop = $('btnBackTop');
-  const btnUiLang = $('btnUiLang');
+  var btnSutraMenu  = $('sidebar-btn');
+  var btnSettings   = $('btnSettings');
+  var btnGuide      = $('btnGuide');
+  var btnBackTop    = $('btnBackTop');
+  var btnUiLang     = $('btnUiLang');
 
-  const settingsPanel = $('settingsPanel');
-  const sutraMenuPanel = $('sutraMenuPanel');
-  const sutraMenuList = $('sutraMenuList');
+  var settingsPanel  = $('settingsPanel');
+  var sutraMenuPanel = $('sutraMenuPanel');
+  var sutraMenuList  = $('sutraMenuList');
+  var guideOverlay   = $('guideOverlay');
+  var searchInput    = $('sutraSearch');
+  var searchResultsEl = $('sutraSearchResults');
 
-  const guideOverlay = $('guideOverlay');
+  var btnPali      = $('btnPali');
+  var btnEng       = $('btnEng');
+  var btnVie       = $('btnVie');
+  var btnLayout    = $('btnLayout');
+  var btnReadTts   = $('btnReadTts');
+  var btnPauseTts  = $('btnPauseTts');
+  var btnStopTts   = $('btnStopTts');
+  var btnFullWidth = $('btnFullWidth');
 
-  const searchInput = $('sutraSearch');
-  const searchResultsEl = $('sutraSearchResults');
+  /* ============================================================
+     State
+     ============================================================ */
+  var currentSutraId = null;
+  var SUTRA_ORDER = [];
+  var FLAT_SUTTAS = [];
+  var showPali = true, showEng = true, showVie = true;
+  var isRendering = false;
+  var renderToken = 0;
+  var lastSingleLangMode = null;
+  var cachedRows = [];
 
-  const btnPali = $('btnPali');
-  const btnEng = $('btnEng');
-  const btnVie = $('btnVie');
-  const btnLayout = $('btnLayout');
-
-  const btnReadTts = $('btnReadTts');
-  const btnPauseTts = $('btnPauseTts');
-  const btnStopTts = $('btnStopTts');
-
-  const paliBgInput = $('paliBgColor');
-  const paliFgInput = $('paliTextColor');
-  const engBgInput = $('engBgColor');
-  const engFgInput = $('engTextColor');
-  const vieBgInput = $('vieBgColor');
-  const vieFgInput = $('vieTextColor');
-
-  const btnResetPali = $('btnResetPaliColor');
-  const btnResetEng = $('btnResetEngColor');
-  const btnResetVie = $('btnResetVieColor');
-
-  const btnZoomOut = $('btnZoomOut');
-  const btnZoomIn = $('btnZoomIn');
-  const btnZoomReset = $('btnZoomReset');
-
-  const btnFullWidth = $('btnFullWidth');
-
-  // =========================================================
-  // 4) State + Storage keys
-  // =========================================================
-  let currentSutraId = null;
-  let SUTRA_ORDER = [];
-  let FLAT_SUTTAS = [];
-
-  let showPali = true,
-    showEng = true,
-    showVie = true;
-
-  let isRendering = false;
-  let renderToken = 0;
-
-  // render mode cache (để biết khi toggle ngôn ngữ có cần render lại hay không)
-  let lastSingleLangMode = null; // null | 'pali' | 'eng' | 'vie'
-
-  // UI lang
-  const LANG_STORAGE_KEY = 'sutra_ui_lang';
-  let uiLang = localStorage.getItem(LANG_STORAGE_KEY) === 'en' ? 'en' : 'vi';
+  var LANG_STORAGE_KEY = 'sutra_ui_lang';
+  var uiLang = storage.get(LANG_STORAGE_KEY) === 'en' ? 'en' : 'vi';
   window.SUTRA_UI_LANG = uiLang;
 
-  // View prefs
-  const KEY_LAST = 'lastSutraId';
-  const KEY_VIEW = 'sutra_view_prefs';
+  var KEY_LAST     = 'lastSutraId';
+  var KEY_VIEW     = 'sutra_view_prefs';
+  var KEY_ANCHOR_K = function (id) { return 'scroll_anchor_key_' + id; };
+  var KEY_ANCHOR_O = function (id) { return 'scroll_anchor_off_' + id; };
+  var WIDE_STORAGE_KEY = 'sutra_layout_wide';
+  var isWide = storage.get(WIDE_STORAGE_KEY) === '1';
 
-  // Anchor scroll per sutra
-  const KEY_ANCHOR_K = (id) => 'scroll_anchor_key_' + id;
-  const KEY_ANCHOR_O = (id) => 'scroll_anchor_off_' + id;
-
-  // Full width
-  const WIDE_STORAGE_KEY = 'sutra_layout_wide';
-  let isWide = localStorage.getItem(WIDE_STORAGE_KEY) === '1';
-
-  // Zoom
-  const ZOOM_STORAGE_KEY = 'sutra_zoom';
-  const MIN_ZOOM = 0.8,
-    MAX_ZOOM = 1.6,
-    ZOOM_STEP = 0.1;
-  let zoomLevel = 1;
-
-  // Colors
-  // Sacred Manuscript theme — khớp với CSS vars --pali/eng/vie-bg/fg
-  const COLOR_DEFAULTS = {
-    paliBg: 'transparent',
-    paliFg: '#1a0f00',
-    engBg:  'transparent',
-    engFg:  '#2d1f0a',
-    vieBg:  'transparent',
-    vieFg:  '#2a1800',
-  };
-  const COLOR_VAR_MAP = {
-    paliBg: '--pali-bg',
-    paliFg: '--pali-fg',
-    engBg: '--eng-bg',
-    engFg: '--eng-fg',
-    vieBg: '--vie-bg',
-    vieFg: '--vie-fg',
-  };
-  const COLOR_STORAGE_PREFIX = 'sutra_color_';
-
-  // =========================================================
-  // 4.5) Single-language merge helpers
-  // =========================================================
+  /* ============================================================
+     Single-language helpers
+     ============================================================ */
   function getSingleVisibleLang() {
-    const count = (showPali ? 1 : 0) + (showEng ? 1 : 0) + (showVie ? 1 : 0);
+    var count = (showPali?1:0) + (showEng?1:0) + (showVie?1:0);
     if (count !== 1) return null;
     if (showPali) return 'pali';
     if (showEng) return 'eng';
@@ -284,170 +196,114 @@
     return null;
   }
 
-  function isNumberedHeadingLine(text) {
-    const t = (text || '').trim();
-    return /^\d+\.\s*/.test(t);
-  }
+  function isNumberedHeadingLine(text) { return /^\d+\.\s*/.test((text||'').trim()); }
 
   function mergeRowsToParagraphRows(rows, lang) {
-    const out = [];
-    if (!Array.isArray(rows) || !rows.length) return out;
-
-    let buf = '';
-    let bufKey = null;
-
-    const flush = () => {
-      const text = (buf || '').trim();
-      if (!text) {
-        buf = '';
-        bufKey = null;
-        return;
-      }
-      const r = { key: bufKey || '', pali: '', eng: '', vie: '' };
-      if (lang === 'pali') r.pali = text;
-      if (lang === 'eng') r.eng = text;
-      if (lang === 'vie') r.vie = text;
-      out.push(r);
-      buf = '';
-      bufKey = null;
+    var out = [];
+    if (!Array.isArray(rows)||!rows.length) return out;
+    var buf = '', bufKey = null;
+    var flush = function () {
+      var text = (buf||'').trim();
+      if (!text) { buf=''; bufKey=null; return; }
+      var r = { key: bufKey||'', pali:'', eng:'', vie:'' };
+      if (lang==='pali') r.pali=text;
+      if (lang==='eng') r.eng=text;
+      if (lang==='vie') r.vie=text;
+      out.push(r); buf=''; bufKey=null;
     };
-
-    for (const r of rows) {
-      const key = String(r.key || '');
-      const raw =
-        lang === 'pali' ? (r.pali || '') : lang === 'eng' ? (r.eng || '') : (r.vie || '');
-      const t = (raw || '').trim();
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      var key = String(r.key||'');
+      var raw = lang==='pali'?(r.pali||''):lang==='eng'?(r.eng||''):(r.vie||'');
+      var t = (raw||'').trim();
       if (!t) continue;
-
       if (isNumberedHeadingLine(t)) {
         flush();
-        const rr = { key, pali: '', eng: '', vie: '' };
-        if (lang === 'pali') rr.pali = t;
-        if (lang === 'eng') rr.eng = t;
-        if (lang === 'vie') rr.vie = t;
-        out.push(rr);
-        continue;
+        var rr = { key: key, pali:'', eng:'', vie:'' };
+        if (lang==='pali') rr.pali=t;
+        if (lang==='eng') rr.eng=t;
+        if (lang==='vie') rr.vie=t;
+        out.push(rr); continue;
       }
-
-      if (!buf) {
-        buf = t;
-        bufKey = key;
-      } else {
-        buf += ' ' + t;
-      }
+      if (!buf) { buf=t; bufKey=key; } else buf+=' '+t;
     }
-
-    flush();
-    return out;
+    flush(); return out;
   }
 
   function maybeRerenderIfModeChanged() {
-    const mode = getSingleVisibleLang();
-    // lastSingleLangMode chỉ được cập nhật trong renderSutra,
-    // nếu toggle nhanh 2 lần trước khi render xong có thể trigger rerender thừa
-    // — ổn vì renderToken sẽ cancel render cũ trước khi chạy render mới.
-    if (mode !== lastSingleLangMode && currentSutraId) {
-      renderSutra(currentSutraId);
-    }
+    var mode = getSingleVisibleLang();
+    if (mode === lastSingleLangMode) return;
+    if (currentSutraId) renderSutra(currentSutraId);
   }
 
-  // =========================================================
-  // 5) UI Language (flag + texts + guide)
-  // =========================================================
-  const FLAG_VI = `
-    <svg viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <rect width="48" height="32" fill="#da251d"/>
-      <polygon fill="#ffde00"
-        points="24,6  27.1,14.3 36,14.3 28.8,19.3 31.7,27 24,22.1 16.3,27 19.2,19.3 12,14.3 20.9,14.3"/>
-    </svg>`;
-  const FLAG_EN = `
-    <svg viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <rect width="48" height="32" fill="#012169"/>
-      <path d="M0 0 L20 13 H16 L0 3 Z M48 0 L28 13 H32 L48 3 Z M0 32 L20 19 H16 L0 29 Z M48 32 L28 19 H32 L48 29 Z" fill="#ffffff"/>
-      <path d="M0 0 L20 13 H17 L0 2 Z M48 0 L28 13 H31 L48 2 Z M0 32 L20 19 H17 L0 30 Z M48 32 L28 19 H31 L48 30 Z" fill="#c8102e"/>
-      <path d="M20 0 H28 V12 H48 V20 H28 V32 H20 V20 H0 V12 H20 Z" fill="#ffffff"/>
-      <path d="M21.5 0 H26.5 V13.5 H48 V18.5 H26.5 V32 H21.5 V18.5 H0 V13.5 H21.5 Z" fill="#c8102e"/>
-    </svg>`;
+  /* ============================================================
+     UI Language flags
+     ============================================================ */
+  var FLAG_VI = '<svg viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" role="presentation" aria-hidden="true"><rect width="48" height="32" fill="#da251d"/><polygon fill="#ffde00" points="24,6 27.1,14.3 36,14.3 28.8,19.3 31.7,27 24,22.1 16.3,27 19.2,19.3 12,14.3 20.9,14.3"/></svg>';
+  var FLAG_EN = '<svg viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" role="presentation" aria-hidden="true"><rect width="48" height="32" fill="#012169"/><path d="M0 0 L20 13 H16 L0 3 Z M48 0 L28 13 H32 L48 3 Z M0 32 L20 19 H16 L0 29 Z M48 32 L28 19 H32 L48 29 Z" fill="#ffffff"/><path d="M0 0 L20 13 H17 L0 2 Z M48 0 L28 13 H31 L48 2 Z M0 32 L20 19 H17 L0 30 Z M48 32 L28 19 H31 L48 30 Z" fill="#c8102e"/><path d="M20 0 H28 V12 H48 V20 H28 V32 H20 V20 H0 V12 H20 Z" fill="#ffffff"/><path d="M21.5 0 H26.5 V13.5 H48 V18.5 H26.5 V32 H21.5 V18.5 H0 V13.5 H21.5 Z" fill="#c8102e"/></svg>';
 
   function renderUiLangFlag() {
     if (!btnUiLang) return;
     btnUiLang.innerHTML = uiLang === 'en' ? FLAG_EN : FLAG_VI;
-    btnUiLang.title =
-      uiLang === 'en'
-        ? 'Interface: English (click to switch to Vietnamese)'
-        : 'Giao diện: Tiếng Việt (bấm để chuyển sang English)';
-    if (btnGuide) btnGuide.title = uiLang === 'en' ? 'User guide' : 'Hướng dẫn sử dụng';
-    if (btnSutraMenu) btnSutraMenu.title = uiLang === 'en' ? 'Sutta Index' : 'Danh mục bài kinh';
-    if (btnSettings) btnSettings.title = uiLang === 'en' ? 'Display settings' : 'Cài đặt hiển thị';
-    if (btnBackTop) btnBackTop.title = uiLang === 'en' ? 'Back to top' : 'Lên đầu nội dung';
+    btnUiLang.setAttribute('aria-label', uiLang === 'en'
+      ? 'Interface: English — click to switch to Vietnamese'
+      : 'Giao diện: Tiếng Việt — bấm để chuyển sang English');
   }
 
   function applyUiLanguageToSearchUi() {
     if (!searchInput) return;
-    searchInput.placeholder = uiLang === 'en' ? 'Search sutta...' : 'Tìm bài kinh ...';
+    searchInput.placeholder = uiLang === 'en' ? 'Search sutta...' : 'Tìm bài kinh...';
   }
 
   function applyUiLanguageToSettingsPanel() {
-    const isEn = uiLang === 'en';
-    const setText = (id, text) => {
-      const el = $(id);
-      if (el) el.textContent = text;
-    };
-    setText('settingsTitle', isEn ? 'Display settings' : 'Cài đặt hiển thị');
-    setText('settingsLangLabel', isEn ? 'Text languages:' : 'Ngôn ngữ hiển thị:');
-    setText('settingsLayoutLabel', isEn ? 'Layout:' : 'Bố cục:');
-    setText('settingsTtsTitle', isEn ? 'Text-to-speech (TTS)' : 'Đọc kinh (TTS)');
-    setText('settingsTtsUiLabel', isEn ? 'By interface language:' : 'Theo ngôn ngữ giao diện:');
-    const note = $('settingsTtsNote');
-    if (note) {
-      note.innerHTML = isEn
-        ? '* Uses browser built-in voices, quality may vary by device.'
-        : '* TTS dùng giọng có sẵn của trình duyệt, có thể khác nhau giữa thiết bị.';
-    }
-    setText('settingsColorTitle', isEn ? 'Language column colors' : 'Màu cột ngôn ngữ');
-    setText('settingsFontSizeLabel', isEn ? 'Font size:' : 'Cỡ chữ:');
+    var isEn = uiLang === 'en';
+    var setText = function (id, text) { var el=$(id); if(el) el.textContent=text; };
 
-    if (btnLayout) btnLayout.textContent = isEn ? '3 columns / Stacked' : '3 cột / Xếp dọc';
-    if (btnFullWidth) btnFullWidth.title = isEn ? 'Toggle full width' : 'Bật / tắt giãn toàn màn hình';
+    setText('settingsTitle',          isEn ? 'Settings'            : 'Tuỳ chỉnh');
+    setText('settingsLangLabel',      isEn ? 'Languages'           : 'Ngôn ngữ');
+    setText('settingsLangSub',        isEn ? 'Show / hide columns' : 'Hiện / ẩn cột');
+    setText('settingsLayoutLabel',    isEn ? 'Layout'              : 'Bố cục');
+    setText('settingsDisplayLabel',   isEn ? 'Display'             : 'Hiển thị');
+    setText('settingsFontSizeLabel',  isEn ? 'Font size'           : 'Cỡ chữ');
+    setText('settingsLineHeightLabel',isEn ? 'Line spacing'        : 'Giãn dòng');
+    setText('settingsTtsTitle',       isEn ? 'Read aloud'          : 'Đọc kinh');
+    setText('settingsTtsUiLabel',     isEn ? 'Text-to-Speech'      : 'Text-to-Speech');
+    setText('settingsFullWidthLabel', isEn ? 'Full width'          : 'Toàn màn hình');
+
+    var note = $('settingsTtsNote');
+    if (note) note.innerHTML = isEn
+      ? '* Uses browser built-in voices, quality may vary by device.'
+      : '* TTS dùng giọng có sẵn của trình duyệt, có thể khác nhau giữa thiết bị.';
+
+    if (btnLayout) btnLayout.innerHTML = isEn
+      ? '<span class="pill-icon">☰</span> Stacked'
+      : '<span class="pill-icon">☰</span> Xếp dọc';
+
+    var btnFW = $('btnFullWidth');
+    if (btnFW) btnFW.innerHTML = isEn
+      ? '<span class="pill-icon">⛶</span> Full width'
+      : '<span class="pill-icon">⛶</span> Toàn màn hình';
+
+    if (btnGuide)     btnGuide.setAttribute('aria-label',     isEn ? 'User guide'       : 'Hướng dẫn sử dụng');
+    if (btnSutraMenu) btnSutraMenu.setAttribute('aria-label', isEn ? 'Sutta Index'      : 'Danh mục bài kinh');
+    if (btnSettings)  btnSettings.setAttribute('aria-label',  isEn ? 'Display settings'  : 'Cài đặt hiển thị');
+    if (btnBackTop)   btnBackTop.setAttribute('aria-label',   isEn ? 'Back to top'       : 'Lên đầu trang');
+    if (btnPauseTts)  btnPauseTts.setAttribute('aria-label',
+      isEn ? 'Pause (current sentence will restart)' : 'Tạm dừng (câu hiện tại sẽ đọc lại từ đầu)');
+
+    var sideLabel = document.querySelector('#sidebar-btn .sidebar-label');
+    if (sideLabel) sideLabel.textContent = isEn ? 'Library' : 'Thư viện';
   }
 
   function renderGuideDialog() {
     if (!guideOverlay) return;
-    const dlg = guideOverlay.querySelector('.guide-dialog');
+    var dlg = guideOverlay.querySelector('.guide-dialog');
     if (!dlg) return;
-
-    const isEn = uiLang === 'en';
+    var isEn = uiLang === 'en';
     dlg.innerHTML = isEn
-      ? `
-        <h2>Quick guide</h2>
-        <div class="guide-body">
-          <em>Short instructions on how to use the sutta reader.</em>
-          <ul>
-            <li>📖 <strong>Sutta Index</strong>: open catalogue and choose a sutta.</li>
-            <li>🔎 <strong>Search</strong>: type name/ID/keyword to filter.</li>
-            <li>⚙ <strong>Settings</strong>: toggle languages, layout, TTS, colors, font size, full width.</li>
-            <li>↔ <strong>Swipe left–right</strong> on the text to previous/next sutta.</li>
-            <li>↑ <strong>Back to top</strong>: jump to top.</li>
-          </ul>
-        </div>
-        <button id="btnCloseGuide" type="button">Close</button>
-      `
-      : `
-        <h2>Hướng dẫn nhanh</h2>
-        <div class="guide-body">
-          <em>Một số hướng dẫn cơ bản để bạn sử dụng trang đọc kinh.</em>
-          <ul>
-            <li>📖 <strong>Danh mục bài kinh</strong>: mở mục lục và chọn bài.</li>
-            <li>🔎 <strong>Tìm kiếm</strong>: gõ tên/mã/từ khóa để lọc.</li>
-            <li>⚙ <strong>Cài đặt</strong>: bật/tắt ngôn ngữ, bố cục, TTS, màu, cỡ chữ, full width.</li>
-            <li>↔ <strong>Vuốt ngang</strong> để chuyển bài trước/sau.</li>
-            <li>↑ <strong>Lên đầu</strong>: cuộn về đầu.</li>
-          </ul>
-        </div>
-        <button id="btnCloseGuide" type="button">Đóng</button>
-      `;
-
-    const btnClose = $('btnCloseGuide');
+      ? '<h2>Quick guide</h2><em>Short instructions on how to use the sutta reader.</em><ul><li>📖 <strong>Sutta Index</strong>: open catalogue and choose a sutta.</li><li>🔎 <strong>Search</strong>: type name/ID/keyword to filter.</li><li>⚙ <strong>Settings</strong>: toggle languages, layout, TTS, font size, full width.</li><li>← → <strong>Prev / Next</strong>: navigate between suttas.</li><li>↑ <strong>Back to top</strong>: jump to top of sutta.</li><li>⏸ <strong>TTS note</strong>: pause restarts the current sentence (browser limitation).</li></ul><button id="btnCloseGuide" type="button">Close</button>'
+      : '<h2>Hướng dẫn nhanh</h2><em>Một số hướng dẫn cơ bản để bạn sử dụng trang đọc kinh.</em><ul><li>📖 <strong>Danh mục bài kinh</strong>: mở mục lục và chọn bài.</li><li>🔎 <strong>Tìm kiếm</strong>: gõ tên/mã/từ khóa để lọc.</li><li>⚙ <strong>Cài đặt</strong>: bật/tắt ngôn ngữ, bố cục, TTS, cỡ chữ, full width.</li><li>← → <strong>Trước / Sau</strong>: chuyển bài kinh bằng nút điều hướng.</li><li>↑ <strong>Lên đầu</strong>: cuộn về đầu bài kinh.</li><li>⏸ <strong>Lưu ý TTS</strong>: tạm dừng sẽ đọc lại từ đầu câu (giới hạn của trình duyệt).</li></ul><button id="btnCloseGuide" type="button">Đóng</button>';
+    var btnClose = $('btnCloseGuide');
     if (btnClose) btnClose.onclick = closeGuide;
   }
 
@@ -456,24 +312,72 @@
     renderGuideDialog();
     guideOverlay.classList.add('show');
     guideOverlay.setAttribute('aria-hidden', 'false');
-    setTimeout(() => $('btnCloseGuide')?.focus(), 0);
+    setTimeout(function () { var b = $('btnCloseGuide'); if (b) b.focus(); }, 50);
   }
-
   function closeGuide() {
     if (!guideOverlay) return;
     guideOverlay.classList.remove('show');
     guideOverlay.setAttribute('aria-hidden', 'true');
-    btnGuide && btnGuide.focus();
+    if (btnGuide) btnGuide.focus();
   }
 
-  // =========================================================
-  // 6) Panels
-  // =========================================================
+  /* ============================================================
+     Panel top position
+     ============================================================ */
+  function updateMenuPanelTop() {
+    if (!sutraMenuPanel || !card) return;
+    var topNote = card.querySelector('.top-note');
+    var topH = topNote ? topNote.offsetHeight : 0;
+    sutraMenuPanel.style.top = topH + 'px';
+  }
+
+  /* ============================================================
+     PANEL LOGIC
+     ============================================================ */
   function togglePanel(panel, force) {
     if (!panel) return;
-    const isOpen = typeof force === 'boolean' ? force : !panel.classList.contains('open');
+    var isOpen = typeof force === 'boolean' ? force : !panel.classList.contains('open');
+    
+    /* FIX: Before closing a panel, move focus OUT of it if it currently
+       contains the focused element. This prevents the browser error:
+       "Blocked aria-hidden on an element because its descendant retained focus" */
+    if (!isOpen && panel.contains(document.activeElement)) {
+      // Move focus to a safe element outside the panel
+      if (btnSutraMenu) {
+        btnSutraMenu.focus();
+      } else {
+        document.activeElement.blur();
+      }
+    }
+    
     panel.classList.toggle('open', isOpen);
-    panel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    if (isOpen) {
+      panel.setAttribute('aria-hidden', 'false');
+      panel.removeAttribute('inert');
+    } else {
+      panel.setAttribute('aria-hidden', 'true');
+      panel.setAttribute('inert', '');
+    }
+    if (panel === settingsPanel && btnSettings) {
+      btnSettings.setAttribute('aria-expanded', String(isOpen));
+      btnSettings.classList.toggle('active', isOpen);
+    }
+    if (panel === sutraMenuPanel && btnSutraMenu) {
+      btnSutraMenu.setAttribute('aria-expanded', String(isOpen));
+      btnSutraMenu.classList.toggle('is-open', isOpen);
+    }
+  }
+
+  function positionSettingsPanel() {
+    if (!settingsPanel || !btnSutraMenu || !card) return;
+    var left   = btnSutraMenu.offsetLeft + btnSutraMenu.offsetWidth + 6;
+    var cardH  = card.offsetHeight;
+    var btnBottom = btnSutraMenu.offsetTop + btnSutraMenu.offsetHeight;
+    var bottom = cardH - btnBottom;
+    settingsPanel.style.left   = left + 'px';
+    settingsPanel.style.bottom = bottom + 'px';
+    settingsPanel.style.top    = 'auto';
+    settingsPanel.style.right  = 'auto';
   }
 
   function closePanels() {
@@ -481,1305 +385,1059 @@
     togglePanel(sutraMenuPanel, false);
   }
 
-  if (btnSettings)
-    btnSettings.onclick = () => {
-      togglePanel(sutraMenuPanel, false);
-      togglePanel(settingsPanel);
-    };
-  if (btnSutraMenu)
-    btnSutraMenu.onclick = () => {
+  if (btnSutraMenu) {
+    btnSutraMenu.onclick = function (e) {
+      e.stopPropagation();
+      var willOpen = !sutraMenuPanel.classList.contains('open');
       togglePanel(settingsPanel, false);
-      togglePanel(sutraMenuPanel);
+      togglePanel(sutraMenuPanel, willOpen);
     };
-  if (btnGuide && guideOverlay) btnGuide.onclick = openGuide;
+  }
 
+  if (btnSettings) {
+    btnSettings.onclick = function (e) {
+      e.stopPropagation();
+      var willOpen = !settingsPanel.classList.contains('open');
+      if (willOpen) {
+        /* Close sutraMenuPanel first (togglePanel will safely move focus
+           out of the panel before setting inert) */
+        togglePanel(sutraMenuPanel, false);
+        positionSettingsPanel();
+      }
+      togglePanel(settingsPanel, willOpen);
+    };
+  }
+
+  if (btnGuide && guideOverlay) {
+    btnGuide.onclick = function (e) {
+      e.stopPropagation();
+      openGuide();  // mở guide overlay, giữ nguyên sidebar
+    };
+  }
   if (guideOverlay) {
-    guideOverlay.addEventListener('click', (e) => {
+    guideOverlay.addEventListener('click', function (e) {
       if (e.target === guideOverlay) closeGuide();
     });
   }
 
-  document.addEventListener('click', (e) => {
-    const t = e.target;
-    const clickedSettingsBtn = btnSettings && btnSettings.contains(t);
-    const clickedMenuBtn = btnSutraMenu && btnSutraMenu.contains(t);
-    const inSettings = settingsPanel && settingsPanel.contains(t);
-    const inMenu = sutraMenuPanel && sutraMenuPanel.contains(t);
-    if (clickedSettingsBtn || clickedMenuBtn || inSettings || inMenu) return;
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (sutraMenuPanel && sutraMenuPanel.contains(t)) return;
+    if (settingsPanel && settingsPanel.contains(t)) return;
+    if (btnSutraMenu && btnSutraMenu.contains(t)) return;
+    // Don't close sidebar when interacting with guide overlay
+    if (guideOverlay && guideOverlay.contains(t)) return;
     closePanels();
   });
 
-  document.addEventListener('keydown', (e) => {
+  document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
       if (guideOverlay && guideOverlay.classList.contains('show')) return closeGuide();
       closePanels();
     }
   });
 
-  // =========================================================
-  // 7) View prefs (columns + stack)
-  // =========================================================
+  /* ============================================================
+     View prefs
+     ============================================================ */
   function saveViewPrefs() {
-    try {
-      localStorage.setItem(
-        KEY_VIEW,
-        JSON.stringify({
-          showPali,
-          showEng,
-          showVie,
-          stack: card ? card.classList.contains('stack') : false,
-        })
-      );
-    } catch (e) {}
+    storage.set(KEY_VIEW, JSON.stringify({
+      showPali: showPali, showEng: showEng, showVie: showVie,
+      stack: card ? card.classList.contains('stack') : false
+    }));
   }
-
   function loadViewPrefs() {
     try {
-      const raw = localStorage.getItem(KEY_VIEW);
+      var raw = storage.get(KEY_VIEW);
       if (!raw) return;
-      const v = JSON.parse(raw);
-
+      var v = JSON.parse(raw);
       if (typeof v.showPali === 'boolean') showPali = v.showPali;
-      if (typeof v.showEng === 'boolean') showEng = v.showEng;
-      if (typeof v.showVie === 'boolean') showVie = v.showVie;
-
+      if (typeof v.showEng  === 'boolean') showEng  = v.showEng;
+      if (typeof v.showVie  === 'boolean') showVie  = v.showVie;
       if (card && typeof v.stack === 'boolean') card.classList.toggle('stack', v.stack);
-    } catch (e) {}
+    } catch(e){}
   }
 
-  function adjustRowColumns() {
-    if (!grid) return;
-    const isNarrow = window.innerWidth <= 500;
-    const rows = grid.querySelectorAll('.sutra-row');
-    const cardIsStack = card && card.classList.contains('stack');
-
-    rows.forEach((row) => {
-      if (cardIsStack || isNarrow) {
-        row.style.gridTemplateColumns = '1fr';
-        return;
-      }
-      let count = 0;
-      if (showPali) count++;
-      if (showEng) count++;
-      if (showVie) count++;
-      count = Math.max(1, count);
-      row.style.gridTemplateColumns = `repeat(${count},1fr)`;
-    });
+  function updateVisibleCols() {
+    var isNarrow = window.innerWidth <= 500;
+    var isStack  = card ? card.classList.contains('stack') : false;
+    var count = (showPali?1:0) + (showEng?1:0) + (showVie?1:0);
+    count = Math.max(1, count);
+    document.documentElement.style.setProperty('--visible-cols', isNarrow || isStack ? '1' : String(count));
   }
 
   function applyVisibility() {
     if (!grid) return;
     grid.classList.toggle('hide-pali', !showPali);
-    grid.classList.toggle('hide-eng', !showEng);
-    grid.classList.toggle('hide-vie', !showVie);
-    adjustRowColumns();
+    grid.classList.toggle('hide-eng',  !showEng);
+    grid.classList.toggle('hide-vie',  !showVie);
+    updateVisibleCols();
   }
 
-  window.addEventListener('resize', adjustRowColumns);
+  window.addEventListener('resize', function () { updateVisibleCols(); updateMenuPanelTop(); });
 
-  if (btnPali)
-    btnPali.onclick = () => {
-      showPali = !showPali;
-      btnPali.classList.toggle('active', showPali);
-      applyVisibility();
-      saveViewPrefs();
-      maybeRerenderIfModeChanged();
-    };
-  if (btnEng)
-    btnEng.onclick = () => {
-      showEng = !showEng;
-      btnEng.classList.toggle('active', showEng);
-      applyVisibility();
-      saveViewPrefs();
-      maybeRerenderIfModeChanged();
-    };
-  if (btnVie)
-    btnVie.onclick = () => {
-      showVie = !showVie;
-      btnVie.classList.toggle('active', showVie);
-      applyVisibility();
-      saveViewPrefs();
-      maybeRerenderIfModeChanged();
-    };
+  if (btnPali) btnPali.onclick = function () {
+    if (showPali && (showEng || showVie)) { showPali = false; }
+    else if (!showPali) { showPali = true; }
+    else { return; }
+    btnPali.classList.toggle('active', showPali);
+    btnPali.setAttribute('aria-pressed', String(showPali));
+    applyVisibility(); saveViewPrefs(); maybeRerenderIfModeChanged();
+  };
 
-  if (btnLayout)
-    btnLayout.onclick = () => {
-      if (card) card.classList.toggle('stack');
-      btnLayout.classList.toggle('active', card && card.classList.contains('stack'));
-      adjustRowColumns();
-      saveViewPrefs();
-    };
+  if (btnEng) btnEng.onclick = function () {
+    if (showEng && (showPali || showVie)) { showEng = false; }
+    else if (!showEng) { showEng = true; }
+    else { return; }
+    btnEng.classList.toggle('active', showEng);
+    btnEng.setAttribute('aria-pressed', String(showEng));
+    applyVisibility(); saveViewPrefs(); maybeRerenderIfModeChanged();
+  };
 
-  // =========================================================
-  // 8) Full width
-  // =========================================================
+  if (btnVie) btnVie.onclick = function () {
+    if (showVie && (showPali || showEng)) { showVie = false; }
+    else if (!showVie) { showVie = true; }
+    else { return; }
+    btnVie.classList.toggle('active', showVie);
+    btnVie.setAttribute('aria-pressed', String(showVie));
+    applyVisibility(); saveViewPrefs(); maybeRerenderIfModeChanged();
+  };
+
+  if (btnLayout) btnLayout.onclick = function () {
+    if (card) card.classList.toggle('stack');
+    var isStack = card ? card.classList.contains('stack') : false;
+    btnLayout.classList.toggle('active', isStack);
+    btnLayout.setAttribute('aria-pressed', String(isStack));
+    updateVisibleCols(); saveViewPrefs();
+  };
+
+  /* ============================================================
+     Full width
+     ============================================================ */
   function applyWideLayout(on) {
     isWide = !!on;
     document.documentElement.classList.toggle('layout-wide', isWide);
-    if (btnFullWidth) btnFullWidth.classList.toggle('active', isWide);
+    if (btnFullWidth) {
+      btnFullWidth.classList.toggle('active', isWide);
+      btnFullWidth.setAttribute('aria-pressed', String(isWide));
+    }
   }
-
   if (btnFullWidth) {
     applyWideLayout(isWide);
-    btnFullWidth.addEventListener('click', () => {
-      const newVal = !isWide;
-      applyWideLayout(newVal);
-      localStorage.setItem(WIDE_STORAGE_KEY, newVal ? '1' : '0');
+    btnFullWidth.addEventListener('click', function () {
+      applyWideLayout(!isWide);
+      storage.set(WIDE_STORAGE_KEY, isWide ? '1' : '0');
     });
   }
 
-  // =========================================================
-  // 9) Zoom
-  // =========================================================
-  function clampZoom(z) {
-    return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, z));
+  /* ============================================================
+     Zoom + Line height sliders
+     ============================================================ */
+  var ZOOM_STORAGE_KEY = 'sutra_zoom';
+  var LH_STORAGE_KEY   = 'sutra_line_height';
+  var MIN_ZOOM=0.8, MAX_ZOOM=1.6, MIN_LH=1.3, MAX_LH=2.6;
+  var zoomLevel=1, lineHeightLevel=1.85;
+
+  var sliderZoom       = $('sliderZoom');
+  var sliderLineHeight = $('sliderLineHeight');
+  var zoomBadge        = $('zoomValueBadge');
+  var lhBadge          = $('lineHeightValueBadge');
+  var btnZoomReset     = $('btnZoomReset');
+  var btnLhReset       = $('btnLineHeightReset');
+
+  function clampZoom(z) { return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, z)); }
+  function clampLh(v)   { return Math.max(MIN_LH,   Math.min(MAX_LH, v)); }
+
+  function updateSliderFill(el, min, max, val) {
+    if (!el) return;
+    el.style.setProperty('--slider-pct', ((val - min) / (max - min) * 100).toFixed(1) + '%');
   }
+
   function applyZoom() {
     document.documentElement.style.setProperty('--sutra-font-scale', String(zoomLevel));
+    var pct = Math.round(zoomLevel * 100);
+    if (zoomBadge) zoomBadge.textContent = pct + '%';
+    if (sliderZoom) { sliderZoom.value = String(pct); updateSliderFill(sliderZoom, 80, 160, pct); }
   }
-  function loadZoom() {
-    const stored = localStorage.getItem(ZOOM_STORAGE_KEY);
-    if (stored) {
-      const v = parseFloat(stored);
-      if (!Number.isNaN(v)) zoomLevel = clampZoom(v);
+  function applyLineHeight() {
+    document.documentElement.style.setProperty('--sutra-line-height', String(lineHeightLevel));
+    if (lhBadge) lhBadge.textContent = lineHeightLevel.toFixed(2);
+    if (sliderLineHeight) {
+      var val = Math.round(lineHeightLevel * 100);
+      sliderLineHeight.value = String(val);
+      updateSliderFill(sliderLineHeight, 130, 260, val);
     }
+  }
+
+  function loadZoom() {
+    var s = storage.get(ZOOM_STORAGE_KEY);
+    if (s) { var v = parseFloat(s); if (!Number.isNaN(v)) zoomLevel = clampZoom(v); }
     applyZoom();
   }
-  function saveZoom() {
-    localStorage.setItem(ZOOM_STORAGE_KEY, String(zoomLevel));
+  function loadLineHeight() {
+    var s = storage.get(LH_STORAGE_KEY);
+    if (s) { var v = parseFloat(s); if (!Number.isNaN(v)) lineHeightLevel = clampLh(v); }
+    applyLineHeight();
   }
-  if (btnZoomIn)
-    btnZoomIn.onclick = () => {
-      zoomLevel = clampZoom(zoomLevel + ZOOM_STEP);
-      applyZoom();
-      saveZoom();
-    };
-  if (btnZoomOut)
-    btnZoomOut.onclick = () => {
-      zoomLevel = clampZoom(zoomLevel - ZOOM_STEP);
-      applyZoom();
-      saveZoom();
-    };
-  if (btnZoomReset)
-    btnZoomReset.onclick = () => {
-      zoomLevel = 1;
-      applyZoom();
-      saveZoom();
-    };
+  function saveZoom()       { storage.set(ZOOM_STORAGE_KEY, String(zoomLevel)); }
+  function saveLineHeight() { storage.set(LH_STORAGE_KEY, String(lineHeightLevel)); }
 
-  // =========================================================
-  // 10) Colors
-  // =========================================================
-  function applyColorVar(key, value) {
-    const cssVar = COLOR_VAR_MAP[key];
-    if (!cssVar) return;
-    document.documentElement.style.setProperty(cssVar, value);
-  }
-  function loadColorPrefs() {
-    const result = {};
-    Object.keys(COLOR_DEFAULTS).forEach((key) => {
-      const stored = localStorage.getItem(COLOR_STORAGE_PREFIX + key);
-      result[key] = stored || COLOR_DEFAULTS[key];
-    });
-    return result;
-  }
-  function saveColorPref(key, value) {
-    localStorage.setItem(COLOR_STORAGE_PREFIX + key, value);
-  }
-  function applyAllColors(colors) {
-    Object.keys(colors).forEach((key) => applyColorVar(key, colors[key]));
-  }
-  function resetLangColors(lang) {
-    const bgKey = lang + 'Bg';
-    const fgKey = lang + 'Fg';
-    const defBg = COLOR_DEFAULTS[bgKey];
-    const defFg = COLOR_DEFAULTS[fgKey];
-    applyColorVar(bgKey, defBg);
-    applyColorVar(fgKey, defFg);
-    saveColorPref(bgKey, defBg);
-    saveColorPref(fgKey, defFg);
-    if (lang === 'pali') {
-      paliBgInput && (paliBgInput.value = defBg);
-      paliFgInput && (paliFgInput.value = defFg);
-    }
-    if (lang === 'eng') {
-      engBgInput && (engBgInput.value = defBg);
-      engFgInput && (engFgInput.value = defFg);
-    }
-    if (lang === 'vie') {
-      vieBgInput && (vieBgInput.value = defBg);
-      vieFgInput && (vieFgInput.value = defFg);
-    }
-  }
-  function initColorControls() {
-    const colors = loadColorPrefs();
-    applyAllColors(colors);
+  if (sliderZoom) sliderZoom.addEventListener('input', function () {
+    zoomLevel = clampZoom(parseInt(sliderZoom.value, 10) / 100); applyZoom(); saveZoom();
+  });
+  if (sliderLineHeight) sliderLineHeight.addEventListener('input', function () {
+    lineHeightLevel = clampLh(parseInt(sliderLineHeight.value, 10) / 100); applyLineHeight(); saveLineHeight();
+  });
+  if (btnZoomReset) btnZoomReset.onclick = function () { zoomLevel = 1; applyZoom(); saveZoom(); };
+  if (btnLhReset)   btnLhReset.onclick   = function () { lineHeightLevel = 1.85; applyLineHeight(); saveLineHeight(); };
 
-    if (paliBgInput) paliBgInput.value = colors.paliBg;
-    if (paliFgInput) paliFgInput.value = colors.paliFg;
-    if (engBgInput) engBgInput.value = colors.engBg;
-    if (engFgInput) engFgInput.value = colors.engFg;
-    if (vieBgInput) vieBgInput.value = colors.vieBg;
-    if (vieFgInput) vieFgInput.value = colors.vieFg;
+  /* ============================================================
+     Anchor scroll
+     FIX: Properly disconnect observer on page unload to prevent memory leak
+     ============================================================ */
+  var anchorObserver = null;
+  var firstVisibleKey = null;
+  var firstVisibleOffsetFromGrid = 0;
 
-    paliBgInput &&
-      paliBgInput.addEventListener('input', (e) => {
-        applyColorVar('paliBg', e.target.value);
-        saveColorPref('paliBg', e.target.value);
-      });
-    paliFgInput &&
-      paliFgInput.addEventListener('input', (e) => {
-        applyColorVar('paliFg', e.target.value);
-        saveColorPref('paliFg', e.target.value);
-      });
-    engBgInput &&
-      engBgInput.addEventListener('input', (e) => {
-        applyColorVar('engBg', e.target.value);
-        saveColorPref('engBg', e.target.value);
-      });
-    engFgInput &&
-      engFgInput.addEventListener('input', (e) => {
-        applyColorVar('engFg', e.target.value);
-        saveColorPref('engFg', e.target.value);
-      });
-    vieBgInput &&
-      vieBgInput.addEventListener('input', (e) => {
-        applyColorVar('vieBg', e.target.value);
-        saveColorPref('vieBg', e.target.value);
-      });
-    vieFgInput &&
-      vieFgInput.addEventListener('input', (e) => {
-        applyColorVar('vieFg', e.target.value);
-        saveColorPref('vieFg', e.target.value);
-      });
-
-    btnResetPali && btnResetPali.addEventListener('click', () => resetLangColors('pali'));
-    btnResetEng && btnResetEng.addEventListener('click', () => resetLangColors('eng'));
-    btnResetVie && btnResetVie.addEventListener('click', () => resetLangColors('vie'));
+  function getScrollRoot() {
+    // FIX: On mobile (<=500px), if grid has overflow-y:auto it's still the scroll root.
+    // We always use grid as scroll root since CSS fix keeps it scrollable.
+    return grid;
   }
 
-  // =========================================================
-  // 11) Anchor scroll (segment based) — FIX: tính offset đúng
-  // =========================================================
-  function getAnchorFromViewport() {
-    if (!grid) return null;
-
-    // Duyệt qua các row để tìm row đầu tiên visible trong viewport của grid
-    const gridTop = grid.getBoundingClientRect().top;
-    const rows = grid.querySelectorAll('.sutra-row');
-    let targetRow = null;
-
-    for (let i = 0; i < rows.length; i++) {
-      const r = rows[i];
-      const rTop = r.getBoundingClientRect().top;
-      // Row đầu tiên mà phần trên của nó còn nằm trong/dưới grid top
-      if (rTop >= gridTop - 1) {
-        targetRow = r;
-        break;
+  function setupAnchorObserver() {
+    if (anchorObserver) { anchorObserver.disconnect(); anchorObserver = null; }
+    var scrollRoot = getScrollRoot();
+    if (!scrollRoot) return;
+    anchorObserver = new IntersectionObserver(function (entries) {
+      var topmost = null;
+      for (var i = 0; i < entries.length; i++) {
+        var entry = entries[i];
+        if (!entry.isIntersecting) continue;
+        if (!topmost || entry.boundingClientRect.top < topmost.boundingClientRect.top) topmost = entry;
       }
-    }
-
-    if (!targetRow) {
-      // fallback: row cuối cùng visible
-      for (let i = rows.length - 1; i >= 0; i--) {
-        const r = rows[i];
-        const rTop = r.getBoundingClientRect().top;
-        if (rTop < gridTop + grid.clientHeight) {
-          targetRow = r;
-          break;
-        }
+      if (topmost) {
+        firstVisibleKey = topmost.target.getAttribute('data-key') || '';
+        firstVisibleOffsetFromGrid = Math.max(0,
+          topmost.target.getBoundingClientRect().top - scrollRoot.getBoundingClientRect().top);
       }
-    }
-
-    if (!targetRow) return null;
-
-    const key = targetRow.getAttribute('data-key') || '';
-    if (!key) return null;
-
-    // Offset chính xác: khoảng cách từ top của row tới top của grid viewport
-    // (offsetTop của row so với scrollable container - scrollTop hiện tại)
-    const offset = Math.max(0, targetRow.offsetTop - grid.scrollTop);
-    return { key, offset };
+    }, { root: scrollRoot, rootMargin: '0px 0px -80% 0px', threshold: 0 });
+    scrollRoot.querySelectorAll('.sutra-row').forEach(function (r) { anchorObserver.observe(r); });
   }
 
   function saveScrollAnchorNow() {
-    if (!grid || !currentSutraId) return;
-    try {
-      const a = getAnchorFromViewport();
-      if (!a) return;
-      localStorage.setItem(KEY_ANCHOR_K(currentSutraId), a.key);
-      localStorage.setItem(KEY_ANCHOR_O(currentSutraId), String(Math.round(a.offset)));
-    } catch (e) {}
+    if (!currentSutraId) return;
+    var scrollRoot = getScrollRoot();
+    if (!scrollRoot || scrollRoot.scrollTop === 0) {
+      storage.remove(KEY_ANCHOR_K(currentSutraId));
+      storage.remove(KEY_ANCHOR_O(currentSutraId));
+      return;
+    }
+    if (!firstVisibleKey) return;
+    storage.set(KEY_ANCHOR_K(currentSutraId), firstVisibleKey);
+    storage.set(KEY_ANCHOR_O(currentSutraId), String(Math.round(firstVisibleOffsetFromGrid)));
   }
 
   function restoreScrollByAnchor(id) {
-    if (!grid) return false;
+    var scrollRoot = getScrollRoot();
+    if (!scrollRoot) return false;
     try {
-      const key = localStorage.getItem(KEY_ANCHOR_K(id));
-      const offRaw = localStorage.getItem(KEY_ANCHOR_O(id));
-      const off = offRaw ? parseInt(offRaw, 10) : 0;
+      var key    = storage.get(KEY_ANCHOR_K(id));
+      var offRaw = storage.get(KEY_ANCHOR_O(id));
+      var off    = offRaw ? parseInt(offRaw, 10) : 0;
       if (!key) return false;
-
-      const safeKey = String(key).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-      const row = grid.querySelector(`.sutra-row[data-key="${safeKey}"]`);
+      // FIX: Use safeCssEscape instead of broken manual fallback
+      var safeKey = safeCssEscape(key);
+      var row = scrollRoot.querySelector('.sutra-row[data-key="' + safeKey + '"]');
       if (!row) return false;
-
-      // Cuộn sao cho row nằm đúng tại vị trí offset đã lưu từ top của grid
-      const max = Math.max(0, grid.scrollHeight - grid.clientHeight);
-      let y = row.offsetTop - (Number.isFinite(off) ? off : 0);
+      var scrollTarget = row.closest('.sutra-row-wrap') || row;
+      var max = Math.max(0, scrollRoot.scrollHeight - scrollRoot.clientHeight);
+      var y = scrollTarget.offsetTop - (Number.isFinite(off) ? off : 0);
       y = Math.max(0, Math.min(y, max));
-      grid.scrollTop = y;
-      toggleBackTop(grid.scrollTop > 0);
+      scrollRoot.scrollTop = y;
+      toggleBackTop(scrollRoot.scrollTop > 0);
       return true;
-    } catch (e) {
-      return false;
-    }
+    } catch(e) { return false; }
   }
 
-  // FIX: Chỉ dùng pagehide + visibilitychange — beforeunload gây hại BFCache trên mobile
-  function saveNowForReload() {
+  // FIX: Clean up observer on page unload to prevent memory leak
+  window.addEventListener('pagehide', function () {
     saveScrollAnchorNow();
-  }
-  window.addEventListener('pagehide', saveNowForReload);
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') saveNowForReload();
+    if (anchorObserver) { anchorObserver.disconnect(); anchorObserver = null; }
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') saveScrollAnchorNow();
   });
 
-  // =========================================================
-  // 12) Back to top
-  // =========================================================
-  function toggleBackTop(show) {
-    if (!btnBackTop) return;
-    btnBackTop.classList.toggle('enabled', show);
-    btnBackTop.disabled = !show;
-    btnBackTop.setAttribute('aria-disabled', String(!show));
-  }
+  /* ============================================================
+     Back to top
+     ============================================================ */
+  var suppressBackTop = false;
+  function toggleBackTop(show) { if (!btnBackTop) return; btnBackTop.classList.toggle('visible', show); }
 
-  if (grid) {
-    grid.addEventListener(
-      'scroll',
-      throttle(() => {
-        toggleBackTop(grid.scrollTop > 0);
-        saveScrollAnchorNow();
-      }, 120)
-    );
-  }
+  if (grid) grid.addEventListener('scroll', throttle(function () {
+    if (!suppressBackTop) toggleBackTop(grid.scrollTop > 0);
+    saveScrollAnchorNow();
+  }, 120));
 
-  if (btnBackTop && grid) {
-    btnBackTop.onclick = () => {
-      if (!btnBackTop.classList.contains('enabled')) return;
-      grid.scrollTo({ top: 0, behavior: 'smooth' });
+  if (btnBackTop && grid) btnBackTop.onclick = function () {
+    suppressBackTop = true;
+    toggleBackTop(false);
+    setMobileHeaderHidden(false);  // Show header when going back to top
+    mobileLastScrollTop = 0;
+    grid.scrollTo({ top: 0, behavior: 'smooth' });
+    var done = function () {
+      suppressBackTop = false;
+      toggleBackTop(false);
+      if (currentSutraId) {
+        storage.remove(KEY_ANCHOR_K(currentSutraId));
+        storage.remove(KEY_ANCHOR_O(currentSutraId));
+      }
     };
+    if ('onscrollend' in grid) {
+      grid.addEventListener('scrollend', done, { once: true });
+    } else {
+      var prev = -1;
+      var poll = function () {
+        var st = grid.scrollTop;
+        if (st === 0 && st === prev) { done(); return; }
+        prev = st;
+        requestAnimationFrame(poll);
+      };
+      requestAnimationFrame(poll);
+    }
+  };
+
+  /* ============================================================
+     Mobile auto-hide header
+     Ẩn header khi cuộn xuống, hiện lại khi cuộn lên hoặc ở đầu trang.
+     Chỉ hoạt động trên mobile (≤500px).
+     ============================================================ */
+  var headerEl = card ? card.querySelector('.header') : null;
+  var mobileLastScrollTop = 0;
+  var mobileHeaderHidden = false;
+  var MOBILE_SCROLL_THRESHOLD = 8;  // Ngưỡng pixel tối thiểu để trigger
+
+  function isMobileViewport() {
+    return window.innerWidth <= 500;
   }
 
-  // =========================================================
-  // 13) Menu từ SUTRA_INDEX + Search
-  // =========================================================
-  function buildSuttaLinkHtml(s) {
-    const codePrefix = s.code ? s.code + ' – ' : '';
-    const viLabel = s.titleVi || '';
-    const enLabel = s.titleEn || '';
-    const paliLabel = s.titlePali || '';
+  function setMobileHeaderHidden(hide) {
+    if (!headerEl) return;
+    if (hide === mobileHeaderHidden) return;
+    mobileHeaderHidden = hide;
+    if (hide) {
+      headerEl.classList.add('header-hidden');
+    } else {
+      headerEl.classList.remove('header-hidden');
+    }
+  }
 
-    let mainText, subText;
+  if (grid && headerEl) {
+    grid.addEventListener('scroll', throttle(function () {
+      if (!isMobileViewport()) {
+        // Desktop: luôn hiện header
+        setMobileHeaderHidden(false);
+        return;
+      }
+
+      var st = grid.scrollTop;
+
+      // Ở đầu trang: luôn hiện header
+      if (st <= 5) {
+        setMobileHeaderHidden(false);
+        mobileLastScrollTop = st;
+        return;
+      }
+
+      var delta = st - mobileLastScrollTop;
+
+      // Cuộn xuống đủ ngưỡng → ẩn header
+      if (delta > MOBILE_SCROLL_THRESHOLD) {
+        setMobileHeaderHidden(true);
+      }
+      // Cuộn lên đủ ngưỡng → hiện header
+      else if (delta < -MOBILE_SCROLL_THRESHOLD) {
+        setMobileHeaderHidden(false);
+      }
+
+      mobileLastScrollTop = st;
+    }, 60));
+  }
+
+  // Khi resize từ mobile sang desktop → đảm bảo header hiện lại
+  window.addEventListener('resize', function () {
+    if (!isMobileViewport()) {
+      setMobileHeaderHidden(false);
+    }
+  });
+
+  /* ============================================================
+     Menu build
+     ============================================================ */
+  function buildSuttaLinkHtml(s) {
+    var codePrefix = s.code ? s.code + ' – ' : '';
+    var viLabel = s.titleVi || '', enLabel = s.titleEn || '', paliLabel = s.titlePali || '';
+    var mainText, subText;
     if (uiLang === 'en') {
       mainText = codePrefix + (enLabel || viLabel || paliLabel || s.id);
-      subText = paliLabel || viLabel || '';
+      subText  = paliLabel || viLabel || '';
     } else {
       mainText = codePrefix + (viLabel || enLabel || paliLabel || s.id);
-      subText = paliLabel || enLabel || '';
+      subText  = paliLabel || enLabel || '';
     }
-
     FLAT_SUTTAS.push({
-      id: s.id,
-      main: mainText,
-      sub: subText,
-      flat: `${mainText} ${viLabel} ${enLabel} ${paliLabel}`.toLowerCase(),
+      id: s.id, main: mainText, sub: subText,
+      flat: (mainText + ' ' + viLabel + ' ' + enLabel + ' ' + paliLabel).toLowerCase()
     });
-
-    return `
-      <a href="#" class="menu-sutta-link" data-id="${escapeAttr(s.id)}">
-        <div class="sutra-label">
-          <div class="sutra-label-main">${escapeHtml(mainText)}</div>
-          ${subText ? `<div class="sutra-label-sub">${escapeHtml(subText)}</div>` : ''}
-        </div>
-      </a>
-    `;
+    return '<a href="#" class="menu-sutta-link" role="treeitem" data-id="' + escapeAttr(s.id) + '" aria-label="' + escapeAttr(mainText) + '">' +
+        '<div class="sutra-label">' +
+          '<div class="sutra-label-main">' + escapeHtml(mainText) + '</div>' +
+          (subText ? '<div class="sutra-label-sub">' + escapeHtml(subText) + '</div>' : '') +
+        '</div></a>';
   }
 
   function buildMenuChildren(children, parentId) {
     if (!children || !children.length) return '';
-    let html = '';
-    children.forEach((child) => {
+    var html = '';
+    for (var i = 0; i < children.length; i++) {
+      var child = children[i];
       if (child.type === 'group') {
-        const grpId = safeDomId(parentId + '-' + child.key);
-        const label =
-          uiLang === 'en'
-            ? child.labelEn || child.labelVi || child.key
-            : child.labelVi || child.labelEn || child.key;
-
-        html += `
-          <div class="menu-subblock">
-            <button class="menu-toggle nested" type="button" data-target="${escapeAttr(grpId)}" aria-expanded="false">
-              <span>${escapeHtml(label)}</span><span class="chevron">▸</span>
-            </button>
-            <div id="${escapeAttr(grpId)}" class="menu-list collapsed">
-              ${buildMenuChildren(child.children || [], grpId)}
-            </div>
-          </div>
-        `;
+        var grpId = safeDomId(parentId + '-' + child.key);
+        var label = uiLang === 'en'
+          ? child.labelEn || child.labelVi || child.key
+          : child.labelVi || child.labelEn || child.key;
+        html += '<div class="menu-subblock" role="group">' +
+            '<button class="menu-toggle nested" type="button" data-target="' + escapeAttr(grpId) + '"' +
+            ' aria-expanded="false" aria-controls="' + escapeAttr(grpId) + '">' +
+            '<span>' + escapeHtml(label) + '</span><span class="chevron" aria-hidden="true">▸</span>' +
+            '</button>' +
+            '<div id="' + escapeAttr(grpId) + '" class="menu-list collapsed">' + buildMenuChildren(child.children || [], grpId) + '</div>' +
+          '</div>';
       } else if (child.type === 'sutta') {
         html += buildSuttaLinkHtml(child);
       }
-    });
+    }
     return html;
   }
 
   function buildSutraMenuFromIndex() {
-    const index = window.SUTRA_INDEX || [];
+    var index = window.SUTRA_INDEX || [];
     FLAT_SUTTAS = [];
-
     if (!Array.isArray(index) || !index.length) {
-      sutraMenuList && (sutraMenuList.innerHTML = '<li>Chưa có mục lục.</li>');
+      if (sutraMenuList) {
+        var msg = uiLang === 'en' ? 'No sutta index found. Make sure toc.js is loaded.' : 'Chưa có mục lục. Hãy đảm bảo file toc.js đã được tải.';
+        sutraMenuList.innerHTML = '<li style="padding:10px;color:var(--ink-light);font-style:italic">' + escapeHtml(msg) + '</li>';
+      }
       return;
     }
-
-    let html = '';
-    index.forEach((sec) => {
-      const secId = safeDomId('sec-' + sec.key);
-      const label =
-        uiLang === 'en' ? sec.labelEn || sec.labelVi || sec.key : sec.labelVi || sec.labelEn || sec.key;
-
-      html += `
-        <li class="menu-block">
-          <button class="menu-toggle" type="button" data-target="${escapeAttr(secId)}" aria-expanded="false">
-            <span>${escapeHtml(label)}</span><span class="chevron">▸</span>
-          </button>
-          <div id="${escapeAttr(secId)}" class="menu-list collapsed">
-            <!-- Sticky header bên trong accordion — dính lên đầu khi cuộn -->
-            <div class="menu-nikaya-sticky" data-label="${escapeAttr(label)}">${escapeHtml(label)}</div>
-            ${buildMenuChildren(sec.children || [], secId)}
-          </div>
-        </li>
-      `;
-    });
-
+    var html = '';
+    for (var i = 0; i < index.length; i++) {
+      var sec = index[i];
+      var secId = safeDomId('sec-' + sec.key);
+      var label = uiLang === 'en'
+        ? sec.labelEn || sec.labelVi || sec.key
+        : sec.labelVi || sec.labelEn || sec.key;
+      html += '<li class="menu-block" role="treeitem" aria-expanded="false">' +
+        '<button class="menu-toggle" type="button" data-target="' + escapeAttr(secId) + '" aria-expanded="false" aria-controls="' + escapeAttr(secId) + '">' +
+        '<span>' + escapeHtml(label) + '</span><span class="chevron" aria-hidden="true">▸</span>' +
+        '</button>' +
+        '<div id="' + escapeAttr(secId) + '" class="menu-list collapsed" role="group">' +
+        '<div class="menu-nikaya-sticky" data-label="' + escapeAttr(label) + '" aria-hidden="true">' + escapeHtml(label) + '</div>' +
+        buildMenuChildren(sec.children || [], secId) +
+        '</div></li>';
+    }
     if (!sutraMenuList) return;
     sutraMenuList.innerHTML = html;
-
-    SUTRA_ORDER = Array.from(sutraMenuList.querySelectorAll('.menu-sutta-link')).map((a) =>
-      a.getAttribute('data-id')
-    );
+    SUTRA_ORDER = Array.from(sutraMenuList.querySelectorAll('.menu-sutta-link'))
+      .map(function (a) { return a.getAttribute('data-id'); });
     highlightActiveInMenu();
-    initMenuBreadcrumb();
-  }
-
-  // =========================================================
-  // 13b) Breadcrumb realtime — dòng nhỏ dưới search hiện Nikāya đang xem
-  // =========================================================
-  let _menuScrollCleanup = null;
-
-  function initMenuBreadcrumb() {
-    // Cleanup listener cũ
-    if (_menuScrollCleanup) { _menuScrollCleanup(); _menuScrollCleanup = null; }
-
-    const list = sutraMenuList;
-    if (!list) return;
-
-    // Tạo hoặc lấy breadcrumb element
-    let bc = $('menuBreadcrumb');
-    if (!bc) {
-      bc = document.createElement('div');
-      bc.id = 'menuBreadcrumb';
-      bc.className = 'menu-breadcrumb';
-      bc.setAttribute('aria-live', 'polite');
-      // Chèn vào trước sutra-list
-      const sutraList = list.closest('#sutraMenuPanel')
-        ? document.querySelector('#sutraMenuPanel .sutra-list') || list
-        : list;
-      sutraList.parentElement && sutraList.parentElement.insertBefore(bc, sutraList);
-    }
-    bc.textContent = '';
-    bc.classList.remove('visible');
-
-    // Theo dõi scroll trên list để cập nhật breadcrumb
-    let currentNikaya = '';
-
-    const onListScroll = throttle(() => {
-      const listRect = list.getBoundingClientRect();
-      const stickyHeaders = list.querySelectorAll('.menu-nikaya-sticky');
-      let active = '';
-
-      stickyHeaders.forEach((h) => {
-        // Chỉ tính header trong accordion đang mở
-        if (!h.closest('.menu-list') || h.closest('.menu-list').classList.contains('collapsed')) return;
-        const r = h.getBoundingClientRect();
-        if (r.top <= listRect.top + 4) {
-          active = h.getAttribute('data-label') || '';
-        }
-      });
-
-      if (active !== currentNikaya) {
-        currentNikaya = active;
-        if (active) {
-          const prefix = uiLang === 'en' ? 'In:' : 'Đang ở:';
-          bc.innerHTML = `<span class="bc-prefix">${escapeHtml(prefix)}</span> <span class="bc-label">${escapeHtml(active)}</span>`;
-          bc.classList.add('visible');
-        } else {
-          bc.textContent = '';
-          bc.classList.remove('visible');
-        }
-      }
-    }, 80);
-
-    list.addEventListener('scroll', onListScroll, { passive: true });
-    _menuScrollCleanup = () => list.removeEventListener('scroll', onListScroll);
   }
 
   function highlightActiveInMenu() {
     if (!sutraMenuList) return;
-    sutraMenuList.querySelectorAll('.menu-sutta-link').forEach((a) => {
-      a.classList.toggle('active', a.getAttribute('data-id') === currentSutraId);
+    sutraMenuList.querySelectorAll('.menu-sutta-link').forEach(function (a) {
+      var isActive = a.getAttribute('data-id') === currentSutraId;
+      a.classList.toggle('active', isActive);
+      a.setAttribute('aria-current', isActive ? 'page' : 'false');
     });
   }
 
   function renderSearchResults(matches, q) {
     if (!searchResultsEl) return;
-    if (!q) {
-      searchResultsEl.innerHTML = '';
-      return;
-    }
-
+    if (!q) { searchResultsEl.innerHTML = ''; return; }
     if (!matches.length) {
-      const msg = uiLang === 'en' ? 'No matching sutta found.' : 'Không tìm thấy kinh phù hợp.';
-      searchResultsEl.innerHTML = `<div class="search-result-empty">${escapeHtml(msg)}</div>`;
+      var msg = uiLang === 'en' ? 'No matching sutta found.' : 'Không tìm thấy kinh phù hợp.';
+      searchResultsEl.innerHTML = '<div class="search-result-empty" role="status">' + escapeHtml(msg) + '</div>';
       return;
     }
-
-    const html = matches
-      .map(
-        (m) => `
-      <button class="search-result-item" data-id="${escapeAttr(m.id)}">
-        <span class="search-main">${escapeHtml(m.main)}</span>
-        ${m.sub ? `<span class="search-sub">${escapeHtml(m.sub)}</span>` : ''}
-      </button>
-    `
-      )
-      .join('');
+    var html = '';
+    for (var i = 0; i < matches.length; i++) {
+      var m = matches[i];
+      html += '<button class="search-result-item" data-id="' + escapeAttr(m.id) + '" role="option">' +
+        '<span class="search-main">' + escapeHtml(m.main) + '</span>' +
+        (m.sub ? '<span class="search-sub">' + escapeHtml(m.sub) + '</span>' : '') +
+        '</button>';
+    }
     searchResultsEl.innerHTML = html;
   }
 
   function applySearch(query) {
-    const q = (query || '').trim().toLowerCase();
+    var q = (query || '').trim().toLowerCase();
     if (!q) return renderSearchResults([], '');
-    const matches = FLAT_SUTTAS.filter((x) => x.flat.includes(q)).slice(0, 80);
+    var matches = FLAT_SUTTAS.filter(function (x) { return x.flat.includes(q); }).slice(0, 80);
     renderSearchResults(matches, query);
   }
 
-  if (searchInput) searchInput.addEventListener('input', debounce((e) => applySearch(e.target.value), 180));
+  if (searchInput) searchInput.addEventListener('input', debounce(function (e) { applySearch(e.target.value); }, 180));
 
-  // Event delegation (menu + search) — attach once
+  /* ============================================================
+     Event delegation
+     ============================================================ */
   function initDelegations() {
-    if (sutraMenuList && sutraMenuList.dataset.delegateAttached !== '1') {
-      sutraMenuList.addEventListener('click', (ev) => {
-        const btn = ev.target.closest('.menu-toggle');
+    if (sutraMenuList && !sutraMenuList._del) {
+      sutraMenuList.addEventListener('click', function (ev) {
+        var btn = ev.target.closest('.menu-toggle');
         if (btn && sutraMenuList.contains(btn)) {
           ev.preventDefault();
-          const targetId = btn.dataset.target;
-          const panel = document.getElementById(targetId);
+          var panel = document.getElementById(btn.dataset.target);
           if (!panel) return;
 
-          const isCollapsed = panel.classList.contains('collapsed');
-          panel.classList.toggle('collapsed', !isCollapsed);
+          var wasCollapsed = panel.classList.contains('collapsed');
+          var isNested = btn.classList.contains('nested');
 
-          btn.setAttribute('aria-expanded', String(!panel.classList.contains('collapsed')));
-          const chev = btn.querySelector('.chevron');
-          if (chev) chev.textContent = panel.classList.contains('collapsed') ? '▸' : '▾';
+          if (wasCollapsed) {
+            var scope = isNested ? btn.closest('.menu-list') : sutraMenuList;
+            var sel   = isNested ? '.menu-toggle.nested' : '.menu-toggle:not(.nested)';
+            if (scope) scope.querySelectorAll(sel).forEach(function (o) {
+              if (o === btn) return;
+              var op = document.getElementById(o.dataset.target);
+              if (op && !op.classList.contains('collapsed')) {
+                op.classList.add('collapsed');
+                o.setAttribute('aria-expanded', 'false');
+                var c = o.querySelector('.chevron'); if (c) c.textContent = '▸';
+                if (!isNested) op.querySelectorAll('.menu-toggle.nested').forEach(function (nb) {
+                  var np = document.getElementById(nb.dataset.target);
+                  if (np && !np.classList.contains('collapsed')) np.classList.add('collapsed');
+                  nb.setAttribute('aria-expanded', 'false');
+                  var c2 = nb.querySelector('.chevron'); if (c2) c2.textContent = '▸';
+                });
+              }
+            });
+          }
+
+          panel.classList.toggle('collapsed', !wasCollapsed);
+          var isCollapsedNow = panel.classList.contains('collapsed');
+          btn.setAttribute('aria-expanded', isCollapsedNow ? 'false' : 'true');
+          var ch = btn.querySelector('.chevron');
+          if (ch) ch.textContent = isCollapsedNow ? '▸' : '▾';
           return;
         }
 
-        const a = ev.target.closest('.menu-sutta-link');
+        var a = ev.target.closest('.menu-sutta-link');
         if (a && sutraMenuList.contains(a)) {
           ev.preventDefault();
-          const id = a.getAttribute('data-id');
+          var id = a.getAttribute('data-id');
           if (id) {
             openSutra(id);
-            togglePanel(sutraMenuPanel, false);
+            closePanels();
             if (searchInput) searchInput.value = '';
             if (searchResultsEl) searchResultsEl.innerHTML = '';
           }
         }
       });
-      sutraMenuList.dataset.delegateAttached = '1';
+      sutraMenuList._del = true;
     }
 
-    if (searchResultsEl && searchResultsEl.dataset.delegateAttached !== '1') {
-      searchResultsEl.addEventListener('click', (ev) => {
-        const btn = ev.target.closest('.search-result-item');
-        if (!btn) return;
-        const id = btn.getAttribute('data-id');
-        if (id) {
-          openSutra(id);
-          togglePanel(sutraMenuPanel, false);
-          if (searchInput) searchInput.value = '';
-          searchResultsEl.innerHTML = '';
+    if (searchResultsEl && !searchResultsEl._del) {
+      searchResultsEl.addEventListener('click', function (ev) {
+        var btn = ev.target.closest('.search-result-item');
+        if (btn) {
+          var id = btn.getAttribute('data-id');
+          if (id) {
+            openSutra(id);
+            closePanels();
+            if (searchInput) searchInput.value = '';
+            searchResultsEl.innerHTML = '';
+          }
         }
       });
-      searchResultsEl.dataset.delegateAttached = '1';
+      searchResultsEl._del = true;
     }
   }
 
-  // =========================================================
-  // 14) Meta lookup trong SUTRA_INDEX
-  // =========================================================
+  /* ============================================================
+     Meta lookup
+     ============================================================ */
   function findMetaById(id) {
-    const index = window.SUTRA_INDEX || [];
-    let found = null;
+    var index = window.SUTRA_INDEX || [];
+    var found = null;
     function walk(children) {
       if (!children || !children.length || found) return;
-      for (const ch of children) {
+      for (var i = 0; i < children.length; i++) {
         if (found) return;
-        if (ch.type === 'sutta' && ch.id === id) {
-          found = ch;
-          return;
-        }
+        var ch = children[i];
+        if (ch.type === 'sutta' && ch.id === id) { found = ch; return; }
         if (ch.type === 'group') walk(ch.children || []);
       }
     }
-    for (const sec of index) {
-      walk(sec.children || []);
-      if (found) break;
-    }
+    for (var i = 0; i < index.length; i++) { walk(index[i].children || []); if (found) break; }
     return found;
   }
 
-  // =========================================================
-  // 15) createRow — FIX: dùng DOM API + textContent thay innerHTML + escapeHtml
-  //     Lợi ích: nhanh hơn ~30% với danh sách dài, an toàn XSS tuyệt đối
-  // =========================================================
+  /* ============================================================
+     createRow
+     ============================================================ */
+  function getColHeaders() {
+    return uiLang === 'en'
+      ? { pali: 'Pali', eng: 'English', vie: 'Vietnamese' }
+      : { pali: 'Pali', eng: 'English', vie: 'Tiếng Việt' };
+  }
+
   function createRow(r) {
-    const row = document.createElement('div');
-    row.className = 'sutra-row';
-    row.setAttribute('data-key', String(r.key || ''));
-
-    // Pali column
-    const paliCol = document.createElement('div');
-    paliCol.className = 'sutra-col pali-col';
-    const paliInner = document.createElement('div');
-    paliInner.className = 'pali';
-    paliInner.textContent = r.pali || '';
-    paliCol.appendChild(paliInner);
-
-    // English column
-    const engCol = document.createElement('div');
-    engCol.className = 'sutra-col eng-col';
-    const engInner = document.createElement('div');
-    engInner.className = 'eng';
-    engInner.textContent = r.eng || '';
-    engCol.appendChild(engInner);
-
-    // Vietnamese column
-    const vieCol = document.createElement('div');
-    vieCol.className = 'sutra-col vie-col';
-    const vieInner = document.createElement('div');
-    vieInner.className = 'vie';
-    vieInner.textContent = r.vie || '';
-    vieCol.appendChild(vieInner);
-
-    row.appendChild(paliCol);
-    row.appendChild(engCol);
-    row.appendChild(vieCol);
-
-    return row;
+    var wrap = document.createElement('div'); wrap.className = 'sutra-row-wrap';
+    var keyRaw = String(r.key || '');
+    var keyShort = '';
+    if (keyRaw.includes(':')) {
+      var parts = keyRaw.split(':');
+      var prefix = parts[0].replace(/([a-zA-Z]+)(\d*)/, function (_, letters, nums) { return letters.toUpperCase() + nums; });
+      keyShort = parts[1] ? prefix + '.' + parts[1] : prefix;
+    } else { keyShort = keyRaw.toUpperCase(); }
+    if (keyShort) {
+      var seg = document.createElement('div');
+      seg.className = 'sutra-seg-key'; seg.textContent = keyShort;
+      seg.setAttribute('aria-hidden', 'true'); wrap.appendChild(seg);
+    }
+    var row = document.createElement('div');
+    row.className = 'sutra-row'; row.setAttribute('data-key', keyRaw);
+    var headers = getColHeaders();
+    function makeCol(className, headerText, contentText, contentClass) {
+      var col  = document.createElement('div'); col.className = 'sutra-col ' + className;
+      var hdr  = document.createElement('div'); hdr.className = 'sutra-col-header';
+      hdr.textContent = headerText; hdr.setAttribute('aria-hidden', 'true');
+      var body = document.createElement('div'); body.className = 'sutra-col-body';
+      var inner = document.createElement('div'); inner.className = contentClass;
+      inner.textContent = contentText || '';
+      body.appendChild(inner); col.appendChild(hdr); col.appendChild(body); return col;
+    }
+    row.appendChild(makeCol('pali-col', headers.pali, r.pali, 'pali'));
+    row.appendChild(makeCol('eng-col',  headers.eng,  r.eng,  'eng'));
+    row.appendChild(makeCol('vie-col',  headers.vie,  r.vie,  'vie'));
+    wrap.appendChild(row); return wrap;
   }
 
   function getByExactOrSuffix(map, exactKey, suffix) {
     if (!map) return '';
     if (exactKey && map[exactKey]) return map[exactKey];
-    const keys = Object.keys(map);
-    let k = exactKey ? keys.find((x) => x === exactKey) : null;
-    if (!k && suffix) k = keys.find((x) => String(x).endsWith(suffix));
+    var keys = Object.keys(map);
+    var k = exactKey ? keys.find(function (x) { return x === exactKey; }) : null;
+    if (!k && suffix) k = keys.find(function (x) { return String(x).endsWith(suffix); });
     return k ? map[k] || '' : '';
   }
 
   function pickTextForUiLangSuffix(merged, id, suffix) {
-    const exactKey = id + suffix;
-    if (uiLang === 'en') {
-      return (
-        getByExactOrSuffix(merged.engMap, exactKey, suffix) ||
-        getByExactOrSuffix(merged.vieMap, exactKey, suffix) ||
-        getByExactOrSuffix(merged.paliMap, exactKey, suffix) ||
-        ''
-      );
-    }
-    return (
-      getByExactOrSuffix(merged.vieMap, exactKey, suffix) ||
-      getByExactOrSuffix(merged.engMap, exactKey, suffix) ||
-      getByExactOrSuffix(merged.paliMap, exactKey, suffix) ||
-      ''
-    );
+    var exactKey = id + suffix;
+    if (uiLang === 'en') return getByExactOrSuffix(merged.engMap, exactKey, suffix)
+      || getByExactOrSuffix(merged.vieMap, exactKey, suffix)
+      || getByExactOrSuffix(merged.paliMap, exactKey, suffix) || '';
+    return getByExactOrSuffix(merged.vieMap, exactKey, suffix)
+      || getByExactOrSuffix(merged.engMap, exactKey, suffix)
+      || getByExactOrSuffix(merged.paliMap, exactKey, suffix) || '';
   }
 
   function renderWelcomeScreen() {
     if (!grid || currentSutraId) return;
     if (uiLang === 'en') {
-      titleEl && (titleEl.textContent = 'Sutta reading collection');
-      subtitleEl && (subtitleEl.textContent = 'Tap 📖 to select a sutta, or ❓ for the guide.');
-      grid.innerHTML = `
-        <div class="welcome-screen">
-          <div class="welcome-box">
-            <strong>Welcome!</strong><br><br>
-            • Tap 📖 <strong>Sutta Index</strong> to choose a sutta.<br>
-            • Tap ⚙ <strong>Settings</strong> to adjust layout/colors/TTS.<br>
-            • Tap ❓ <strong>Guide</strong> for help.
-          </div>
-        </div>`;
+      if (titleEl) titleEl.textContent = 'Sutta reading collection';
+      if (subtitleEl) subtitleEl.textContent = 'Tap 📖 to select a sutta, or ❓ for the guide.';
+      grid.innerHTML = '<div class="welcome-screen"><div class="welcome-box"><strong>Welcome!</strong><br><br>• Tap 📖 <strong>Sutta Index</strong> to choose a sutta.<br>• Tap ⚙ <strong>Settings</strong> to adjust layout/TTS.<br>• Tap ❓ <strong>Guide</strong> for help.</div></div>';
     } else {
-      titleEl && (titleEl.textContent = 'Chào mừng bạn đến với trang lưu trữ kinh');
-      subtitleEl && (subtitleEl.textContent = 'Bấm 📖 để chọn bài kinh, hoặc ❓ để xem hướng dẫn.');
-      grid.innerHTML = `
-        <div class="welcome-screen">
-          <div class="welcome-box">
-            <strong>Xin chào!</strong><br><br>
-            • Bấm 📖 <strong>Danh mục bài kinh</strong> để chọn bài.<br>
-            • Bấm ⚙ <strong>Cài đặt</strong> để chỉnh bố cục/màu/TTS.<br>
-            • Bấm ❓ <strong>Hướng dẫn</strong> để xem cách dùng.
-          </div>
-        </div>`;
+      if (titleEl) titleEl.textContent = 'Chào mừng bạn đến với trang lưu trữ kinh';
+      if (subtitleEl) subtitleEl.textContent = 'Bấm 📖 để chọn bài kinh, hoặc ❓ để xem hướng dẫn.';
+      grid.innerHTML = '<div class="welcome-screen"><div class="welcome-box"><strong>Xin chào!</strong><br><br>• Bấm 📖 <strong>Danh mục bài kinh</strong> để chọn bài.<br>• Bấm ⚙ <strong>Cài đặt</strong> để chỉnh bố cục/TTS.<br>• Bấm ❓ <strong>Hướng dẫn</strong> để xem cách dùng.</div></div>';
     }
   }
 
-  // =========================================================
-  // 16) Render sutra — FIX: restoreScrollByAnchor chỉ gọi 1 lần ở cuối
-  // =========================================================
+  /* ============================================================
+     renderSutra
+     FIX: Clear cachedRows immediately to prevent TTS reading stale data
+     FIX: Reset isRendering when render token is invalidated
+     ============================================================ */
   async function renderSutra(id) {
     if (!id || !grid) return;
+    saveScrollAnchorNow(); resetTts(true, false);
+    if (anchorObserver) { anchorObserver.disconnect(); anchorObserver = null; }
 
-    saveScrollAnchorNow();
-    resetTts(true, false);
+    // FIX: Clear cached rows immediately
+    cachedRows = [];
 
-    const token = ++renderToken;
+    // Show header when loading new sutta (mobile auto-hide reset)
+    setMobileHeaderHidden(false);
+    mobileLastScrollTop = 0;
+
+    var token = ++renderToken;
     isRendering = true;
+    grid.setAttribute('aria-busy', 'true');
 
-    btnReadTts && (btnReadTts.disabled = true);
-    btnPauseTts && (btnPauseTts.disabled = true);
-    btnStopTts && (btnStopTts.disabled = true);
+    if (btnReadTts)  btnReadTts.disabled  = true;
+    if (btnPauseTts) btnPauseTts.disabled = true;
+    if (btnStopTts)  btnStopTts.disabled  = true;
 
-    currentSutraId = id;
-    try {
-      localStorage.setItem(KEY_LAST, id);
-    } catch (e) {}
-    highlightActiveInMenu();
+    var merged = null;
+    try { merged = await loadMerged(id); } catch(e) { merged = null; }
 
-    let merged = null;
-    try {
-      merged = await loadMerged(id);
-    } catch (e) {
-      merged = null;
-    }
-    if (token !== renderToken) return;
-
-    if (!merged || !merged.rows || !merged.rows.length) {
-      titleEl && (titleEl.textContent = uiLang === 'en' ? 'Sutta data not found' : 'Không tìm thấy dữ liệu bài kinh');
-      subtitleEl && (subtitleEl.textContent = (uiLang === 'en' ? 'ID: ' : 'Mã bài: ') + id);
-      grid.innerHTML = '';
+    // FIX: Also reset isRendering when token is stale
+    if (token !== renderToken) {
       isRendering = false;
-      setTtsUiState('idle');
       return;
     }
 
-    const titleFromBilara = (pickTextForUiLangSuffix(merged, id, ':0.2') || '').trim();
-    const subtitleFromBilara = (pickTextForUiLangSuffix(merged, id, ':0.1') || '').trim();
+    currentSutraId = id;
+    storage.set(KEY_LAST, id);
+    highlightActiveInMenu();
+    updateNavButtons();
 
-    const meta = findMetaById(id) || {};
-    const titleFallback =
-      uiLang === 'en'
-        ? meta.titleEn || meta.titleVi || meta.titlePali || meta.title || id
-        : meta.titleVi || meta.titleEn || meta.titlePali || meta.title || id;
-    const subtitleFallback =
-      uiLang === 'en'
-        ? meta.subtitleEn || meta.subtitleVi || meta.subtitle || ''
-        : meta.subtitleVi || meta.subtitleEn || meta.subtitle || '';
+    if (!merged || !merged.rows || !merged.rows.length) {
+      if (titleEl) titleEl.textContent = uiLang === 'en' ? 'Sutta data not found' : 'Không tìm thấy dữ liệu bài kinh';
+      if (subtitleEl) subtitleEl.textContent = (uiLang === 'en' ? 'ID: ' : 'Mã bài: ') + id;
+      grid.innerHTML = ''; isRendering = false;
+      grid.setAttribute('aria-busy', 'false'); setTtsUiState('idle'); return;
+    }
 
-    titleEl && (titleEl.textContent = titleFromBilara || titleFallback);
-    subtitleEl && (subtitleEl.textContent = subtitleFromBilara || subtitleFallback);
+    var titleFromBilara    = (pickTextForUiLangSuffix(merged, id, ':0.2') || '').trim();
+    var subtitleFromBilara = (pickTextForUiLangSuffix(merged, id, ':0.1') || '').trim();
+    var meta = findMetaById(id) || {};
+    var titleFallback    = uiLang === 'en'
+      ? meta.titleEn || meta.titleVi || meta.titlePali || meta.title || id
+      : meta.titleVi || meta.titleEn || meta.titlePali || meta.title || id;
+    var subtitleFallback = uiLang === 'en'
+      ? meta.subtitleEn || meta.subtitleVi || meta.subtitle || ''
+      : meta.subtitleVi || meta.subtitleEn || meta.subtitle || '';
+    if (titleEl) titleEl.textContent = titleFromBilara || titleFallback;
+    if (subtitleEl) subtitleEl.textContent = subtitleFromBilara || subtitleFallback;
 
-    const rowsForViewRaw = (merged.rows || []).filter((r) => !String(r.key || '').includes(':0.'));
-
-    const singleLang = getSingleVisibleLang();
-    lastSingleLangMode = singleLang;
-
-    const rowsForView = singleLang ? mergeRowsToParagraphRows(rowsForViewRaw, singleLang) : rowsForViewRaw;
+    var rowsForViewRaw = (merged.rows || []).filter(function (r) { return !String(r.key || '').includes(':0.'); });
+    var singleLang = getSingleVisibleLang(); lastSingleLangMode = singleLang;
+    var rowsForView = singleLang ? mergeRowsToParagraphRows(rowsForViewRaw, singleLang) : rowsForViewRaw;
 
     grid.innerHTML = '';
+    cachedRows = [];
     applyVisibility();
 
-    let i = 0;
-    const BATCH = 220;
-
+    var i = 0, BATCH = 220;
     function renderBatch() {
-      if (token !== renderToken) return;
-
-      const frag = document.createDocumentFragment();
-      const end = Math.min(i + BATCH, rowsForView.length);
-      for (; i < end; i++) frag.appendChild(createRow(rowsForView[i]));
+      // FIX: Also reset isRendering when token is stale
+      if (token !== renderToken) {
+        isRendering = false;
+        return;
+      }
+      var frag = document.createDocumentFragment();
+      var end  = Math.min(i + BATCH, rowsForView.length);
+      for (; i < end; i++) {
+        var wrap = createRow(rowsForView[i]); frag.appendChild(wrap);
+        var innerRow = wrap.querySelector ? wrap.querySelector('.sutra-row') : wrap;
+        cachedRows.push(innerRow || wrap);
+      }
       grid.appendChild(frag);
-
       if (i < rowsForView.length) {
         requestAnimationFrame(renderBatch);
       } else {
-        // FIX: restoreScrollByAnchor chỉ gọi 1 lần sau khi render xong hoàn toàn
-        // (không gọi mỗi batch để tránh querySelectorAll lặp lặp)
-        isRendering = false;
-
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            adjustRowColumns();
-            restoreScrollByAnchor(id);
-            setTtsUiState('idle');
-          });
-        });
-
-        // Preload bài TIẾP THEO (chỉ next, không prev)
-        // Lý do bỏ prev: preload prev + next = 6 request JS thêm ngay sau render,
-        // tranh bandwidth trên mobile/3G. Next đủ dùng cho trải nghiệm swipe.
-        // Điều kiện: requestIdleCallback + không saveData + deviceMemory đủ
+        isRendering = false; grid.setAttribute('aria-busy', 'false');
+        requestAnimationFrame(function () { requestAnimationFrame(function () {
+          updateVisibleCols(); restoreScrollByAnchor(id);
+          setupAnchorObserver(); setTtsUiState('idle'); updateNavButtons();
+        }); });
         scheduleNextPreload(id);
       }
     }
-
     renderBatch();
   }
 
-  // =========================================================
-  // 17) Preload bài tiếp theo — chỉ next, có kiểm tra network/memory
-  // =========================================================
   function scheduleNextPreload(currentId) {
     try {
-      const idx = SUTRA_ORDER.indexOf(currentId);
-      if (idx === -1) return;
-
-      const nextId = SUTRA_ORDER[idx + 1];
-      if (!nextId) return;
-
-      // Kiểm tra save-data
-      const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-      const saveData = !!(conn && conn.saveData);
-      if (saveData) return;
-
-      // Kiểm tra deviceMemory — bỏ qua trên thiết bị RAM thấp (< 2GB)
-      const memOk = !navigator.deviceMemory || navigator.deviceMemory >= 2;
-      if (!memOk) return;
-
-      // Chỉ preload khi trình duyệt rảnh
-      const doPreload = () => {
-        loadMerged(nextId).catch(() => {});
-      };
-
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(doPreload, { timeout: 2000 });
-      } else {
-        setTimeout(doPreload, 800);
-      }
-    } catch (e) {}
+      var idx = SUTRA_ORDER.indexOf(currentId); if (idx === -1) return;
+      var nextId = SUTRA_ORDER[idx + 1]; if (!nextId) return;
+      var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      if (conn && conn.saveData) return;
+      if (navigator.deviceMemory && navigator.deviceMemory < 2) return;
+      var doPreload = function () { loadMerged(nextId).catch(function () {}); };
+      if ('requestIdleCallback' in window) requestIdleCallback(doPreload, { timeout: 2000 });
+      else setTimeout(doPreload, 800);
+    } catch(e){}
   }
 
-  function openSutra(id) {
-    renderSutra(id);
+  function openSutra(id) { renderSutra(id); }
+
+  /* ============================================================
+     Prev / Next
+     ============================================================ */
+  var btnPrev = $('btnPrev');
+  var btnNext = $('btnNext');
+
+  function updateNavButtons() {
+    var idx = SUTRA_ORDER.indexOf(currentSutraId);
+    var navTitle = $('navTitle');
+
+    if (!currentSutraId || !Array.isArray(SUTRA_ORDER) || !SUTRA_ORDER.length || idx === -1) {
+      if (btnPrev)  btnPrev.disabled  = true;
+      if (btnNext)  btnNext.disabled  = true;
+      if (navTitle) navTitle.textContent = '—';
+      return;
+    }
+
+    if (btnPrev) btnPrev.disabled = !(idx > 0);
+    if (btnNext) btnNext.disabled = !(idx < SUTRA_ORDER.length - 1);
+
+    if (navTitle) {
+      var meta  = findMetaById(currentSutraId);
+      var code  = meta && meta.code ? meta.code + ' · ' : '';
+      var title = uiLang === 'en'
+        ? (meta && meta.titleEn) || (meta && meta.titleVi) || (meta && meta.titlePali) || currentSutraId
+        : (meta && meta.titleVi) || (meta && meta.titleEn) || (meta && meta.titlePali) || currentSutraId;
+      navTitle.textContent = code + title;
+    }
   }
 
-  // =========================================================
-  // 18) Swipe prev/next (mobile)
-  // =========================================================
-  const SWIPE_THRESHOLD = 80;
-  const SWIPE_MAX_DY = 25;
+  if (btnPrev) btnPrev.onclick = function () {
+    var idx = SUTRA_ORDER.indexOf(currentSutraId);
+    if (idx > 0) openSutra(SUTRA_ORDER[idx - 1]);
+  };
+  if (btnNext) btnNext.onclick = function () {
+    var idx = SUTRA_ORDER.indexOf(currentSutraId);
+    if (idx !== -1 && idx < SUTRA_ORDER.length - 1) openSutra(SUTRA_ORDER[idx + 1]);
+  };
 
-  function goPrevNext(direction) {
-    const idx = SUTRA_ORDER.indexOf(currentSutraId);
-    if (idx === -1) return;
-    if (direction === 'next' && idx < SUTRA_ORDER.length - 1) openSutra(SUTRA_ORDER[idx + 1]);
-    if (direction === 'prev' && idx > 0) openSutra(SUTRA_ORDER[idx - 1]);
-  }
-
-  if (grid) {
-    let sx = 0,
-      sy = 0;
-    grid.addEventListener(
-      'touchstart',
-      (e) => {
-        if (e.touches.length) {
-          sx = e.touches[0].clientX;
-          sy = e.touches[0].clientY;
-        }
-      },
-      { passive: true }
-    );
-    grid.addEventListener(
-      'touchend',
-      (e) => {
-        if (!e.changedTouches.length) return;
-        const ex = e.changedTouches[0].clientX;
-        const ey = e.changedTouches[0].clientY;
-        const dx = ex - sx;
-        const dy = ey - sy;
-        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) >= SWIPE_THRESHOLD && Math.abs(dy) <= SWIPE_MAX_DY) {
-          if (dx < 0) goPrevNext('next');
-          else goPrevNext('prev');
-        }
-      },
-      { passive: true }
-    );
-  }
-
-  // =========================================================
-  // 19) TTS (Web Speech) — theo uiLang
-  //
-  // LƯU Ý: Web Speech API không hỗ trợ resume giữa chừng một câu.
-  // Khi pause, synth.cancel() hủy utterance đang đọc và lưu index câu đó.
-  // Khi resume, câu đó sẽ được đọc lại từ đầu (không phải từ chỗ dừng).
-  // Đây là giới hạn của Web Speech API trên tất cả trình duyệt, không phải bug.
-  // =========================================================
-  const synthSupported = 'speechSynthesis' in window;
-  const synth = synthSupported ? window.speechSynthesis : null;
-
-  let cachedVoices = [];
+  /* ============================================================
+     TTS
+     ============================================================ */
+  var synthSupported = 'speechSynthesis' in window;
+  var synth = synthSupported ? window.speechSynthesis : null;
+  var cachedVoices = [];
   if (synthSupported) {
-    try {
-      cachedVoices = synth.getVoices() || [];
-    } catch (e) {}
-    synth.addEventListener('voiceschanged', () => {
-      try {
-        cachedVoices = synth.getVoices() || [];
-      } catch (e) {}
-    });
+    try { cachedVoices = synth.getVoices() || []; } catch(e){}
+    synth.addEventListener('voiceschanged', function () { try { cachedVoices = synth.getVoices() || []; } catch(e){} });
   }
 
-  function ensureVoicesLoaded(timeout = 1200) {
-    return new Promise((resolve) => {
+  function ensureVoicesLoaded(timeout) {
+    timeout = timeout || 1200;
+    return new Promise(function (resolve) {
       if (!synth) return resolve([]);
-      try {
-        const v = synth.getVoices();
-        if (v && v.length) {
-          cachedVoices = v;
-          return resolve(v);
-        }
-      } catch (e) {}
-
-      const onChange = () => {
+      try { var v = synth.getVoices(); if (v && v.length) { cachedVoices = v; return resolve(v); } } catch(e){}
+      var onChange = function () {
         try {
-          const v2 = synth.getVoices();
-          if (v2 && v2.length) {
-            synth.removeEventListener('voiceschanged', onChange);
-            cachedVoices = v2;
-            resolve(v2);
-          }
-        } catch (e) {}
+          var v2 = synth.getVoices();
+          if (v2 && v2.length) { synth.removeEventListener('voiceschanged', onChange); cachedVoices = v2; resolve(v2); }
+        } catch(e){}
       };
-
       synth.addEventListener('voiceschanged', onChange);
-      setTimeout(() => {
-        try {
-          synth.removeEventListener('voiceschanged', onChange);
-        } catch (e) {}
-        try {
-          cachedVoices = synth.getVoices() || [];
-        } catch (e) {}
+      setTimeout(function () {
+        try { synth.removeEventListener('voiceschanged', onChange); } catch(e){}
+        try { cachedVoices = synth.getVoices() || []; } catch(e){}
         resolve(cachedVoices);
       }, timeout);
     });
   }
 
-  const ttsState = {
-    activeLang: null,
-    index: 0,
-    isPlaying: false,
-    isPaused: false,
-    currentUtter: null,
-  };
+  var ttsState = { activeLang: null, index: 0, isPlaying: false, isPaused: false, currentUtter: null };
 
   function setTtsUiState(state) {
     if (!btnReadTts || !btnPauseTts || !btnStopTts) return;
-
     if (!synthSupported || isRendering) {
-      btnReadTts.disabled = true;
-      btnPauseTts.disabled = true;
-      btnStopTts.disabled = true;
-      return;
+      btnReadTts.disabled = btnPauseTts.disabled = btnStopTts.disabled = true; return;
     }
-
-    if (state === 'idle') {
-      btnReadTts.disabled = false;
-      btnPauseTts.disabled = true;
-      btnStopTts.disabled = true;
-    } else if (state === 'playing') {
-      btnReadTts.disabled = true;
-      btnPauseTts.disabled = false;
-      btnStopTts.disabled = false;
-    } else if (state === 'paused') {
-      btnReadTts.disabled = false;
-      btnPauseTts.disabled = true;
-      btnStopTts.disabled = false;
-    }
+    if (state === 'idle')    { btnReadTts.disabled=false; btnPauseTts.disabled=true;  btnStopTts.disabled=true; }
+    if (state === 'playing') { btnReadTts.disabled=true;  btnPauseTts.disabled=false; btnStopTts.disabled=false; }
+    if (state === 'paused')  { btnReadTts.disabled=false; btnPauseTts.disabled=true;  btnStopTts.disabled=false; }
   }
 
-  function clearRowHighlight() {
-    if (!grid) return;
-    grid.querySelectorAll('.sutra-row.reading').forEach((r) => r.classList.remove('reading'));
-  }
-
+  function clearRowHighlight() { cachedRows.forEach(function (r) { r.classList.remove('reading'); }); }
   function highlightRowAt(index) {
-    if (!grid) return;
     clearRowHighlight();
-    const rows = grid.querySelectorAll('.sutra-row');
-    if (index < 0 || index >= rows.length) return;
-    const row = rows[index];
-    row.classList.add('reading');
-
-    const top = row.offsetTop;
-    const bottom = top + row.offsetHeight;
-    const viewTop = grid.scrollTop;
-    const viewBottom = viewTop + grid.clientHeight;
-    if (top < viewTop || bottom > viewBottom) {
+    if (index < 0 || index >= cachedRows.length) return;
+    var row = cachedRows[index]; row.classList.add('reading');
+    var top = row.offsetTop, bottom = top + row.offsetHeight;
+    var viewTop = grid.scrollTop, viewBottom = viewTop + grid.clientHeight;
+    if (top < viewTop || bottom > viewBottom)
       grid.scrollTo({ top: Math.max(0, top - 20), behavior: 'auto' });
-    }
   }
 
   function pickVoice(langPrefix) {
-    const lp = (langPrefix || '').toLowerCase();
-    const list = (cachedVoices || []).filter((v) => v.lang && v.lang.toLowerCase().startsWith(lp));
-    const good = list.find((v) => /google|microsoft/i.test(v.name || ''));
-    return good || list[0] || null;
+    var lp = (langPrefix || '').toLowerCase();
+    var list = cachedVoices.filter(function (v) { return v.lang && v.lang.toLowerCase().startsWith(lp); });
+    return list.find(function (v) { return /google|microsoft/i.test(v.name || ''); }) || list[0] || null;
   }
 
   function resetTts(clearHighlight, clearStorage) {
-    if (synthSupported && synth) {
-      try {
-        synth.cancel();
-      } catch (e) {}
-    }
-    ttsState.isPlaying = false;
-    ttsState.isPaused = false;
-    ttsState.currentUtter = null;
-    ttsState.index = 0;
-    ttsState.activeLang = null;
-
+    if (synthSupported && synth) { try { synth.cancel(); } catch(e){} }
+    ttsState.isPlaying = ttsState.isPaused = false;
+    ttsState.currentUtter = null; ttsState.index = 0; ttsState.activeLang = null;
     if (clearHighlight) clearRowHighlight();
-
     if (clearStorage && currentSutraId) {
-      try {
-        localStorage.removeItem('tts_state_' + currentSutraId);
-      } catch (e) {}
+      storage.remove('tts_state_' + currentSutraId);
     }
     setTtsUiState('idle');
   }
 
   function saveTtsState() {
     if (!currentSutraId || !ttsState.activeLang) return;
-    try {
-      localStorage.setItem(
-        'tts_state_' + currentSutraId,
-        JSON.stringify({ lang: ttsState.activeLang, index: ttsState.index })
-      );
-    } catch (e) {}
+    storage.set('tts_state_' + currentSutraId,
+      JSON.stringify({ lang: ttsState.activeLang, index: ttsState.index }));
   }
 
   function speakNextRow() {
-    if (!synthSupported || !synth || !grid) return;
-    if (!ttsState.activeLang) return;
-
-    const rows = grid.querySelectorAll('.sutra-row');
-    if (ttsState.index >= rows.length) return resetTts(true, true);
-
-    const row = rows[ttsState.index];
-    const el =
-      ttsState.activeLang === 'vi'
-        ? row.querySelector('.vie-col .vie')
-        : row.querySelector('.eng-col .eng');
-
-    const text = el ? (el.textContent || '').trim() : '';
-    if (!text) {
-      ttsState.index++;
-      return speakNextRow();
-    }
-
-    highlightRowAt(ttsState.index);
-    saveTtsState();
-
-    const utter = new SpeechSynthesisUtterance(text);
+    if (!synthSupported || !synth || !ttsState.activeLang) return;
+    if (ttsState.index >= cachedRows.length) return resetTts(true, true);
+    var row = cachedRows[ttsState.index];
+    var el  = ttsState.activeLang === 'vi'
+      ? row.querySelector('.vie-col .vie')
+      : row.querySelector('.eng-col .eng');
+    var text = el ? (el.textContent || '').trim() : '';
+    if (!text) { ttsState.index++; return speakNextRow(); }
+    highlightRowAt(ttsState.index); saveTtsState();
+    var utter = new SpeechSynthesisUtterance(text);
     if (ttsState.activeLang === 'vi') {
-      utter.lang = 'vi-VN';
-      const v = pickVoice('vi');
-      if (v) utter.voice = v;
-      utter.rate = 0.98;
-      utter.pitch = 0.95;
+      utter.lang = 'vi-VN'; var v = pickVoice('vi'); if (v) utter.voice = v;
+      utter.rate = 0.98; utter.pitch = 0.95;
     } else {
-      utter.lang = 'en-US';
-      const v = pickVoice('en');
-      if (v) utter.voice = v;
+      utter.lang = 'en-US'; var v2 = pickVoice('en'); if (v2) utter.voice = v2;
     }
-
-    utter.onend = () => {
+    utter.onend = function () {
       ttsState.currentUtter = null;
       if (!ttsState.activeLang || ttsState.isPaused || !ttsState.isPlaying) return;
-      ttsState.index++;
-      speakNextRow();
+      ttsState.index++; speakNextRow();
     };
-
-    utter.onerror = () => {
+    utter.onerror = function (e) {
       ttsState.currentUtter = null;
+      if (e.error === 'canceled' || ttsState.isPaused) return;
       resetTts(true, false);
     };
-
-    ttsState.currentUtter = utter;
-    ttsState.isPlaying = true;
-    ttsState.isPaused = false;
+    ttsState.currentUtter = utter; ttsState.isPlaying = true; ttsState.isPaused = false;
     setTtsUiState('playing');
-
-    try {
-      synth.speak(utter);
-    } catch (e) {
-      resetTts(true, false);
-    }
+    try { synth.speak(utter); } catch(e) { resetTts(true, false); }
   }
 
   async function startTtsByUiLang() {
     if (isRendering) {
-      alert(
-        uiLang === 'en'
-          ? 'Please wait for the text to finish loading.'
-          : 'Vui lòng chờ tải xong nội dung rồi hãy bấm đọc.'
-      );
+      alert(uiLang === 'en' ? 'Please wait for the text to finish loading.' : 'Vui lòng chờ tải xong nội dung rồi hãy bấm đọc.');
       return;
     }
     if (!synthSupported) {
-      alert(
-        uiLang === 'en'
-          ? 'Your browser does not support TTS.'
-          : 'Trình duyệt không hỗ trợ đọc TTS.'
-      );
+      alert(uiLang === 'en' ? 'Your browser does not support TTS.' : 'Trình duyệt không hỗ trợ đọc TTS.');
       return;
     }
-
-    const targetLang = uiLang === 'en' ? 'en' : 'vi';
-
+    var targetLang = uiLang === 'en' ? 'en' : 'vi';
     if (ttsState.activeLang === targetLang && ttsState.isPlaying) return;
-
     if (ttsState.activeLang === targetLang && ttsState.isPaused) {
-      // Resume: câu hiện tại sẽ được đọc lại từ đầu (giới hạn Web Speech API)
-      ttsState.isPaused = false;
-      ttsState.isPlaying = true;
-      setTtsUiState('playing');
-      speakNextRow();
-      return;
+      ttsState.isPaused = false; ttsState.isPlaying = true;
+      setTtsUiState('playing'); speakNextRow(); return;
     }
-
-    resetTts(true, false);
-    ttsState.activeLang = targetLang;
-
-    await ensureVoicesLoaded();
-
+    resetTts(true, false); ttsState.activeLang = targetLang; await ensureVoicesLoaded();
     if (currentSutraId) {
       try {
-        const raw = localStorage.getItem('tts_state_' + currentSutraId);
+        var raw = storage.get('tts_state_' + currentSutraId);
         if (raw) {
-          const st = JSON.parse(raw);
+          var st = JSON.parse(raw);
           if (st && st.lang === targetLang && typeof st.index === 'number') ttsState.index = st.index;
         }
-      } catch (e) {}
+      } catch(e){}
     }
     if (!Number.isInteger(ttsState.index) || ttsState.index < 0) ttsState.index = 0;
-
     speakNextRow();
   }
 
+  /* FIX: Set isPaused and isPlaying BEFORE calling synth.cancel()
+     so the onend/onerror handlers see the correct state */
   function pauseTtsByUiLang() {
     if (!synthSupported || !synth) return;
     if (!ttsState.activeLang || !ttsState.isPlaying || !ttsState.currentUtter) return;
-
     ttsState.isPaused = true;
     ttsState.isPlaying = false;
-    try {
-      synth.cancel();
-    } catch (e) {}
-    ttsState.currentUtter = null;
-    saveTtsState();
-    clearRowHighlight();
-    setTtsUiState('paused');
+    try { synth.cancel(); } catch(e){}
+    ttsState.currentUtter = null; saveTtsState(); clearRowHighlight(); setTtsUiState('paused');
   }
-
   function stopTtsByUiLang() {
     if (!synthSupported || !synth) return;
     resetTts(true, true);
   }
 
-  btnReadTts && (btnReadTts.onclick = startTtsByUiLang);
-  btnPauseTts && (btnPauseTts.onclick = pauseTtsByUiLang);
-  btnStopTts && (btnStopTts.onclick = stopTtsByUiLang);
+  if (btnReadTts)  btnReadTts.onclick  = startTtsByUiLang;
+  if (btnPauseTts) btnPauseTts.onclick = pauseTtsByUiLang;
+  if (btnStopTts)  btnStopTts.onclick  = stopTtsByUiLang;
 
-  // =========================================================
-  // 20) UI Lang switch
-  // =========================================================
+  /* ============================================================
+     UI Lang switch
+     ============================================================ */
   function initUiLang() {
-    renderUiLangFlag();
-    applyUiLanguageToSearchUi();
-    applyUiLanguageToSettingsPanel();
-    renderGuideDialog();
-
+    renderUiLangFlag(); applyUiLanguageToSearchUi(); applyUiLanguageToSettingsPanel(); renderGuideDialog();
     if (!btnUiLang) return;
-    btnUiLang.addEventListener('click', () => {
+    btnUiLang.addEventListener('click', function (e) {
+      e.stopPropagation();  // giữ sidebar không đóng
       uiLang = uiLang === 'vi' ? 'en' : 'vi';
-      localStorage.setItem(LANG_STORAGE_KEY, uiLang);
-      window.SUTRA_UI_LANG = uiLang;
-
-      renderUiLangFlag();
-      applyUiLanguageToSearchUi();
-      applyUiLanguageToSettingsPanel();
-      renderGuideDialog();
-
-      buildSutraMenuFromIndex();
-      highlightActiveInMenu();
-
-      if (currentSutraId) renderSutra(currentSutraId);
-      else renderWelcomeScreen();
+      storage.set(LANG_STORAGE_KEY, uiLang); window.SUTRA_UI_LANG = uiLang;
+      renderUiLangFlag(); applyUiLanguageToSearchUi(); applyUiLanguageToSettingsPanel(); renderGuideDialog();
+      buildSutraMenuFromIndex(); highlightActiveInMenu(); updateNavButtons();
+      if (currentSutraId) renderSutra(currentSutraId); else renderWelcomeScreen();
     });
   }
 
-  // =========================================================
-  // 21) INIT
-  // =========================================================
+  /* ============================================================
+     INIT
+     ============================================================ */
   function init() {
-    if (!grid || !titleEl || !subtitleEl || !card) {
-      console.warn('Sutta app: core DOM missing, some features may be disabled.');
-    }
-
-    initUiLang();
-
-    loadViewPrefs();
-    btnPali && btnPali.classList.toggle('active', showPali);
-    btnEng && btnEng.classList.toggle('active', showEng);
-    btnVie && btnVie.classList.toggle('active', showVie);
-    btnLayout && btnLayout.classList.toggle('active', card && card.classList.contains('stack'));
-    applyVisibility();
-
-    initColorControls();
-    loadZoom();
-
-    buildSutraMenuFromIndex();
-    initDelegations();
-
-    let startId = null;
-    try {
-      startId = localStorage.getItem(KEY_LAST);
-    } catch (e) {}
-    if (startId) openSutra(startId);
-    else renderWelcomeScreen();
-
+    if (!grid || !titleEl || !subtitleEl || !card) console.warn('Sutta app: core DOM missing.');
+    initUiLang(); loadViewPrefs();
+    if (btnPali) { btnPali.classList.toggle('active', showPali); btnPali.setAttribute('aria-pressed', String(showPali)); }
+    if (btnEng)  { btnEng.classList.toggle('active',  showEng);  btnEng.setAttribute('aria-pressed',  String(showEng)); }
+    if (btnVie)  { btnVie.classList.toggle('active',  showVie);  btnVie.setAttribute('aria-pressed',  String(showVie)); }
+    if (btnLayout) { btnLayout.classList.toggle('active', card ? card.classList.contains('stack') : false); }
+    applyVisibility(); loadZoom(); loadLineHeight(); buildSutraMenuFromIndex(); initDelegations();
+    var startId = storage.get(KEY_LAST);
+    if (startId) openSutra(startId); else renderWelcomeScreen();
     if (!synthSupported) {
-      [btnReadTts, btnPauseTts, btnStopTts].forEach((b) => b && (b.disabled = true));
+      [btnReadTts, btnPauseTts, btnStopTts].forEach(function (b) { if (b) b.disabled = true; });
     } else {
       setTtsUiState('idle');
     }
+    updateMenuPanelTop();
   }
 
   init();
+})();
+
+/* ============================================================
+   Dark mode (separate IIFE)
+   ============================================================ */
+(function () {
+  var btn = document.getElementById('btnDarkMode');
+  if (!btn) return;
+
+  var STORAGE_KEY = 'sutra-dark-mode';
+  var html = document.documentElement;
+
+  var saved = null;
+  try { saved = localStorage.getItem(STORAGE_KEY); } catch(e){}
+
+  if (saved === 'dark') {
+    html.setAttribute('data-theme', 'dark');
+    btn.textContent = '☀️'; btn.title = 'Chế độ sáng';
+  }
+
+  if (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    html.setAttribute('data-theme', 'dark');
+    btn.textContent = '☀️'; btn.title = 'Chế độ sáng';
+    try { localStorage.setItem(STORAGE_KEY, 'dark'); } catch(e){}
+  }
+
+  btn.addEventListener('click', function () {
+    var isDark = html.getAttribute('data-theme') === 'dark';
+    if (isDark) {
+      html.removeAttribute('data-theme');
+      btn.textContent = '🌙'; btn.title = 'Chế độ tối';
+      try { localStorage.setItem(STORAGE_KEY, 'light'); } catch(e){}
+    } else {
+      html.setAttribute('data-theme', 'dark');
+      btn.textContent = '☀️'; btn.title = 'Chế độ sáng';
+      try { localStorage.setItem(STORAGE_KEY, 'dark'); } catch(e){}
+    }
+  });
 })();
