@@ -722,9 +722,47 @@
     return window.innerWidth <= 500;
   }
 
-  function setMobileHeaderHidden(hide) {
-   
-  
+function setMobileHeaderHidden(hide) {
+    if (!headerEl || !isMobileViewport()) return;
+    if (hide === mobileHeaderHidden) return;
+    mobileHeaderHidden = hide;
+
+    if (hide) {
+      // Tính chiều cao thực tế của header để đẩy nó lên trên
+      var h = headerEl.offsetHeight;
+      headerEl.style.marginTop = '-' + h + 'px';
+      headerEl.style.opacity = '0';
+      headerEl.style.pointerEvents = 'none'; // Chống click nhầm khi đang tàng hình
+    } else {
+      headerEl.style.marginTop = '0px';
+      headerEl.style.opacity = '1';
+      headerEl.style.pointerEvents = 'auto';
+    }
+  }
+
+  // Lắng nghe sự kiện scroll để kích hoạt ẩn/hiện header
+ // Lắng nghe sự kiện scroll để kích hoạt ẩn/hiện header
+  if (grid) {
+    grid.addEventListener('scroll', function () {
+      if (!isMobileViewport() || !headerEl) return;
+      var st = grid.scrollTop;
+
+      // Bỏ qua hiệu ứng scroll bounce (cuộn quá đà) trên iOS
+      if (st < 0 || st > grid.scrollHeight - grid.clientHeight) return;
+
+      if (st <= 10) {
+        // Cuộn lên chạm (hoặc rất gần) đầu trang -> Hiện lại header
+        setMobileHeaderHidden(false);
+      } else if (st > 50 && st > mobileLastScrollTop) {
+        // Cuộn xuống qua 50px -> Ẩn header đi
+        setMobileHeaderHidden(true);
+      }
+      
+      // Nếu cuộn lên bình thường (st > 10 và st < mobileLastScrollTop) 
+      // thì không làm gì cả, header vẫn tiếp tục ẩn.
+
+      mobileLastScrollTop = st;
+    });
   }
 
   /* ============================================================
