@@ -716,61 +716,16 @@
   var headerEl = card ? card.querySelector('.header') : null;
   var mobileLastScrollTop = 0;
   var mobileHeaderHidden = false;
-  var MOBILE_SCROLL_THRESHOLD = 8;  // Ngưỡng pixel tối thiểu để trigger
+  var MOBILE_SCROLL_THRESHOLD = 1;  // Ngưỡng pixel tối thiểu để trigger
 
   function isMobileViewport() {
     return window.innerWidth <= 500;
   }
 
   function setMobileHeaderHidden(hide) {
-    if (!headerEl) return;
-    if (hide === mobileHeaderHidden) return;
-    mobileHeaderHidden = hide;
-    if (hide) {
-      headerEl.classList.add('header-hidden');
-    } else {
-      headerEl.classList.remove('header-hidden');
-    }
+   
+  
   }
-
-  if (grid && headerEl) {
-    grid.addEventListener('scroll', throttle(function () {
-      if (!isMobileViewport()) {
-        // Desktop: luôn hiện header
-        setMobileHeaderHidden(false);
-        return;
-      }
-
-      var st = grid.scrollTop;
-
-      // Ở đầu trang: luôn hiện header
-      if (st <= 5) {
-        setMobileHeaderHidden(false);
-        mobileLastScrollTop = st;
-        return;
-      }
-
-      var delta = st - mobileLastScrollTop;
-
-      // Cuộn xuống đủ ngưỡng → ẩn header
-      if (delta > MOBILE_SCROLL_THRESHOLD) {
-        setMobileHeaderHidden(true);
-      }
-      // Cuộn lên đủ ngưỡng → hiện header
-      else if (delta < -MOBILE_SCROLL_THRESHOLD) {
-       // setMobileHeaderHidden(false);
-      }
-
-      mobileLastScrollTop = st;
-    }, 60));
-  }
-
-  // Khi resize từ mobile sang desktop → đảm bảo header hiện lại
-  window.addEventListener('resize', function () {
-    if (!isMobileViewport()) {
-      setMobileHeaderHidden(false);
-    }
-  });
 
   /* ============================================================
      Menu build

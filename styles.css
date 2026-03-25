@@ -582,29 +582,17 @@ html, body {
 
   /* Header: auto-hide khi cuộn xuống, hiện khi cuộn lên */
   .header {
-    position: relative;
-    flex-shrink: 0;
-    overflow: hidden;
-    max-height: 80px;                   /* đủ chứa title + subtitle */
-    transition: max-height 0.28s ease,
-                padding 0.28s ease,
-                opacity 0.22s ease,
-                border-bottom-width 0.28s ease;
-    will-change: max-height;
+ overflow-y: auto; 
+  
+  height: 55px;
+  flex: 1 1 auto;
+  min-height: 0;
+
   }
 
-  .header.header-hidden {
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    opacity: 0;
-    border-bottom-width: 0;
-    pointer-events: none;
-  }
 
-  .header.header-hidden::before {
-    display: none;
-  }
+
+ 
 
   /* sutraGrid: chiếm toàn bộ không gian còn lại, cuộn nội bộ */
   #sutraGrid {
@@ -1870,27 +1858,45 @@ button:not(:focus-visible),
 
 #btnDarkMode,
 #btnUiLang,
-#btnGuide,
-#btnSettings {
+#btnGuide {
   transition: transform 0.3s ease;
+}
+#btnSettings {
+ position: absolute;
+  left: 0;
+  bottom: 169px;
+  z-index: 150;
+  width: 19px;
+  height: 35px;
+  border-radius: 0 8px 8px 0;
+  border: 1px solid var(--panel-border);
+  border-left: none;
+ // background: var(--panel-toggle-bg);
+ // color: var(--fab-color);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 4px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 2px 0 8px rgba(44,31,14,0.05);
+  opacity: 0.9;
+  transition: all var(--transition);
+
 }
 
 #btnDarkMode:hover,
 #btnUiLang:hover,
-#btnGuide:hover,
-#btnSettings:hover {
+#btnGuide:hover {
   transform: scale(1.15) rotate(-12deg);
 }
 
 /* ── PANEL TOOLBAR ── */
 .panel-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 12px 10px;
-  border-top: 1px solid var(--paper-edge);
-  background: linear-gradient(180deg, transparent 0%, rgba(245,234,213,0.4) 100%);
-}
+  }
 
 .toolbar-group {
   display: flex;
@@ -2060,4 +2066,31 @@ button:not(:focus-visible),
   .menu-toggle {
     touch-action: manipulation;
   }
+}
+
+/* ============================================================
+   CANH ĐỀU (JUSTIFY) VĂN BẢN KHI CHỈ HIỂN THỊ 1 CỘT NGÔN NGỮ
+   ============================================================ */
+/* 1. Trên Mobile (luôn là 1 cột) */
+@media (max-width: 500px) {
+  .pali, .eng, .vie {
+    text-align: justify;
+    text-justify: inter-word;
+  }
+}
+
+/* 2. Khi bật chế độ "Xếp dọc" (Stacked Layout) trên Desktop */
+.card.stack .pali,
+.card.stack .eng,
+.card.stack .vie {
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+/* 3. Khi chỉ bật hiển thị duy nhất 1 ngôn ngữ trên Desktop */
+#sutraGrid.hide-eng.hide-vie .pali,
+#sutraGrid.hide-pali.hide-vie .eng,
+#sutraGrid.hide-pali.hide-eng .vie {
+  text-align: justify;
+  text-justify: inter-word;
 }

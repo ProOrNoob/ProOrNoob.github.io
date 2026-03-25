@@ -54,7 +54,18 @@
 
     <!-- BACK TO TOP -->
     <button id="btnBackTop" aria-label="Lên đầu trang">↑</button>
-
+	 <button id="btnSettings" class="toolbar-btn"
+                  aria-label="Cài đặt hiển thị" aria-haspopup="true" aria-expanded="false">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+                 stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+                 role="presentation" aria-hidden="true">
+              <circle cx="12" cy="12" r="4"></circle>
+              <path d="M12 3v2"></path><path d="M18.364 5.636 16.95 7.05"></path>
+              <path d="M21 12h-2"></path><path d="M18.364 18.364 16.95 16.95"></path>
+              <path d="M12 21v-2"></path><path d="M5.636 18.364 7.05 16.95"></path>
+              <path d="M3 12h2"></path><path d="M5.636 5.636 7.05 7.05"></path>
+            </svg>
+          </button>
     <!-- NÚT MỞ SIDEBAR -->
     <button type="button" id="sidebar-btn" title="Open sutta list" aria-label="Mở danh mục bài kinh">
       <span class="sidebar-label" data-i18n="btn-library">Library</span>
@@ -73,40 +84,6 @@
       </div>
       <div id="sutraSearchResults" class="search-results" role="listbox" aria-label="Kết quả tìm kiếm"></div>
       <ul id="sutraMenuList" class="sutra-list" role="tree" aria-label="Mục lục bài kinh"></ul>
-
-      <!-- Toolbar -->
-      <div class="panel-toolbar">
-        <div class="toolbar-group">
-          <button id="btnSettings" class="toolbar-btn"
-                  aria-label="Cài đặt hiển thị" aria-haspopup="true" aria-expanded="false">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
-                 stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-                 role="presentation" aria-hidden="true">
-              <circle cx="12" cy="12" r="4"></circle>
-              <path d="M12 3v2"></path><path d="M18.364 5.636 16.95 7.05"></path>
-              <path d="M21 12h-2"></path><path d="M18.364 18.364 16.95 16.95"></path>
-              <path d="M12 21v-2"></path><path d="M5.636 18.364 7.05 16.95"></path>
-              <path d="M3 12h2"></path><path d="M5.636 5.636 7.05 7.05"></path>
-            </svg>
-          </button>
-          <!-- FIX: Added aria-label fallback text for when SVG doesn't render -->
-          <button id="btnUiLang" class="toolbar-btn btn-flag" aria-label="Đổi ngôn ngữ giao diện">
-            <span class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Ngôn ngữ</span>
-          </button>
-          <button id="btnGuide" class="toolbar-btn" aria-label="Hướng dẫn sử dụng">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
-                 stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-                 role="presentation" aria-hidden="true">
-              <circle cx="12" cy="12" r="9"></circle>
-              <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.4-.9 2-1.6 2.4-.7.4-1.1.7-1.1 1.6v.4"></path>
-              <path d="M12 16.2h.01"></path>
-            </svg>
-          </button>
-
-          <button class="toolbar-btn btn-dark-toggle" id="btnDarkMode"
-                  title="Chế độ tối" aria-label="Chuyển sáng/tối">🌙</button>
-        </div>
-      </div>
 
     </div><!-- /#sutraMenuPanel -->
 
@@ -201,7 +178,22 @@
             <div class="set-note" id="settingsTtsNote">Chọn đoạn kinh rồi nhấn ▶ để nghe đọc.</div>
           </div>
         </div>
-
+        <div class="toolbar-group">
+          <button id="btnUiLang" class="toolbar-btn btn-flag" aria-label="Đổi ngôn ngữ giao diện">
+                    <span class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Ngôn ngữ</span>
+                  </button>
+                  <button id="btnGuide" class="toolbar-btn" aria-label="Hướng dẫn sử dụng">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                        stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+                        role="presentation" aria-hidden="true">
+                      <circle cx="12" cy="12" r="9"></circle>
+                      <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.4-.9 2-1.6 2.4-.7.4-1.1.7-1.1 1.6v.4"></path>
+                      <path d="M12 16.2h.01"></path>
+                    </svg>
+                  </button>
+                  <button class="toolbar-btn btn-dark-toggle" id="btnDarkMode"
+                          title="Chế độ tối" aria-label="Chuyển sáng/tối">🌙</button>
+        </div>
       </div><!-- /.set-panel-body -->
     </div><!-- /#settingsPanel -->
 
@@ -214,7 +206,6 @@
   <div class="guide-dialog"></div>
 </div>
 
-<!-- Scripts: toc.js must load BEFORE app.js so SUTRA_INDEX is available -->
 <script src="toc.js"></script>
 <script src="app.js"></script>
 </body>
