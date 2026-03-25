@@ -1259,7 +1259,7 @@ html, body {
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 1100;
 }
 #guideOverlay.show { display: flex; }
 
