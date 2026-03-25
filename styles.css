@@ -750,9 +750,9 @@ html, body {
 
 #settingsPanel .set-pills {
   display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 6px;
 }
-#settingsPanel .set-pills { grid-template-columns: repeat(2, 1fr); }
 #settingsPanel .set-pills.cols-3 { grid-template-columns: repeat(3, 1fr); }
 
 #settingsPanel .pill {
@@ -1870,8 +1870,6 @@ button:not(:focus-visible),
   border-radius: 0 8px 8px 0;
   border: 1px solid var(--panel-border);
   border-left: none;
- // background: var(--panel-toggle-bg);
- // color: var(--fab-color);
   cursor: pointer;
   display: flex;
   flex-direction: column;
