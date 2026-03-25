@@ -2035,7 +2035,7 @@ button:not(:focus-visible),
     font-size: 16px !important;
   }
 
-  /* Touch target: tất cả button tối thiểu 44x44 (Apple HIG) */
+  /* Touch target: tất cả button tối thiểu 44x44 (Apple HIG) 
   button,
   .btn-circle,
   .btn-nav,
@@ -2049,7 +2049,7 @@ button:not(:focus-visible),
     min-height: 44px;
     min-width: 44px;
   }
-
+  */
   /* Prevent double-tap zoom on interactive elements */
   button,
   a,
