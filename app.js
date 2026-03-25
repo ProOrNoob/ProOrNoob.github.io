@@ -1075,12 +1075,12 @@ if (grid) {
     if (!grid || currentSutraId) return;
     if (uiLang === 'en') {
       if (titleEl) titleEl.textContent = 'Sutta reading collection';
-      if (subtitleEl) subtitleEl.textContent = 'Tap 📖 to select a sutta, or ❓ for the guide.';
-      grid.innerHTML = '<div class="welcome-screen"><div class="welcome-box"><strong>Welcome!</strong><br><br>• Tap 📖 <strong>Sutta Index</strong> to choose a sutta.<br>• Tap ⚙ <strong>Settings</strong> to adjust layout/TTS.<br>• Tap ❓ <strong>Guide</strong> for help.</div></div>';
+      if (subtitleEl) subtitleEl.textContent = 'Tap "Library" to select a sutta, or ❓ for the guide.';
+      grid.innerHTML = '<div class="welcome-screen"><div class="welcome-box"><strong>Welcome!</strong><br><br>• Tap  <strong>"Library"</strong> to choose a sutta.<br>• Tap ⚙ <strong>Settings</strong> to adjust layout/TTS.<br>• Tap ❓ <strong>Guide</strong> for help.</div></div>';
     } else {
       if (titleEl) titleEl.textContent = 'Chào mừng bạn đến với trang lưu trữ kinh';
-      if (subtitleEl) subtitleEl.textContent = 'Bấm 📖 để chọn bài kinh, hoặc ❓ để xem hướng dẫn.';
-      grid.innerHTML = '<div class="welcome-screen"><div class="welcome-box"><strong>Xin chào!</strong><br><br>• Bấm 📖 <strong>Danh mục bài kinh</strong> để chọn bài.<br>• Bấm ⚙ <strong>Cài đặt</strong> để chỉnh bố cục/TTS.<br>• Bấm ❓ <strong>Hướng dẫn</strong> để xem cách dùng.</div></div>';
+      if (subtitleEl) subtitleEl.textContent = 'Bấm vào "Thư Viện" để chọn bài kinh, hoặc ❓ để xem hướng dẫn.';
+      grid.innerHTML = '<div class="welcome-screen"><div class="welcome-box"><strong>Xin chào!</strong><br><br>• Bấm  <strong>"Thư Viện"</strong> để chọn bài.<br>• Bấm ⚙ <strong>Cài đặt</strong> để chỉnh bố cục/TTS.<br>• Bấm ❓ <strong>Hướng dẫn</strong> trong Setting để xem cách dùng.</div></div>';
     }
   }
 
