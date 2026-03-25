@@ -324,12 +324,27 @@
   /* ============================================================
      Panel top position
      ============================================================ */
-  function updateMenuPanelTop() {
-    if (!sutraMenuPanel || !card) return;
-    var topNote = card.querySelector('.top-note');
-    var topH = topNote ? topNote.offsetHeight : 0;
-    sutraMenuPanel.style.top = topH + 'px';
+ // Tạo một biến để theo dõi sự thay đổi kích thước
+const resizeObserver = new ResizeObserver(entries => {
+  for (let entry of entries) {
+    // Chỉ cập nhật khi trình duyệt rảnh (requestAnimationFrame)
+    requestAnimationFrame(() => {
+      if (sutraMenuPanel) {
+        sutraMenuPanel.style.top = entry.contentRect.height + 'px';
+      }
+    });
   }
+});
+
+function updateMenuPanelTop() {
+  if (!card) return;
+  const topNote = card.querySelector('.top-note');
+  if (topNote) {
+    resizeObserver.observe(topNote); // Bắt đầu theo dõi phần tử này
+  } else {
+    sutraMenuPanel.style.top = '0px';
+  }
+}
 
   /* ============================================================
      PANEL LOGIC
@@ -458,13 +473,24 @@
     } catch(e){}
   }
 
-  function updateVisibleCols() {
-    var isNarrow = window.innerWidth <= 500;
-    var isStack  = card ? card.classList.contains('stack') : false;
-    var count = (showPali?1:0) + (showEng?1:0) + (showVie?1:0);
-    count = Math.max(1, count);
+// Tạo một listener cho màn hình hẹp (<= 500px)
+const mql = window.matchMedia('(max-width: 500px)');
+
+function updateVisibleCols() {
+  const isNarrow = mql.matches; // Kiểm tra nhanh không gây reflow
+  const isStack = card?.classList.contains('stack') || false;
+  
+  let count = (showPali ? 1 : 0) + (showEng ? 1 : 0) + (showVie ? 1 : 0);
+  count = Math.max(1, count);
+
+  // Dùng requestAnimationFrame để đảm bảo việc ghi style diễn ra mượt mà
+  requestAnimationFrame(() => {
     document.documentElement.style.setProperty('--visible-cols', isNarrow || isStack ? '1' : String(count));
-  }
+  });
+}
+
+// Lắng nghe sự thay đổi màn hình một cách tối ưu
+mql.addEventListener('change', updateVisibleCols);
 
   function applyVisibility() {
     if (!grid) return;
