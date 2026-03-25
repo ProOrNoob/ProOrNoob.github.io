@@ -582,12 +582,7 @@ html, body {
 
   /* Header: auto-hide khi cuộn xuống, hiện khi cuộn lên */
   .header {
- overflow-y: auto; 
-  
-  height: 55px;
-  flex: 1 1 auto;
-  min-height: 0;
-
+display: none !important;
   }
 
 
@@ -597,8 +592,8 @@ html, body {
   /* sutraGrid: chiếm toàn bộ không gian còn lại, cuộn nội bộ */
   #sutraGrid {
     overflow-y: auto;
-    flex: 1 1 auto;
-    min-height: 0;
+	flex: 1 1 auto;
+    height: 100%;
   }
 
   /* Nav bar: luôn cố định dưới cùng, không bao giờ cuộn đi */
