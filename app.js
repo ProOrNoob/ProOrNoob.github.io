@@ -740,29 +740,36 @@ function setMobileHeaderHidden(hide) {
     }
   }
 
-  // Lắng nghe sự kiện scroll để kích hoạt ẩn/hiện header
- // Lắng nghe sự kiện scroll để kích hoạt ẩn/hiện header
-  if (grid) {
+if (grid) {
+    var isHeaderScrollTicking = false;
+
+    // 1. Logic UI cần mượt mà (ẩn/hiện header) -> Dùng requestAnimationFrame
     grid.addEventListener('scroll', function () {
-      if (!isMobileViewport() || !headerEl) return;
-      var st = grid.scrollTop;
-
-      // Bỏ qua hiệu ứng scroll bounce (cuộn quá đà) trên iOS
-      if (st < 0 || st > grid.scrollHeight - grid.clientHeight) return;
-
-      if (st <= 10) {
-        // Cuộn lên chạm (hoặc rất gần) đầu trang -> Hiện lại header
-        setMobileHeaderHidden(false);
-      } else if (st > 50 && st > mobileLastScrollTop) {
-        // Cuộn xuống qua 50px -> Ẩn header đi
-        setMobileHeaderHidden(true);
+      if (!isHeaderScrollTicking) {
+        window.requestAnimationFrame(function () {
+          if (isMobileViewport() && headerEl) {
+            var st = grid.scrollTop;
+            // Chỉ chạy khi không bị scroll bounce (kéo quá đà trên iOS)
+            if (st >= 0 && st <= grid.scrollHeight - grid.clientHeight) {
+              if (st <= 10) {
+                setMobileHeaderHidden(false);
+              } else if (st > 50 && st > mobileLastScrollTop) {
+                setMobileHeaderHidden(true);
+              }
+              mobileLastScrollTop = st;
+            }
+          }
+          isHeaderScrollTicking = false;
+        });
+        isHeaderScrollTicking = true;
       }
-      
-      // Nếu cuộn lên bình thường (st > 10 và st < mobileLastScrollTop) 
-      // thì không làm gì cả, header vẫn tiếp tục ẩn.
+    }, { passive: true });
 
-      mobileLastScrollTop = st;
-    });
+    // 2. Logic tác vụ ngầm (Save anchor, Back to top) -> Dùng throttle 120ms để nhẹ máy
+    grid.addEventListener('scroll', throttle(function () {
+      if (!suppressBackTop) toggleBackTop(grid.scrollTop > 0);
+      saveScrollAnchorNow();
+    }, 120), { passive: true });
   }
 
   /* ============================================================
