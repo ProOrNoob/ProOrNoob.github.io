@@ -758,7 +758,7 @@
       }
       // Cuộn lên đủ ngưỡng → hiện header
       else if (delta < -MOBILE_SCROLL_THRESHOLD) {
-        setMobileHeaderHidden(false);
+       // setMobileHeaderHidden(false);
       }
 
       mobileLastScrollTop = st;
