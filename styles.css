@@ -1,8 +1,13 @@
 :root {
-  --font-display: "Noto Serif", Georgia, serif;
-  --font-body:    "Noto Serif", Georgia, "Times New Roman", serif;
-  --font-pali:    "Noto Serif", Georgia, "Times New Roman", serif;
+  --font-display: "Sitka Banner", "Cambria", "Times New Roman", "Charter", serif;
+  --font-body:    "Sitka Banner", "Cambria", "Times New Roman", "Charter", serif;
+  --font-pali:    "Sitka Banner", "Cambria", "Times New Roman", "Charter", serif;
 
+  /*
+  --font-display: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-body:    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-pali:    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  */
   --paper:        #fdf8f0;
   --paper-dark:   #f5ead5;
   --paper-darker: #ede0c4;
@@ -1543,7 +1548,7 @@ button:not(:focus-visible),
 #sidebar-btn .sidebar-label {
   position: absolute;
   bottom: 39px;
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: 0.62em;
   letter-spacing: 0.18em;
   text-transform: uppercase;
