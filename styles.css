@@ -1543,7 +1543,7 @@ button:not(:focus-visible),
 #sidebar-btn .sidebar-label {
   position: absolute;
   bottom: 39px;
-  font-family: 'Cinzel', serif;
+  font-family: 'Playfair Display', serif;
   font-size: 0.62em;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -1553,6 +1553,8 @@ button:not(:focus-visible),
   transform: translateX(-50%) rotate(-90deg);
   line-height: 1;
   white-space: nowrap;
+ color: #4E342E; /* Màu nâu đất đậm, rất rõ nét */
+  font-weight: 700;
 }
 
 /* ============================================================
