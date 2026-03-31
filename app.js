@@ -301,8 +301,8 @@
     if (!dlg) return;
     var isEn = uiLang === 'en';
     dlg.innerHTML = isEn
-      ? '<h2>Quick guide</h2><em>Short instructions on how to use the sutta reader.</em><ul><li>📖 <strong>Sutta Index</strong>: open catalogue and choose a sutta.</li><li>🔎 <strong>Search</strong>: type name/ID/keyword to filter.</li><li>⚙ <strong>Settings</strong>: toggle languages, layout, TTS, font size, full width.</li><li>← → <strong>Prev / Next</strong>: navigate between suttas.</li><li>↑ <strong>Back to top</strong>: jump to top of sutta.</li><li>⏸ <strong>TTS note</strong>: pause restarts the current sentence (browser limitation).</li></ul><button id="btnCloseGuide" type="button">Close</button>'
-      : '<h2>Hướng dẫn nhanh</h2><em>Một số hướng dẫn cơ bản để bạn sử dụng trang đọc kinh.</em><ul><li>📖 <strong>Danh mục bài kinh</strong>: mở mục lục và chọn bài.</li><li>🔎 <strong>Tìm kiếm</strong>: gõ tên/mã/từ khóa để lọc.</li><li>⚙ <strong>Cài đặt</strong>: bật/tắt ngôn ngữ, bố cục, TTS, cỡ chữ, full width.</li><li>← → <strong>Trước / Sau</strong>: chuyển bài kinh bằng nút điều hướng.</li><li>↑ <strong>Lên đầu</strong>: cuộn về đầu bài kinh.</li><li>⏸ <strong>Lưu ý TTS</strong>: tạm dừng sẽ đọc lại từ đầu câu (giới hạn của trình duyệt).</li></ul><button id="btnCloseGuide" type="button">Đóng</button>';
+      ? '<h2>Quick guide</h2><em>Short instructions on how to use the sutta reader.</em><ul><li>📖 <strong>Sutta Index</strong>: open catalogue and choose a sutta.</li><li>🔎 <strong>Search</strong>: type name/ID/keyword to filter.</li><li>⚙ <strong>Settings</strong>: toggle languages, layout, TTS, font size, full width.</li><li>← → <strong>Prev / Next</strong>: navigate between suttas.</li><li>↑ <strong>Back to top</strong>: jump to top of sutta.</li><li>⏸ <strong>TTS note</strong>: pause restarts the current sentence (browser limitation).Please feel free to email: tuanctvn199@gmail.com</li></ul><button id="btnCloseGuide" type="button">Close</button>'
+      : '<h2>Hướng dẫn nhanh</h2><em>Một số hướng dẫn cơ bản để bạn sử dụng trang đọc kinh.</em><ul><li>📖 <strong>Danh mục bài kinh</strong>: mở mục lục và chọn bài.</li><li>🔎 <strong>Tìm kiếm</strong>: gõ tên/mã/từ khóa để lọc.</li><li>⚙ <strong>Cài đặt</strong>: bật/tắt ngôn ngữ, bố cục, TTS, cỡ chữ, full width.</li><li>← → <strong>Trước / Sau</strong>: chuyển bài kinh bằng nút điều hướng.</li><li>↑ <strong>Lên đầu</strong>: cuộn về đầu bài kinh.</li><li>⏸ <strong>Lưu ý TTS</strong>: tạm dừng sẽ đọc lại từ đầu câu (giới hạn của trình duyệt). Mọi góp ý xin vui lòng gửi về email: tuanctvn199@gmail.com</li></ul><button id="btnCloseGuide" type="button">Đóng</button>';
     var btnClose = $('btnCloseGuide');
     if (btnClose) btnClose.onclick = closeGuide;
   }
@@ -1080,7 +1080,7 @@ if (grid) {
     } else {
       if (titleEl) titleEl.textContent = 'Chào mừng bạn đến với trang lưu trữ kinh';
       if (subtitleEl) subtitleEl.textContent = 'Bấm vào "Thư Viện" để chọn bài kinh, hoặc ❓ để xem hướng dẫn.';
-      grid.innerHTML = '<div class="welcome-screen"><div class="welcome-box"><strong>Xin chào!</strong><br><br>• Bấm  <strong>"Thư Viện"</strong> để chọn bài.<br>• Bấm ⚙ <strong>Cài đặt</strong> để chỉnh bố cục/TTS.<br>• Bấm ❓ <strong>Hướng dẫn</strong> trong Setting để xem cách dùng.</div></div>';
+      grid.innerHTML = '<div class="welcome-screen"><div class="welcome-box"><strong>Xin chào!</strong><br><br>• Bấm  <strong>"Thư Viện"</strong> để chọn bài.<br>• Bấm ⚙ <strong>Cài đặt</strong> để chỉnh bố cục/TTS.<br>• Bấm ❓ <strong>Hướng dẫn</strong> trong Setting để xem cách dùng. *Bản dịch Tiếng Việt đang cập nhật và có thể có nội dung chưa phừ hợp, mọi góp ý xin vui lòng gửi về email: tuanctvn199@gmail.com</div></div>';
     }
   }
 
