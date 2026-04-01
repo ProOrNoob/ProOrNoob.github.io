@@ -195,7 +195,7 @@ window.BILARA["mn146"]["vi"] = {
   "mn146:15.4": "Cũng vậy, này các Tỳ-kheo, các Tỳ-kheo-ni ấy hoan hỷ với bài pháp của Nandaka, nhưng chưa hoàn toàn viên mãn ý nguyện”. ",
   "mn146:16.1": "Rồi Thế Tôn gọi Tôn giả Nandaka: ",
   "mn146:16.2": "“Vậy thì, này Nandaka, ngày mai con hãy khuyên dạy các Tỳ-kheo-ni ấy bằng lời khuyên đó”. ",
-  "mn146:16.3": "“Vâng, bạch Tôn Giả”, Tôn giả Nandaka vâng lời Thế Tôn. ",
+  "mn146:16.3": "“Vâng, bạch Thế Tôn”, Tôn giả Nandaka vâng lời Thế Tôn. ",
   "mn146:16.4": "Rồi Tôn giả Nandaka, sau khi đêm ấy trôi qua, vào buổi sáng đắp y, cầm bát và y, đi vào Xá-vệ để khất thực. ",
   "mn146:16.5": "Sau khi khất thực ở Xá-vệ, và sau bữa ăn, trở về từ việc khất thực, Tôn giả cùng với một người bạn đi đến khu vườn của vua. ",
   "mn146:16.6": "Các Tỳ-kheo-ni ấy thấy Tôn giả Nandaka đang đến từ xa. ",
@@ -364,4 +364,4 @@ window.BILARA["mn146"]["vi"] = {
   "mn146:27.8": "Kinh Nandakovāda chấm dứt, thứ tư."
 }
 window.BILARA["mn146"]["vi"]["mn146:source"] =
-"Dịch từ nguồn Pali https://suttacentral.net/ .Trong quá trình dịch có thể có sai sót, vui lòng đối chiếu gốc Pali, và tiếng Anh. Mọi góp ý chỉnh sửa xin vui lòng emil: tuanctvn199@gmail.com Chỉnh sửa: 04/01/2026";
+"Dịch từ nguồn Pali https://suttacentral.net/ .Trong quá trình dịch có thể có sai sót, vui lòng đối chiếu gốc Pali, và tiếng Anh. Mọi góp ý chỉnh sửa xin vui lòng email: tuanctvn199@gmail.com Chỉnh sửa: 04/01/2026";
