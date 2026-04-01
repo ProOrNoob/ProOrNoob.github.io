@@ -5,7 +5,7 @@ window.BILARA["mn146"]["vi"] = {
   "mn146:0.2": "Kinh Nandakovāda ",
   "mn146:1.1": "Tôi nghe như vầy",
   "mn146:1.2": "Một thời Thế Tôn trú ở Sāvatthī, tại Jetavana, khu vườn của ông Anāthapiṇḍika. ",
-  "mn146:2.1": "Rồi Mahāpajāpatī Gotamī, cùng với khoảng năm trăm Tỳ Kheo Ni, đi đến chỗ Thế Tôn; sau khi đến, đảnh lễ Thế Tôn rồi đứng một bên. Đứng một bên, Mahāpajāpatī Gotamī bạch Tôn Giả rằng: ",
+  "mn146:2.1": "Rồi Mahāpajāpatī Gotamī, cùng với khoảng năm trăm Tỳ Kheo Ni, đi đến chỗ Thế Tôn; sau khi đến, đảnh lễ Thế Tôn rồi đứng một bên. Đứng một bên, Mahāpajāpatī Gotamī bạch Thế Tôn rằng: ",
   "mn146:2.2": "“Bạch Thế Tôn, xin Thế Tôn hãy giáo giới các Tỳ Kheo Ni; ",
   "mn146:2.3": "Xin Thế Tôn hãy khuyên dạy các Tỳ Kheo Ni; ",
   "mn146:2.4": "Xin Thế Tôn hãy thuyết pháp cho các Tỳ Kheo Ni.” ",
