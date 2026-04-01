@@ -364,4 +364,4 @@ window.BILARA["mn146"]["vi"] = {
   "mn146:27.8": "Kinh Nandakovāda chấm dứt, thứ tư."
 }
 window.BILARA["mn146"]["vi"]["mn146:source"] =
-"Dịch từ nguồn Pali https://suttacentral.net/ .Trong quá trình dịch có thể có sai sót, vui lòng đối chiếu gốc Pali, và tiếng Anh. Mọi góp ý chỉnh sửa xin vui lòng email: tuanctvn199@gmail.com Chỉnh sửa: 04/01/2026";
+"Dịch từ nguồn Pali https://suttacentral.net/ .Trong quá trình dịch có thể có sai sót, vui lòng đối chiếu bản gốc Pali, và tiếng Anh. Mọi góp ý chỉnh sửa xin vui lòng email: tuanctvn199@gmail.com: 04/01/2026";
