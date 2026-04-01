@@ -1080,7 +1080,7 @@ if (grid) {
     } else {
       if (titleEl) titleEl.textContent = 'Chào mừng bạn đến với trang lưu trữ kinh';
       if (subtitleEl) subtitleEl.textContent = 'Bấm vào "Thư Viện" để chọn bài kinh, hoặc ❓ để xem hướng dẫn.';
-      grid.innerHTML = '<div class="welcome-screen"><div class="welcome-box"><strong>Xin chào!</strong><br><br>• Bấm  <strong>"Thư Viện"</strong> để chọn bài.<br>• Bấm ⚙ <strong>Cài đặt</strong> để chỉnh bố cục/TTS.<br>• Bấm ❓ <strong>Hướng dẫn</strong> trong Setting để xem cách dùng. *Bản dịch Tiếng Việt đang cập nhật và có thể có nội dung chưa phừ hợp, mọi góp ý xin vui lòng gửi về email: tuanctvn199@gmail.com</div></div>';
+      grid.innerHTML = '<div class="welcome-screen"><div class="welcome-box"><strong>Xin chào!</strong><br><br>• Bấm  <strong>"Thư Viện"</strong> để chọn bài.<br>• Bấm ⚙ <strong>Cài đặt</strong> để chỉnh bố cục/TTS.<br>• Bấm ❓ <strong>Hướng dẫn</strong> trong Setting để xem cách dùng. *Trong quá trình dịch có thể có sai sót, vui lòng đối chiếu gốc Pali, và tiếng Anh. Mọi góp ý chỉnh sửa xin vui lòng emil: tuanctvn199@gmail.com</div></div>';
     }
   }
 
