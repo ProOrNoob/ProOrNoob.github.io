@@ -1,8 +1,3 @@
-Sutta Translation Archive | Dự Án Lưu Trữ Kinh Điển Song Ngữ
-A comprehensive repository for sharing and archiving Vietnamese translations from SuttaCentral, utilizing the Bilara data structure, alongside the English translations by Bhikkhu Sujato.
-
-Kho lưu trữ toàn diện nhằm chia sẻ và lưu trữ các bản dịch tiếng Việt từ SuttaCentral, sử dụng cấu trúc dữ liệu Bilara, đối chiếu cùng bản dịch tiếng Anh của Bhikkhu Sujato.
-
 📌 Project Overview | Tổng Quan Dự Án
 
 This project aims to provide a structured, easy-to-access database of Buddhist scriptures. By leveraging the Bilara format (segment-by-segment alignment), users can compare the Vietnamese translation directly with the English version and the original Pāli source.
