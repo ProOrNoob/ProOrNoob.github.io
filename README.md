@@ -24,7 +24,10 @@ Nếu bạn tìm thấy bất kỳ lỗi nào trong việc đối chiếu phân 
 
 📜 License | Giấy Phép
 English Translation (Sujato): Creative Commons Zero (CC0 1.0 Universal) Public Domain Dedication.
+
 Dự án này tuân thủ tinh thần chia sẻ Pháp bảo (Dhamma-dana):
+
 Nội dung bản dịch được phát hành dưới giấy phép Creative Commons Zero (CC0 1.0 Universal).
+
 Bạn có thể tự do sao chép, sửa đổi và phân phối với mục đích phi lợi nhuận.
 
