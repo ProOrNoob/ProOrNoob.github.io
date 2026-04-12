@@ -102,8 +102,65 @@
   }
 
   function sortBilaraKeys(keys) {
-    return keys.sort(function (x, y) { return x.localeCompare(y, 'en', { numeric: true }); });
-  }
+  return keys.sort(function (x, y) {
+    var strX = String(x).toLowerCase();
+    var strY = String(y).toLowerCase();
+
+    // 1. LUẬT TUYỆT ĐỐI: Thẻ nào có chữ "source" thì ép văng xuống dưới đáy
+    var isSourceX = strX.includes('source');
+    var isSourceY = strY.includes('source');
+    
+    if (isSourceX && !isSourceY) return 1;  // X có source -> đẩy X xuống dưới
+    if (!isSourceX && isSourceY) return -1; // Y có source -> đẩy Y xuống dưới
+    if (isSourceX && isSourceY) return strX.localeCompare(strY, 'en', { numeric: true });
+
+    // 2. Logic xử lý các thẻ chuẩn (cắt qua dấu :)
+    var partsX = x.split(':');
+    var partsY = y.split(':');
+
+    var idX = partsX[0] || '';
+    var idY = partsY[0] || '';
+
+    // So sánh ID bài kinh (ví dụ: sn1.1 vs sn1.2)
+    var idCmp = idX.localeCompare(idY, 'en', { numeric: true });
+    if (idCmp !== 0) return idCmp;
+
+    // So sánh phân cấp Segment (ví dụ: 1.1 vs 1.2)
+    var segX = partsX[1] || '';
+    var segY = partsY[1] || '';
+
+    var sx = segX.split('.');
+    var sy = segY.split('.');
+    var maxLen = Math.max(sx.length, sy.length);
+
+    for (var i = 0; i < maxLen; i++) {
+      var pX = sx[i];
+      var pY = sy[i];
+
+      if (pX === undefined) return -1;
+      if (pY === undefined) return 1;
+
+      var numX = parseInt(pX, 10);
+      var numY = parseInt(pY, 10);
+      var isNumX = !isNaN(numX);
+      var isNumY = !isNaN(numY);
+
+      if (isNumX && isNumY) {
+        // Cả 2 đều là số học
+        if (numX !== numY) return numX - numY;
+      } else if (isNumX && !isNumY) {
+        // Số luôn đứng TRƯỚC chữ
+        return -1;
+      } else if (!isNumX && isNumY) {
+        return 1;
+      } else {
+        var strCmp = pX.localeCompare(pY, 'en', { numeric: true });
+        if (strCmp !== 0) return strCmp;
+      }
+    }
+    return 0;
+  });
+}
 
   async function loadMerged(id) {
     if (!id) return null;
@@ -652,6 +709,7 @@ mql.addEventListener('change', updateVisibleCols);
   }
 
   function saveScrollAnchorNow() {
+	  if (isRendering) return;
     if (!currentSutraId) return;
     var scrollRoot = getScrollRoot();
     if (!scrollRoot || scrollRoot.scrollTop === 0) {
@@ -665,17 +723,30 @@ mql.addEventListener('change', updateVisibleCols);
   }
 
   function restoreScrollByAnchor(id) {
-    var scrollRoot = getScrollRoot();
+  var scrollRoot = getScrollRoot();
     if (!scrollRoot) return false;
     try {
       var key    = storage.get(KEY_ANCHOR_K(id));
       var offRaw = storage.get(KEY_ANCHOR_O(id));
       var off    = offRaw ? parseInt(offRaw, 10) : 0;
-      if (!key) return false;
-      // FIX: Use safeCssEscape instead of broken manual fallback
+      
+      // SỬA LỖI: Nếu bài kinh chưa từng lưu vị trí (bài mới), ép cuộn lên đầu
+      if (!key) {
+        scrollRoot.scrollTop = 0;
+        toggleBackTop(false);
+        return false;
+      }
+      
       var safeKey = safeCssEscape(key);
       var row = scrollRoot.querySelector('.sutra-row[data-key="' + safeKey + '"]');
-      if (!row) return false;
+      
+      // SỬA LỖI: Nếu tìm không ra dòng đã lưu (do file bị đổi), ép cuộn lên đầu
+      if (!row) {
+        scrollRoot.scrollTop = 0;
+        toggleBackTop(false);
+        return false;
+      }
+      
       var scrollTarget = row.closest('.sutra-row-wrap') || row;
       var max = Math.max(0, scrollRoot.scrollHeight - scrollRoot.clientHeight);
       var y = scrollTarget.offsetTop - (Number.isFinite(off) ? off : 0);
@@ -683,7 +754,12 @@ mql.addEventListener('change', updateVisibleCols);
       scrollRoot.scrollTop = y;
       toggleBackTop(scrollRoot.scrollTop > 0);
       return true;
-    } catch(e) { return false; }
+    } catch(e) { 
+      // SỬA LỖI: Bắt lỗi an toàn, ép về đầu
+      scrollRoot.scrollTop = 0;
+      toggleBackTop(false);
+      return false; 
+    }
   }
 
   // FIX: Clean up observer on page unload to prevent memory leak
@@ -996,18 +1072,36 @@ if (grid) {
      Meta lookup
      ============================================================ */
   function findMetaById(id) {
-    var index = window.SUTRA_INDEX || [];
+   var index = window.SUTRA_INDEX || [];
     var found = null;
-    function walk(children) {
+    
+    // Thêm tham số currentParent để nhớ xem đang đứng ở thư mục nào
+    function walk(children, currentParent) {
       if (!children || !children.length || found) return;
       for (var i = 0; i < children.length; i++) {
         if (found) return;
         var ch = children[i];
-        if (ch.type === 'sutta' && ch.id === id) { found = ch; return; }
-        if (ch.type === 'group') walk(ch.children || []);
+        
+        if (ch.type === 'sutta' && ch.id === id) { 
+          // Dùng Object.assign để copy data, tránh làm hư data gốc
+          found = Object.assign({}, ch);
+          // Gắn thêm cục data của thư mục cha vào bài kinh
+          found.parentGroup = currentParent; 
+          return; 
+        }
+        
+        if (ch.type === 'group') {
+          // Khi chui vào thư mục con, báo cho nó biết cha của nó chính là 'ch'
+          walk(ch.children || [], ch);
+        }
       }
     }
-    for (var i = 0; i < index.length; i++) { walk(index[i].children || []); if (found) break; }
+    
+    // Vòng lặp đầu tiên, cha của nó là chính nó (index[i])
+    for (var i = 0; i < index.length; i++) { 
+      walk(index[i].children || [], index[i]); 
+      if (found) break; 
+    }
     return found;
   }
 
@@ -1096,7 +1190,7 @@ if (grid) {
 
     // FIX: Clear cached rows immediately
     cachedRows = [];
-
+   firstVisibleKey = null;
     // Show header when loading new sutta (mobile auto-hide reset)
     setMobileHeaderHidden(false);
     mobileLastScrollTop = 0;
@@ -1130,26 +1224,40 @@ if (grid) {
       grid.setAttribute('aria-busy', 'false'); setTtsUiState('idle'); return;
     }
 
-    var titleFromBilara    = (pickTextForUiLangSuffix(merged, id, ':0.2') || '').trim();
+   var titleFromBilara    = (pickTextForUiLangSuffix(merged, id, ':0.2') || '').trim();
     var subtitleFromBilara = (pickTextForUiLangSuffix(merged, id, ':0.1') || '').trim();
     var meta = findMetaById(id) || {};
+    
     var titleFallback    = uiLang === 'en'
       ? meta.titleEn || meta.titleVi || meta.titlePali || meta.title || id
       : meta.titleVi || meta.titleEn || meta.titlePali || meta.title || id;
-    var subtitleFallback = uiLang === 'en'
-      ? meta.subtitleEn || meta.subtitleVi || meta.subtitle || ''
-      : meta.subtitleVi || meta.subtitleEn || meta.subtitle || '';
-    if (titleEl) titleEl.textContent = titleFromBilara || titleFallback;
-    if (subtitleEl) subtitleEl.textContent = subtitleFromBilara || subtitleFallback;
 
-    var rowsForViewRaw = (merged.rows || []).filter(function (r) { return !String(r.key || '').includes(':0.'); });
+    // Lấy tên chương (group) từ thông tin cha mà ta vừa gắn vào ở Bước 1
+    var parentLabelVi = meta.parentGroup ? (meta.parentGroup.labelVi || meta.parentGroup.key) : '';
+    var parentLabelEn = meta.parentGroup ? (meta.parentGroup.labelEn || meta.parentGroup.key) : '';
+
+    var subtitleFallback = uiLang === 'en'
+      ? meta.subtitleEn || parentLabelEn || meta.subtitleVi || ''
+      : meta.subtitleVi || parentLabelVi || meta.subtitleEn || '';
+
+    if (titleEl) titleEl.textContent = titleFromBilara || titleFallback;
+    
+    // QUAN TRỌNG: Đảo ngược sự ưu tiên. Ưu tiên lấy subtitleFallback (chứa tên Chương từ JSON)
+    // Nếu trong JSON không có thì mới lấy đỡ subtitleFromBilara (ví dụ chữ "1.1")
+    if (subtitleEl) subtitleEl.textContent = subtitleFallback || subtitleFromBilara;
+
+    var rowsForViewRaw = (merged.rows || []).filter(function (r) { 
+    var k = String(r.key || '');
+    // Chỉ giấu tiêu đề nếu nó thuộc chính xác ID kinh được chọn ban đầu
+    return !(k.startsWith(id + ':0.')); 
+});
     var singleLang = getSingleVisibleLang(); lastSingleLangMode = singleLang;
     var rowsForView = singleLang ? mergeRowsToParagraphRows(rowsForViewRaw, singleLang) : rowsForViewRaw;
 
     grid.innerHTML = '';
     cachedRows = [];
     applyVisibility();
-
+	if (grid) grid.scrollTop = 0;
     var i = 0, BATCH = 220;
     function renderBatch() {
       // FIX: Also reset isRendering when token is stale
@@ -1168,10 +1276,11 @@ if (grid) {
       if (i < rowsForView.length) {
         requestAnimationFrame(renderBatch);
       } else {
-        isRendering = false; grid.setAttribute('aria-busy', 'false');
+         grid.setAttribute('aria-busy', 'false');
         requestAnimationFrame(function () { requestAnimationFrame(function () {
           updateVisibleCols(); restoreScrollByAnchor(id);
           setupAnchorObserver(); setTtsUiState('idle'); updateNavButtons();
+		  isRendering = false;
         }); });
         scheduleNextPreload(id);
       }
@@ -1214,13 +1323,37 @@ if (grid) {
     if (btnPrev) btnPrev.disabled = !(idx > 0);
     if (btnNext) btnNext.disabled = !(idx < SUTRA_ORDER.length - 1);
 
-    if (navTitle) {
-      var meta  = findMetaById(currentSutraId);
-      var code  = meta && meta.code ? meta.code + ' · ' : '';
+   if (navTitle) {
+      var meta = findMetaById(currentSutraId) || {};
+      
+      // 1. Lấy tên Chương (Group)
+      var parentLabel = '';
+      if (meta.parentGroup) {
+        parentLabel = uiLang === 'en' 
+          ? (meta.parentGroup.labelEn || meta.parentGroup.key) 
+          : (meta.parentGroup.labelVi || meta.parentGroup.key);
+      }
+
+      // 2. Lấy Mã bài và Tên bài
+      var code = meta.code ? meta.code : '';
       var title = uiLang === 'en'
-        ? (meta && meta.titleEn) || (meta && meta.titleVi) || (meta && meta.titlePali) || currentSutraId
-        : (meta && meta.titleVi) || (meta && meta.titleEn) || (meta && meta.titlePali) || currentSutraId;
-      navTitle.textContent = code + title;
+        ? meta.titleEn || meta.titleVi || meta.titlePali || currentSutraId
+        : meta.titleVi || meta.titleEn || meta.titlePali || currentSutraId;
+
+      // ==========================================
+      // CÁCH 1: HIỂN THỊ ĐẦY ĐỦ (Mã bài · Tên Chương · Tên Bài)
+      // Ví dụ: SN 1 – Vagga 1 · Chương Một: Tương Ưng Chư Thiên · I. Phẩm Cây Lau
+      // ==========================================
+      // var finalNavText = (code ? code + ' · ' : '') + (parentLabel ? parentLabel + ' · ' : '') + title;
+
+      // ==========================================
+      // CÁCH 2: HIỂN THỊ GỌN GÀNG (Tên Chương · Tên Bài) - Khuyên dùng
+      // Ví dụ: Chương Một: Tương Ưng Chư Thiên · I. Phẩm Cây Lau
+      // Giấu mã code đi cho footer đỡ bị dài quá trên điện thoại
+      // ==========================================
+      var finalNavText = (parentLabel ? parentLabel + ' · ' : '') + title;
+
+      navTitle.textContent = finalNavText;
     }
   }
 

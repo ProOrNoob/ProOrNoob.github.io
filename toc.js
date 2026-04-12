@@ -246,8 +246,8 @@ window.SUTRA_INDEX = [
                 labelVi: "Chương Một: Tương Ưng Chư Thiên",
                 labelEn: "Devatā Saṃyutta",
                 children: [
-                  { type: "sutta", id: "sn1_v1", code: "SN 1 – Vagga 1", titlePali: "Oghataraṇa Vagga", titleVi: "I. Phẩm Vượt Dòng", titleEn: "Chapter on Crossing the Flood" },
-                  { type: "sutta", id: "sn1_v2", code: "SN 1 – Vagga 2", titlePali: "Nandana Vagga", titleVi: "II. Phẩm Hoan Hỷ", titleEn: "The Nandana Chapter" },
+                  { type: "sutta", id: "sn1_v1", code: "SN 1 – Vagga 1", titlePali: "Oghataraṇa Vagga", titleVi: "I. Phẩm Cây Lau", titleEn: "A Reed" },
+                  { type: "sutta", id: "sn1_v2", code: "SN 1 – Vagga 2", titlePali: "Nandana Vagga", titleVi: "II. Phẩm Vườn Hoan Hỷ", titleEn: "The Garden of Delight" },
                   { type: "sutta", id: "sn1_v3", code: "SN 1 – Vagga 3", titlePali: "Satti Vagga", titleVi: "III. Phẩm Giáo Mác", titleEn: "The Spear Chapter" },
                   { type: "sutta", id: "sn1_v4", code: "SN 1 – Vagga 4", titlePali: "Satullapakāyika Vagga", titleVi: "IV. Phẩm Chúng Thiên Satullapakāyika", titleEn: "The Satullapakāyika Deities" },
                   { type: "sutta", id: "sn1_v5", code: "SN 1 – Vagga 5", titlePali: "Āditta Vagga", titleVi: "V. Phẩm Cháy", titleEn: "The Burning Chapter" },
@@ -1259,8 +1259,8 @@ window.SUTRA_INDEX = [
     labelEn: "Ekakanipāta (The Book of the Ones)",
     children: [
 
-    { type: "sutta", id: "an1_v1",  code: "AN 1 – Vagga 1",  titlePali: "Rūpādivagga",            titleVi: "01. Phẩm Sắc",                    titleEn: "Form and Related Phenomena" },
-    { type: "sutta", id: "an1_v2",  code: "AN 1 – Vagga 2",  titlePali: "Nīvaraṇappahānavagga",   titleVi: "02. Phẩm Đoạn Triền Cái",       titleEn: "Abandoning the Hindrances" },
+    { type: "sutta", id: "an1_v1",  code: "AN 1 – Vagga 1",  titlePali: "Rūpādivagga",            titleVi: "01. Phẩm Sắc - Những Điều Chiếm Lĩnh Tâm Trí",  titleEn: "The Chapter on What Occupies the Mind" },
+    { type: "sutta", id: "an1_v2",  code: "AN 1 – Vagga 2",  titlePali: "Nīvaraṇappahānavagga",   titleVi: "02. Phẩm Đoạn Trừ Các Chướng Ngại",       titleEn: "The Chapter on Giving Up the Hindrances" },
     { type: "sutta", id: "an1_v3",  code: "AN 1 – Vagga 3",  titlePali: "Akammaniyavagga",        titleVi: "03. Phẩm Khó Sử Dụng",          titleEn: "The Unworkable Mind" },
     { type: "sutta", id: "an1_v4",  code: "AN 1 – Vagga 4",  titlePali: "Adantavagga",            titleVi: "04. Phẩm Không Điều Phục",     titleEn: "The Untamed" },
     { type: "sutta", id: "an1_v5",  code: "AN 1 – Vagga 5",  titlePali: "Pabhassaravagga",        titleVi: "05. Phẩm Đầy Thượng và Trong Sáng", titleEn: "The Luminous Mind" },
