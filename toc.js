@@ -234,17 +234,11 @@ window.SUTRA_INDEX = [
     labelEn: "Saṃyutta Nikāya - Connected Discourses",
     children: [
       {
-        /* Tập I – SN 1–11: level thứ 2 */
-        type: "group",
-        key: "SN1",
-        labelVi: "Tập I: Thiên Có Kệ",
-        labelEn: "Sagāthāvagga (Verses)",
-                children: [ 
-                {
+       
                 type: "group",
                 key: "SSN1",
-                labelVi: "Chương Một: Tương Ưng Chư Thiên",
-                labelEn: "Devatā Saṃyutta",
+                labelVi: "Chủ đề 1: Chư Thiên",
+                labelEn: "I. Devatā Saṃyutta",
                 children: [
                   { type: "sutta", id: "sn1_v1", code: "SN 1 – Vagga 1", titlePali: "Oghataraṇa Vagga", titleVi: "I. Phẩm Cây Lau", titleEn: "A Reed" },
                   { type: "sutta", id: "sn1_v2", code: "SN 1 – Vagga 2", titlePali: "Nandana Vagga", titleVi: "II. Phẩm Vườn Hoan Hỷ", titleEn: "The Garden of Delight" },
@@ -258,8 +252,8 @@ window.SUTRA_INDEX = [
                  },{
                 type: "group",
                 key: "SSN2",
-                labelVi: "Chương Hai: Tương Ưng Thiên Tử",
-                labelEn: "Devaputta Saṃyutta",
+                labelVi: "Chủ đề 2: Thiên Tử",
+                labelEn: "II. Devaputta Saṃyutta",
                 children: [
                   {
                     type: "sutta",
@@ -291,7 +285,7 @@ window.SUTRA_INDEX = [
               {
                 type: "group",
                 key: "SSN3",
-                labelVi: "Chương Ba: Tương Ưng Kosala",
+                labelVi: "Chủ đề 3: Kosala",
                 labelEn: "Kosala Saṃyutta",
                 children: [
                   {
@@ -324,7 +318,7 @@ window.SUTRA_INDEX = [
               {
                 type: "group",
                 key: "SSN4",
-                labelVi: "Chương Bốn: Tương Ưng Ác Ma",
+                labelVi: "Chủ đề 4: Mara",
                 labelEn: "Māra Saṃyutta",
                 children: [
                   {
@@ -357,7 +351,7 @@ window.SUTRA_INDEX = [
               {
                 type: "group",
                 key: "SSN5",
-                labelVi: "Chương Năm: Tương Ưng Tỷ-kheo-ni",
+                labelVi: "Chủ đề 5: Tỷ-kheo-ni",
                 labelEn: "Bhikkhunī Saṃyutta",
                 children: [
                   {
@@ -374,7 +368,7 @@ window.SUTRA_INDEX = [
               {
                 type: "group",
                 key: "SSN6",
-                labelVi: "Chương Sáu: Tương Ưng Phạm Thiên",
+                labelVi: "Chủ đề 6: Phạm Thiên",
                 labelEn: "Brahmā Saṃyutta",
                 children: [
                   {
@@ -399,7 +393,7 @@ window.SUTRA_INDEX = [
               {
                 type: "group",
                 key: "SSN7",
-                labelVi: "Chương Bảy: Tương Ưng Bà-la-môn",
+                labelVi: "Chủ đề 7: Bà-la-môn",
                 labelEn: "Brāhmaṇa Saṃyutta",
                 children: [
                   {
@@ -424,7 +418,7 @@ window.SUTRA_INDEX = [
               {
                 type: "group",
                 key: "SSN8",
-                labelVi: "Chương Tám: Tương Ưng Trưởng Lão Vaṅgīsa",
+                labelVi: "Chủ đề 8: Trưởng Lão Vaṅgīsa",
                 labelEn: "Vaṅgīsa Saṃyutta",
                 children: [
                   {
@@ -441,7 +435,7 @@ window.SUTRA_INDEX = [
               {
                 type: "group",
                 key: "SSN9",
-                labelVi: "Chương Chín: Tương Ưng Rừng",
+                labelVi: "Chủ đề 9: Rừng",
                 labelEn: "Vana Saṃyutta",
                 children: [
                   {
@@ -458,7 +452,7 @@ window.SUTRA_INDEX = [
               {
                 type: "group",
                 key: "SSN10",
-                labelVi: "Chương Mười: Tương Ưng Dạ Xoa",
+                labelVi: "Chủ đề 10: Dạ Xoa",
                 labelEn: "Yakkha Saṃyutta",
                 children: [
                   {
@@ -475,7 +469,7 @@ window.SUTRA_INDEX = [
               {
                 type: "group",
                 key: "SSN11",
-                labelVi: "Chương Mười Một: Tương Ưng Sakka",
+                labelVi: "Chủ đề 11:  Sakka",
                 labelEn: "Sakka Saṃyutta",
                 children: [
                   {
@@ -504,19 +498,14 @@ window.SUTRA_INDEX = [
                   }
                 ]
               }
-        ]
-      },
-      {
-        type: "group",
-        key: "SN2",
-       labelVi: "Tập II: Thiên Nhân Duyên",
-       labelEn: "Nidānavagga (Causation)",
-        children: [
+        
+      ,
+     
 
     {
       type: "group",
       key: "SSN12",
-      labelVi: "Chương Mười Hai: Tương Ưng Duyên Khởi",
+      labelVi: "Chủ đề 12: Duyên Khởi",
       labelEn: "Nidāna Saṃyutta",
       children: [
         { type: "sutta", id: "sn12_v1", code: "SN 12 – Vagga 1", titlePali: "Buddha Vagga", titleVi: "I. Phẩm Phật", titleEn: "The Buddha Chapter" },
@@ -530,7 +519,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN13",
-      labelVi: "Chương Mười Ba: Tương Ưng Uẩn",
+      labelVi: "Chủ đề 13: Uẩn Khandha",
       labelEn: "Khandha Saṃyutta",
       children: [
         { type: "sutta", id: "sn13_v1", code: "SN 13 – Vagga 1", titlePali: "Paṭhama Vagga", titleVi: "I. Phẩm Thứ Nhất", titleEn: "First Chapter" }
@@ -540,7 +529,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN14",
-      labelVi: "Chương Mười Bốn: Tương Ưng Giới",
+      labelVi: "Chủ đề 14: Giới",
       labelEn: "Dhātu Saṃyutta",
       children: [
         { type: "sutta", id: "sn14_v1", code: "SN 14 – Vagga 1", titlePali: "Paṭhama Vagga", titleVi: "I. Phẩm Thứ Nhất", titleEn: "First Chapter" }
@@ -550,7 +539,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN15",
-      labelVi: "Chương Mười Lăm: Tương Ưng Vô Ngã",
+      labelVi: "Chủ đề 15: Vô Ngã",
       labelEn: "Anamatagga Saṃyutta",
       children: [
         { type: "sutta", id: "sn15_v1", code: "SN 15 – Vagga 1", titlePali: "Paṭhama Vagga", titleVi: "I. Phẩm Luân Hồi Không Bờ Bến", titleEn: "The Beginningless Chapter" }
@@ -560,7 +549,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN16",
-      labelVi: "Chương Mười Sáu: Tương Ưng A-nậu-đa-la",
+      labelVi: "Chủ đề 16: A-nậu-đa-la",
       labelEn: "Kassapa Saṃyutta",
       children: [
         { type: "sutta", id: "sn16_v1", code: "SN 16 – Vagga 1", titlePali: "Kassapa Vagga", titleVi: "I. Phẩm Ca Diếp", titleEn: "The Kassapa Chapter" }
@@ -570,7 +559,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN17",
-      labelVi: "Chương Mười Bảy: Tương Ưng Lợi Dưỡng",
+      labelVi: "Chủ đề 17: Lợi Dưỡng",
       labelEn: "Lābhasakkāra Saṃyutta",
       children: [
         { type: "sutta", id: "sn17_v1", code: "SN 17 – Vagga 1", titlePali: "Paṭhama Vagga", titleVi: "I. Phẩm Lợi Dưỡng", titleEn: "Gain and Honor Chapter" }
@@ -580,7 +569,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN18",
-      labelVi: "Chương Mười Tám: Tương Ưng Rāhula",
+      labelVi: "Chủ đề 18: Rāhula",
       labelEn: "Rāhula Saṃyutta",
       children: [
         { type: "sutta", id: "sn18_v1", code: "SN 18 – Vagga 1", titlePali: "Rāhula Vagga", titleVi: "I. Phẩm Rāhula", titleEn: "The Rāhula Chapter" }
@@ -590,7 +579,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN19",
-      labelVi: "Chương Mười Chín: Tương Ưng Lakkhaṇa",
+      labelVi: "Chủ đề 19:  Lakkhaṇa",
       labelEn: "Lakkhaṇa Saṃyutta",
       children: [
         { type: "sutta", id: "sn19_v1", code: "SN 19 – Vagga 1", titlePali: "Lakkhaṇa Vagga", titleVi: "I. Phẩm Lakkhaṇa", titleEn: "The Lakkhaṇa Chapter" }
@@ -600,7 +589,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN20",
-      labelVi: "Chương Hai Mươi: Tương Ưng Ma-ha Kaccāyana",
+      labelVi: "Chủ đề 20: Ma-ha Kaccāyana",
       labelEn: "Mahākaccāna Saṃyutta",
       children: [
         { type: "sutta", id: "sn20_v1", code: "SN 20 – Vagga 1", titlePali: "Mahākaccāna Vagga", titleVi: "I. Phẩm Mahākaccāna", titleEn: "The Mahākaccāna Chapter" }
@@ -610,26 +599,18 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN21",
-      labelVi: "Chương Hai Mươi Mốt: Tương Ưng Bhikkhu",
+      labelVi: "Chủ đề 21: Bhikkhu",
       labelEn: "Bhikkhu Saṃyutta",
       children: [
         { type: "sutta", id: "sn21_v1", code: "SN 21 – Vagga 1", titlePali: "Bhikkhu Vagga", titleVi: "I. Phẩm Các Tỳ-kheo", titleEn: "The Monks Chapter" }
       ]
-    }
-
-  ]
-      },
-        {
-        type: "group",
-        key: "SN3",
-        labelVi: "Tập III: Thiên Uẩn",
-    labelEn: "Khandhavagga (The Aggregates)",
-        children: [
+    },
+      
 
     {
       type: "group",
       key: "SSN22",
-      labelVi: "Chương Hai Mươi Hai: Tương Ưng Uẩn",
+      labelVi: "Chủ đề 22: Chủ Đề Uẩn",
       labelEn: "Khandha Saṃyutta",
       children: [
         {
@@ -646,7 +627,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN23",
-      labelVi: "Chương Hai Mươi Ba: Tương Ưng Rādha",
+      labelVi: "Chủ đề 23: Rādha",
       labelEn: "Rādha Saṃyutta",
       children: [
         {
@@ -663,7 +644,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN24",
-      labelVi: "Chương Hai Mươi Bốn: Tương Ưng Kiến",
+      labelVi: "Chủ đề 24: Kiến",
       labelEn: "Diṭṭhi Saṃyutta",
       children: [
         {
@@ -680,7 +661,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN25",
-      labelVi: "Chương Hai Mươi Lăm: Tương Ưng Nhập Lưu",
+      labelVi: "Chủ đề 25: Nhập Lưu",
       labelEn: "Okkantika Saṃyutta",
       children: [
         {
@@ -697,7 +678,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN26",
-      labelVi: "Chương Hai Mươi Sáu: Tương Ưng Khởi Lên",
+      labelVi: "Chủ đề 26: Khởi Lên",
       labelEn: "Uppāda Saṃyutta",
       children: [
         {
@@ -714,7 +695,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN27",
-      labelVi: "Chương Hai Mươi Bảy: Tương Ưng Phiền Não",
+      labelVi: "Chủ đề 27: Phiền Não",
       labelEn: "Kilesa Saṃyutta",
       children: [
         {
@@ -731,7 +712,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN28",
-      labelVi: "Chương Hai Mươi Tám: Tương Ưng Xá Lợi Phất",
+      labelVi: "Chủ đề 28: Xá Lợi Phất",
       labelEn: "Sāriputta Saṃyutta",
       children: [
         {
@@ -748,7 +729,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN29",
-      labelVi: "Chương Hai Mươi Chín: Tương Ưng Long",
+      labelVi: "Chủ đề 29: Rồng",
       labelEn: "Nāga Saṃyutta",
       children: [
         {
@@ -765,7 +746,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN30",
-      labelVi: "Chương Ba Mươi: Tương Ưng Kim Xí Điểu",
+      labelVi: "Chủ đề 30: Kim Xí Điểu",
       labelEn: "Supaṇṇa Saṃyutta",
       children: [
         {
@@ -782,7 +763,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN31",
-      labelVi: "Chương Ba Mươi Mốt: Tương Ưng Càn-thát-bà",
+      labelVi: "Chủ đề 31: Càn-thát-bà",
       labelEn: "Gandhabbakāya Saṃyutta",
       children: [
         {
@@ -799,7 +780,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN32",
-      labelVi: "Chương Ba Mươi Hai: Tương Ưng Mây",
+      labelVi: "Chủ đề 32: Chủ Đề Mây",
       labelEn: "Valāhaka Saṃyutta",
       children: [
         {
@@ -816,7 +797,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN33",
-      labelVi: "Chương Ba Mươi Ba: Tương Ưng Vacchagotta",
+      labelVi: "Chủ đề 23: Vacchagotta",
       labelEn: "Vacchagotta Saṃyutta",
       children: [
         {
@@ -833,7 +814,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN34",
-      labelVi: "Chương Ba Mươi Bốn: Tương Ưng Thiền",
+      labelVi: "Chủ đề 34: Thiền",
       labelEn: "Jhāna Saṃyutta",
       children: [
         {
@@ -845,21 +826,13 @@ window.SUTRA_INDEX = [
           titleEn: "Meditation Chapter"
         }
       ]
-    }
-
-  ]
-      },
-        {
-        type: "group",
-        key: "SN4",
-      labelVi: "Tập IV: Thiên Sáu Xứ",
-      labelEn: "Saḷāyatanavagga (The Six Sense Bases)",
-        children: [
+    },
+       
 
     {
       type: "group",
       key: "SSN35",
-      labelVi: "Chương Ba Mươi Lăm: Tương Ưng Sáu Xứ",
+      labelVi: "Chủ đề 35: Sáu Xứ",
       labelEn: "Saḷāyatana Saṃyutta",
       children: [
         {
@@ -876,7 +849,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN36",
-      labelVi: "Chương Ba Mươi Sáu: Tương Ưng Thọ",
+      labelVi: "Chủ đề 36: Thọ",
       labelEn: "Vedanā Saṃyutta",
       children: [
         {
@@ -893,7 +866,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN37",
-      labelVi: "Chương Ba Mươi Bảy: Tương Ưng Bồ-tát Metteyya",
+      labelVi: "Chủ đề 37: Bồ-tát Metteyya",
       labelEn: "Mātugāma Saṃyutta",
       children: [
         {
@@ -910,7 +883,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN38",
-      labelVi: "Chương Ba Mươi Tám: Tương Ưng Đạo Sư",
+      labelVi: "Chủ đề 38: Đạo Sư",
       labelEn: "Jambukhādaka Saṃyutta",
       children: [
         {
@@ -927,7 +900,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN39",
-      labelVi: "Chương Ba Mươi Chín: Tương Ưng Sư Tử Hống",
+      labelVi: "Chủ đề 39: Sư Tử Hống",
       labelEn: "Sāḷha Saṃyutta",
       children: [
         {
@@ -944,7 +917,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN40",
-      labelVi: "Chương Bốn Mươi: Tương Ưng Citta",
+      labelVi: "Chủ đề 40: Cư sĩ Citta",
       labelEn: "Citta Saṃyutta",
       children: [
         {
@@ -961,7 +934,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN41",
-      labelVi: "Chương Bốn Mươi Mốt: Tương Ưng Thôn Trưởng",
+      labelVi: "Chủ đề 41: Thôn Trưởng",
       labelEn: "Gāmaṇisaṃyutta",
       children: [
         {
@@ -978,7 +951,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN42",
-      labelVi: "Chương Bốn Mươi Hai: Tương Ưng Gia Chủ",
+      labelVi: "Chủ đề 42: Gia Chủ",
       labelEn: "Gahaṭṭha Saṃyutta",
       children: [
         {
@@ -995,7 +968,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN43",
-      labelVi: "Chương Bốn Mươi Ba: Tương Ưng Niết-bàn",
+      labelVi: "Chủ đề 43: Niết-bàn",
       labelEn: "Nibbāna Saṃyutta",
       children: [
         {
@@ -1012,7 +985,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN44",
-      labelVi: "Chương Bốn Mươi Bốn: Tương Ưng Vô Ký",
+      labelVi: "Chủ đề 44: Vô Ký",
       labelEn: "Abyākata Saṃyutta",
       children: [
         {
@@ -1024,21 +997,13 @@ window.SUTRA_INDEX = [
           titleEn: "Unanswered Questions Chapter"
         }
       ]
-    }
-
-  ]
-      },
-        {
-        type: "group",
-        key: "SN5",
-     labelVi: "Tập V: Thiên Lớn",
-    labelEn: "Mahāvagga (The Great Chapter)",
-        children: [
+    },
+       
 
     {
       type: "group",
       key: "SSN45",
-      labelVi: "Chương Bốn Mươi Lăm: Tương Ưng Đạo",
+      labelVi: "Chủ đề 45: Đạo",
       labelEn: "Magga Saṃyutta",
       children: [
         {
@@ -1055,7 +1020,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN46",
-      labelVi: "Chương Bốn Mươi Sáu: Tương Ưng Giác Chi",
+      labelVi: "Chủ đề 46: Giác Chi",
       labelEn: "Bojjhaṅga Saṃyutta",
       children: [
         {
@@ -1072,7 +1037,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN47",
-      labelVi: "Chương Bốn Mươi Bảy: Tương Ưng Niệm Xứ",
+      labelVi: "Chủ đề 47: Niệm Xứ",
       labelEn: "Satipaṭṭhāna Saṃyutta",
       children: [
         {
@@ -1089,7 +1054,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN48",
-      labelVi: "Chương Bốn Mươi Tám: Tương Ưng Quyền",
+      labelVi: "Chủ đề 48: Quyền",
       labelEn: "Indriya Saṃyutta",
       children: [
         {
@@ -1106,7 +1071,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN49",
-      labelVi: "Chương Bốn Mươi Chín: Tương Ưng Chánh Cần",
+      labelVi: "Chủ đề 49: Chánh Cần",
       labelEn: "Sammappadhāna Saṃyutta",
       children: [
         {
@@ -1123,7 +1088,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN50",
-      labelVi: "Chương Năm Mươi: Tương Ưng Lực",
+      labelVi: "Chủ đề 50: Lực",
       labelEn: "Bala Saṃyutta",
       children: [
         {
@@ -1140,7 +1105,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN51",
-      labelVi: "Chương Năm Mươi Mốt: Tương Ưng Thần Túc",
+      labelVi: "Chủ đề 51: Thần Túc",
       labelEn: "Iddhipāda Saṃyutta",
       children: [
         {
@@ -1157,7 +1122,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN52",
-      labelVi: "Chương Năm Mươi Hai: Tương Ưng Anuruddha",
+      labelVi: "Chủ đề 52: Anuruddha",
       labelEn: "Anuruddha Saṃyutta",
       children: [
         {
@@ -1174,7 +1139,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN53",
-      labelVi: "Chương Năm Mươi Ba: Tương Ưng Thiền",
+      labelVi: "Chủ đề 53: Thiền",
       labelEn: "Jhāna Saṃyutta",
       children: [
         {
@@ -1191,7 +1156,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN54",
-      labelVi: "Chương Năm Mươi Bốn: Tương Ưng Niệm Hơi Thở",
+      labelVi: "Chủ đề 54: Niệm Hơi Thở",
       labelEn: "Ānāpāna Saṃyutta",
       children: [
         {
@@ -1208,7 +1173,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN55",
-      labelVi: "Chương Năm Mươi Lăm: Tương Ưng Nhập Lưu",
+      labelVi: "Chủ đề 55: Nhập Lưu",
       labelEn: "Sotāpatti Saṃyutta",
       children: [
         {
@@ -1225,7 +1190,7 @@ window.SUTRA_INDEX = [
     {
       type: "group",
       key: "SSN56",
-      labelVi: "Chương Năm Mươi Sáu: Tương Ưng Thánh Đế",
+      labelVi: "Chủ đề 56: Thánh Đế",
       labelEn: "Sacca Saṃyutta",
       children: [
         {
@@ -1238,12 +1203,9 @@ window.SUTRA_INDEX = [
         }
       ]
     }
-
-  ]
-      }
-
-    ]
-  },
+ 
+]
+},
 
   /* ====================== AṄGUTTARA NIKĀYA (AN) ====================== */
   {
@@ -1255,7 +1217,7 @@ window.SUTRA_INDEX = [
   {
     type: "group",
     key: "AN1",
-    labelVi: "Chương Một Pháp",
+    labelVi: "Nhóm Một Pháp",
     labelEn: "Ekakanipāta (The Book of the Ones)",
     children: [
 
@@ -1287,7 +1249,7 @@ window.SUTRA_INDEX = [
   {
     type: "group",
     key: "AN2",
-    labelVi: "Chương Hai Pháp",
+    labelVi: "Nhóm Hai Pháp",
     labelEn: "Dukanipāta (The Book of the Twos)",
     children:  [
 { type: "sutta", id: "an2_v1", code: "AN 2 – Vagga 1", titlePali: "Vassūpanāyikavagga", titleVi: "01. Phẩm Hình Phạt", titleEn: "Rains Residence / Punishment" },
@@ -1312,7 +1274,7 @@ window.SUTRA_INDEX = [
   {
     type: "group",
     key: "AN3",
-    labelVi: "Chương Ba Pháp",
+    labelVi: "Nhóm Ba Pháp",
     labelEn: "Tikanipāta (The Book of the Threes)",
     children: [
    { type: "sutta", id: "an3_v1", code: "AN 3 – Vagga 1", titlePali: "Balavagga", titleVi: "01. Phẩm Người Ngu", titleEn: "Fools Chapter" },
@@ -1336,7 +1298,7 @@ window.SUTRA_INDEX = [
   {
     type: "group",
     key: "AN4",
-    labelVi: "Chương Bốn Pháp",
+    labelVi: "Nhóm Bốn Pháp",
     labelEn: "Catukkanipāta (The Book of the Fours)",
     children:[
   { type: "sutta", id: "an4_v1", code: "AN 4 – Vagga 1", titlePali: "Bhandagāma­vagga", titleVi: "01. Phẩm Bhandagāma", titleEn: "Bhandagāma Chapter" },
@@ -1372,7 +1334,7 @@ window.SUTRA_INDEX = [
   {
     type: "group",
     key: "AN5",
-    labelVi: "Chương Năm Pháp",
+    labelVi: "Nhóm Năm Pháp",
     labelEn: "Pañcakanipāta (The Book of the Fives)",
     children:[
 
@@ -1411,7 +1373,7 @@ window.SUTRA_INDEX = [
   {
     type: "group",
     key: "AN6",
-    labelVi: "Chương Sáu Pháp",
+    labelVi: "Nhóm Sáu Pháp",
     labelEn: "Chakkanipāta (The Book of the Sixes)",
     children: [
    { type: "sutta", id: "an6_v1", code: "AN 6 – Vagga 1", titlePali: "Ahuneyyavagga", titleVi: "01. Phẩm Đáng Được Cung Kính", titleEn: "Worthy of Gifts Chapter" },
@@ -1431,7 +1393,7 @@ window.SUTRA_INDEX = [
   {
     type: "group",
     key: "AN7",
-    labelVi: "Chương Bảy Pháp",
+    labelVi: "Nhóm Bảy Pháp",
     labelEn: "Sattakanipāta (The Book of the Sevens)",
     children: [
 { type: "sutta", id: "an7_v1", code: "AN 7 – Vagga 1", titlePali: "Dhanavagga", titleVi: "01. Phẩm Tài Sản", titleEn: "Wealth Chapter" },
@@ -1450,7 +1412,7 @@ window.SUTRA_INDEX = [
   {
     type: "group",
     key: "AN8",
-    labelVi: "Chương Tám Pháp",
+    labelVi: "Nhóm Tám Pháp",
     labelEn: "Aṭṭhakanipāta (The Book of the Eights)",
     children:  [
 { type: "sutta", id: "an8_v1", code: "AN 8 – Vagga 1", titlePali: "Metta­vagga", titleVi: "01. Phẩm Từ", titleEn: "Loving-kindness Chapter" },
@@ -1469,7 +1431,7 @@ window.SUTRA_INDEX = [
   {
     type: "group",
     key: "AN9",
-    labelVi: "Chương Chín Pháp",
+    labelVi: "Nhóm Chín Pháp",
     labelEn: "Navakanipāta (The Book of the Nines)",
     children: [
 { type: "sutta", id: "an9_v1", code: "AN 9 – Vagga 1", titlePali: "Sambodhavagga", titleVi: "01. Phẩm Chánh Giác", titleEn: "Enlightenment Chapter" },
@@ -1489,7 +1451,7 @@ window.SUTRA_INDEX = [
   {
     type: "group",
     key: "AN10",
-    labelVi: "Chương Mười Pháp",
+    labelVi: "Nhóm Mười Pháp",
     labelEn: "Dasakanipāta (The Book of the Tens)",
     children: [
 
@@ -1525,7 +1487,7 @@ window.SUTRA_INDEX = [
   {
     type: "group",
     key: "AN11",
-    labelVi: "Chương Mười Một Pháp",
+    labelVi: "Nhóm Mười Một Pháp",
     labelEn: "Ekādasakanipāta (The Book of the Elevens)",
     children:[
 
