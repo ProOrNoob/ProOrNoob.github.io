@@ -1,6 +1,6 @@
 window.BILARA = window.BILARA || {};
-window.BILARA["sn3_v1"] = window.BILARA["sn3_v1"] || {};
-window.BILARA["sn3_v1"]["vi"] = {
+window.BILARA["sn3_v2"] = window.BILARA["sn3_v2"] || {};
+window.BILARA["sn3_v2"]["vi"] = {
   "sn3.11:0.1": "Tương Ưng Bộ 3.11",
   "sn3.11:0.2": "2. Phẩm Thứ Hai",
   "sn3.11:0.3": "Kinh Bảy Người Bện Tóc",
@@ -393,5 +393,5 @@ window.BILARA["sn3_v1"]["vi"] = {
   "sn3.20:9.5": "Hai kinh về người không có con thừa kế",
   "sn3.20:9.6": "Đó là tên gọi của phẩm này."
 }
-window.BILARA["sn3_v1"]["vi"]["sn3_v1:source"] =
+window.BILARA["sn3_v2"]["vi"]["sn3_v2:source"] =
 "Dịch từ nguồn Pali https://suttacentral.net/ .Trong quá trình dịch có thể có sai sót, vui lòng đối chiếu bản gốc Pali, và tiếng Anh. Mọi góp ý chỉnh sửa xin vui lòng email: tuanctvn199@gmail.com";

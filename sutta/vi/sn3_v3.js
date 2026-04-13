@@ -1,6 +1,6 @@
 window.BILARA = window.BILARA || {};
-window.BILARA["sn3_v1"] = window.BILARA["sn3_v1"] || {};
-window.BILARA["sn3_v1"]["vi"] = {
+window.BILARA["sn3_v3"] = window.BILARA["sn3_v3"] || {};
+window.BILARA["sn3_v3"]["vi"] = {
   "sn3.21:0.1": "Tương Ưng Bộ Kinh 3.21",
   "sn3.21:0.2": "Chương 3. Phẩm Thứ Ba",
   "sn3.21:0.3": "Kinh Bốn Hạng Người (Puggalasutta)",
@@ -295,5 +295,5 @@ window.BILARA["sn3_v1"]["vi"] = {
   "sn3.25:11.4": "đây là năm bài kinh thuộc phẩm Kosala thứ ba.",
   "sn3.25:11.5": "Hết Tương Ưng Kosala."
 }
-window.BILARA["sn3_v1"]["vi"]["sn3_v1:source"] =
+window.BILARA["sn3_v3"]["vi"]["sn3_v3:source"] =
 "Dịch từ nguồn Pali https://suttacentral.net/ .Trong quá trình dịch có thể có sai sót, vui lòng đối chiếu bản gốc Pali, và tiếng Anh. Mọi góp ý chỉnh sửa xin vui lòng email: tuanctvn199@gmail.com";
