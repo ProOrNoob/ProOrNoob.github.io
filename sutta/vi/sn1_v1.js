@@ -21,6 +21,8 @@ window.BILARA["sn1_v1"]["vi"] = {
   "sn1.1:3.2": "Bậc Đạo Sư tán đồng.",
   "sn1.1:3.3": "Vị thiên nhân ấy nghĩ:",
   "sn1.1:3.4": "Bậc Đạo Sư đã tán đồng ta', liền đảnh lễ Thế Tôn, nhiễu quanh theo chiều phải rồi biến mất tại chỗ.",
+  "sn1.1:note": "Đây là phần ghi chú không có trong kinh, xin lưu ý ...",
+  "sn1.1:note1": "",
   "sn1.2:0.1": "Tương Ưng Bộ 1.2",
   "sn1.2:0.2": "1. Phẩm Cây Lau",
   "sn1.2:0.3": "Kinh Giải Thoát",
@@ -152,4 +154,4 @@ window.BILARA["sn1_v1"]["vi"] = {
   "sn1.10:5.6": "đó là tên gọi của phẩm này."
 }
 window.BILARA["sn1_v1"]["vi"]["sn1_v1:source"] =
-"Dịch từ nguồn Pali https://suttacentral.net/";
+"Dịch từ nguồn Pali https://suttacentral.net/ .Trong quá trình dịch có thể có sai sót, vui lòng đối chiếu bản gốc Pali, và tiếng Anh. Mọi góp ý chỉnh sửa xin vui lòng email: tuanctvn199@gmail.com";

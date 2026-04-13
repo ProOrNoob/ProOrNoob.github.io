@@ -248,12 +248,12 @@ window.SUTRA_INDEX = [
                 children: [
                   { type: "sutta", id: "sn1_v1", code: "SN 1 – Vagga 1", titlePali: "Oghataraṇa Vagga", titleVi: "I. Phẩm Cây Lau", titleEn: "A Reed" },
                   { type: "sutta", id: "sn1_v2", code: "SN 1 – Vagga 2", titlePali: "Nandana Vagga", titleVi: "II. Phẩm Vườn Hoan Hỷ", titleEn: "The Garden of Delight" },
-                  { type: "sutta", id: "sn1_v3", code: "SN 1 – Vagga 3", titlePali: "Satti Vagga", titleVi: "III. Phẩm Giáo Mác", titleEn: "The Spear Chapter" },
-                  { type: "sutta", id: "sn1_v4", code: "SN 1 – Vagga 4", titlePali: "Satullapakāyika Vagga", titleVi: "IV. Phẩm Chúng Thiên Satullapakāyika", titleEn: "The Satullapakāyika Deities" },
-                  { type: "sutta", id: "sn1_v5", code: "SN 1 – Vagga 5", titlePali: "Āditta Vagga", titleVi: "V. Phẩm Cháy", titleEn: "The Burning Chapter" },
-                  { type: "sutta", id: "sn1_v6", code: "SN 1 – Vagga 6", titlePali: "Jarā Vagga", titleVi: "VI. Phẩm Già", titleEn: "The Old Age Chapter" },
-                  { type: "sutta", id: "sn1_v7", code: "SN 1 – Vagga 7", titlePali: "Addha Vagga", titleVi: "VII. Phẩm Con Đường", titleEn: "The Path Chapter" },
-                  { type: "sutta", id: "sn1_v8", code: "SN 1 – Vagga 8", titlePali: "Citta Vagga", titleVi: "VIII. Phẩm Tâm", titleEn: "The Mind Chapter" }
+                  { type: "sutta", id: "sn1_v3", code: "SN 1 – Vagga 3", titlePali: "Satti Vagga", titleVi: "III.  Phẩm Về Mũi Tên", titleEn: "A Sword" },
+                  { type: "sutta", id: "sn1_v4", code: "SN 1 – Vagga 4", titlePali: "Satullapakāyika Vagga", titleVi: "IV. Phẩm Nhóm Thiên Thần Satullapa", titleEn: " The Host of a Hundred Felicities" },
+                  { type: "sutta", id: "sn1_v5", code: "SN 1 – Vagga 5", titlePali: "Āditta Vagga", titleVi: "V.  Phẩm Bốc Lửa", titleEn: "On Fire" },
+                  { type: "sutta", id: "sn1_v6", code: "SN 1 – Vagga 6", titlePali: "Jarā Vagga", titleVi: "VI. Phẩm Già Nua", titleEn: "Old Age" },
+                  { type: "sutta", id: "sn1_v7", code: "SN 1 – Vagga 7", titlePali: "Addha Vagga", titleVi: "VII. Phẩm Con Đường", titleEn: "Overcome" },
+                  { type: "sutta", id: "sn1_v8", code: "SN 1 – Vagga 8", titlePali: "Citta Vagga", titleVi: "VIII. Phẩm Chặt Đứt", titleEn: "Slain" }
                 ]
                  },{
                 type: "group",
