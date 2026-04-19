@@ -1734,10 +1734,17 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
 }
 
 @media (max-width: 720px) {
-  .bar-center::before, .bar-center::after { display: none; }
-  .bar-center { font-size: 11px; letter-spacing: 0.12em; gap: 0; }
-  .bar-in { padding: 10px 14px; gap: 10px; }
-  .bar-right { gap: 0; }
+  /* Mobile: ẩn dedication ở top-bar (tránh chồng lấp với 3 icons 2 bên);
+     user vẫn thấy Namo tassa đầy đủ ở Welcome screen. */
+  .bar-center { display: none; }
+  .bar-in {
+    padding: 6px 12px;
+    gap: 10px;
+    grid-template-columns: auto 1fr auto;
+  }
+  .bar-right { gap: 2px; }
+  /* Ẩn dải epigraph dưới footer trên mobile — tiết kiệm chiều cao */
+  .epigraph { display: none; }
   .header { padding: 24px 22px 20px; }
   #title { font-size: calc(26px * var(--sutra-font-scale)); }
   #subtitle { font-size: calc(14px * var(--sutra-font-scale)); }
@@ -1778,11 +1785,12 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
   .epigraph-inner { gap: 6px; }
   #sutraMenuPanel { width: calc(100vw - 20px); max-height: 86vh; }
   #settingsPanel { right: 10px !important; bottom: 56px !important; width: calc(100vw - 20px); }
-  #btnBackTop { right: 14px; bottom: 62px; width: 38px; height: 38px; }
+  /* Back-to-top dời lên cao hơn footer để ngón tay không chạm nhầm nút Thư viện / Cài đặt */
+  #btnBackTop { right: 14px; bottom: 110px; width: 38px; height: 38px; }
 }
 
 @media (max-width: 500px) {
-  .bar-in { padding: 8px 12px; }
+  .bar-in { padding: 6px 10px; }
   .header { padding: 22px 18px 18px; }
   #title { font-size: calc(24px * var(--sutra-font-scale)); }
   #subtitle { font-size: calc(14px * var(--sutra-font-scale)); }
@@ -2068,7 +2076,7 @@ button:not(:focus-visible), a:not(:focus-visible),
   <div class="guide-dialog"></div>
 </div>
 
-<script src="toc.js?v=2" defer></script>
-<script src="app.js?v=2" defer></script>
+<script src="toc.js?v=3" defer></script>
+<script src="app.js?v=5" defer></script>
 </body>
 </html>

@@ -1856,7 +1856,22 @@ mql.addEventListener('change', updateVisibleCols);
     resetTts(true, true);
   }
 
-  if (btnReadTts)  btnReadTts.onclick  = startTtsByUiLang;
+  // Warm-up trick: Chrome Android / Safari iOS yêu cầu speechSynthesis.speak()
+  // phải gọi ĐỒNG BỘ trong event handler. Nếu có await trước khi speak() thật,
+  // user gesture bị mất → TTS fail âm thầm.
+  // Giải pháp: speak() ngay 1 utterance rỗng (volume 0) để "unlock" TTS cho phiên này,
+  // rồi mới chạy logic async như bình thường.
+  var ttsUnlocked = false;
+  function unlockTts() {
+    if (ttsUnlocked || !synthSupported || !synth) return;
+    try {
+      var warm = new SpeechSynthesisUtterance('');
+      warm.volume = 0;
+      synth.speak(warm);
+      ttsUnlocked = true;
+    } catch (e) { /* ignore */ }
+  }
+  if (btnReadTts)  btnReadTts.onclick  = function () { unlockTts(); startTtsByUiLang(); };
   if (btnPauseTts) btnPauseTts.onclick = pauseTtsByUiLang;
   if (btnStopTts)  btnStopTts.onclick  = stopTtsByUiLang;
 
