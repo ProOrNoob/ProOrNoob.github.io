@@ -195,6 +195,7 @@
   var titleEl     = $('title');
   var subtitleEl  = $('subtitle');
   var grid        = $('sutraGrid');
+  var readerArea  = $('readerArea') || grid;  // scroll container; fallback to grid
 
   var btnSutraMenu  = $('sidebar-btn');
   var btnSettings   = $('btnSettings');
@@ -216,7 +217,10 @@
   var btnReadTts   = $('btnReadTts');
   var btnPauseTts  = $('btnPauseTts');
   var btnStopTts   = $('btnStopTts');
-  var btnFullWidth = $('btnFullWidth');
+  var btnSegKey    = $('btnSegKey');
+  var btnSegHdr    = $('btnSegHdr');
+  var superTitleEl = $('supertitle');
+  var titleMetaEl  = $('titleMeta');
 
   /* ============================================================
      State
@@ -238,8 +242,13 @@
   var KEY_VIEW     = 'sutra_view_prefs';
   var KEY_ANCHOR_K = function (id) { return 'scroll_anchor_key_' + id; };
   var KEY_ANCHOR_O = function (id) { return 'scroll_anchor_off_' + id; };
-  var WIDE_STORAGE_KEY = 'sutra_layout_wide';
-  var isWide = storage.get(WIDE_STORAGE_KEY) === '1';
+  var SEG_KEY_STORAGE_KEY = 'sutra_hide_seg_key';
+  var SEG_HDR_STORAGE_KEY = 'sutra_hide_seg_hdr';
+  var hideSegKey = storage.get(SEG_KEY_STORAGE_KEY) === '1';
+  // Column headers (PALI/ENG/TIẾNG VIỆT) default hidden — nhãn lặp lại quá nhiều.
+  // Lần đầu visit (storage === null) → ẩn; sau đó tôn trọng lựa chọn người dùng.
+  var rawSegHdr  = storage.get(SEG_HDR_STORAGE_KEY);
+  var hideSegHdr = rawSegHdr === null ? true : rawSegHdr === '1';
 
   /* ============================================================
      Single-language helpers
@@ -296,15 +305,16 @@
   /* ============================================================
      UI Language flags
      ============================================================ */
-  var FLAG_VI = '<svg viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" role="presentation" aria-hidden="true"><rect width="48" height="32" fill="#da251d"/><polygon fill="#ffde00" points="24,6 27.1,14.3 36,14.3 28.8,19.3 31.7,27 24,22.1 16.3,27 19.2,19.3 12,14.3 20.9,14.3"/></svg>';
-  var FLAG_EN = '<svg viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" role="presentation" aria-hidden="true"><rect width="48" height="32" fill="#012169"/><path d="M0 0 L20 13 H16 L0 3 Z M48 0 L28 13 H32 L48 3 Z M0 32 L20 19 H16 L0 29 Z M48 32 L28 19 H32 L48 29 Z" fill="#ffffff"/><path d="M0 0 L20 13 H17 L0 2 Z M48 0 L28 13 H31 L48 2 Z M0 32 L20 19 H17 L0 30 Z M48 32 L28 19 H31 L48 30 Z" fill="#c8102e"/><path d="M20 0 H28 V12 H48 V20 H28 V32 H20 V20 H0 V12 H20 Z" fill="#ffffff"/><path d="M21.5 0 H26.5 V13.5 H48 V18.5 H26.5 V32 H21.5 V18.5 H0 V13.5 H21.5 Z" fill="#c8102e"/></svg>';
-
+  // Ngôi sao 5 cánh đều: R=10 (outer), r≈3.82 (inner = R·(3−√5)/2), tâm (24,16)
+  // UI language toggle — hiển thị text "VI" / "EN" trong mono uppercase để hòa vào typography,
+  // không dùng cờ màu (quá nổi bật so với aesthetic monastic minimal).
   function renderUiLangFlag() {
     if (!btnUiLang) return;
-    btnUiLang.innerHTML = uiLang === 'en' ? FLAG_EN : FLAG_VI;
+    btnUiLang.innerHTML = '<span class="lang-code">' + (uiLang === 'en' ? 'EN' : 'VI') + '</span>';
     btnUiLang.setAttribute('aria-label', uiLang === 'en'
       ? 'Interface: English — click to switch to Vietnamese'
       : 'Giao diện: Tiếng Việt — bấm để chuyển sang English');
+    btnUiLang.setAttribute('title', uiLang === 'en' ? 'Switch to Tiếng Việt' : 'Chuyển sang English');
   }
 
   function applyUiLanguageToSearchUi() {
@@ -325,7 +335,8 @@
     setText('settingsLineHeightLabel',isEn ? 'Line spacing'        : 'Giãn dòng');
     setText('settingsTtsTitle',       isEn ? 'Read aloud'          : 'Đọc kinh');
     setText('settingsTtsUiLabel',     isEn ? 'Text-to-Speech'      : 'Text-to-Speech');
-    setText('settingsFullWidthLabel', isEn ? 'Full width'          : 'Toàn màn hình');
+    setText('settingsSegmentLabel',   isEn ? 'Segments'             : 'Phân đoạn');
+    setText('settingsSegmentSub',     isEn ? 'Show / hide'          : 'Hiện / ẩn');
 
     var note = $('settingsTtsNote');
     if (note) note.innerHTML = isEn
@@ -336,10 +347,12 @@
       ? '<span class="pill-icon">☰</span> Stacked'
       : '<span class="pill-icon">☰</span> Xếp dọc';
 
-    var btnFW = $('btnFullWidth');
-    if (btnFW) btnFW.innerHTML = isEn
-      ? '<span class="pill-icon">⛶</span> Full width'
-      : '<span class="pill-icon">⛶</span> Toàn màn hình';
+    if (btnSegHdr) btnSegHdr.innerHTML = isEn
+      ? '<span class="pill-icon">▦</span> Segment'
+      : '<span class="pill-icon">▦</span> Phân đoạn';
+    if (btnSegKey) btnSegKey.innerHTML = isEn
+      ? '<span class="pill-icon">#</span> Segment ID'
+      : '<span class="pill-icon">#</span> Mã đoạn';
 
     if (btnGuide)     btnGuide.setAttribute('aria-label',     isEn ? 'User guide'       : 'Hướng dẫn sử dụng');
     if (btnSutraMenu) btnSutraMenu.setAttribute('aria-label', isEn ? 'Sutta Index'      : 'Danh mục bài kinh');
@@ -348,8 +361,14 @@
     if (btnPauseTts)  btnPauseTts.setAttribute('aria-label',
       isEn ? 'Pause (current sentence will restart)' : 'Tạm dừng (câu hiện tại sẽ đọc lại từ đầu)');
 
-    var sideLabel = document.querySelector('#sidebar-btn .sidebar-label');
-    if (sideLabel) sideLabel.textContent = isEn ? 'Library' : 'Thư viện';
+    setText('sidebarBtnLabel',  isEn ? 'Library'  : 'Thư viện');
+    setText('btnSettingsLabel', isEn ? 'Settings' : 'Cài đặt');
+    setText('btnPrevLabel',     isEn ? 'Prev'     : 'Trước');
+    setText('btnNextLabel',     isEn ? 'Next'     : 'Sau');
+
+    var sidebarBtn = $('sidebar-btn');
+    if (sidebarBtn) sidebarBtn.setAttribute('title', isEn ? 'Library' : 'Thư viện');
+    if (btnSettings) btnSettings.setAttribute('title', isEn ? 'Settings' : 'Cài đặt');
   }
 
   function renderGuideDialog() {
@@ -358,8 +377,40 @@
     if (!dlg) return;
     var isEn = uiLang === 'en';
     dlg.innerHTML = isEn
-      ? '<h2>Quick guide</h2><em>Short instructions on how to use the sutta reader.</em><ul><li>📖 <strong>Sutta Index</strong>: open catalogue and choose a sutta.</li><li>🔎 <strong>Search</strong>: type name/ID/keyword to filter.</li><li>⚙ <strong>Settings</strong>: toggle languages, layout, TTS, font size, full width.</li><li>← → <strong>Prev / Next</strong>: navigate between suttas.</li><li>↑ <strong>Back to top</strong>: jump to top of sutta.</li><li>⏸ <strong>TTS note</strong>: pause restarts the current sentence (browser limitation).Please feel free to email: tuanctvn199@gmail.com</li></ul><button id="btnCloseGuide" type="button">Close</button>'
-      : '<h2>Hướng dẫn nhanh</h2><em>Một số hướng dẫn cơ bản để bạn sử dụng trang đọc kinh.</em><ul><li>📖 <strong>Danh mục bài kinh</strong>: mở mục lục và chọn bài.</li><li>🔎 <strong>Tìm kiếm</strong>: gõ tên/mã/từ khóa để lọc.</li><li>⚙ <strong>Cài đặt</strong>: bật/tắt ngôn ngữ, bố cục, TTS, cỡ chữ, full width.</li><li>← → <strong>Trước / Sau</strong>: chuyển bài kinh bằng nút điều hướng.</li><li>↑ <strong>Lên đầu</strong>: cuộn về đầu bài kinh.</li><li>⏸ <strong>Lưu ý TTS</strong>: tạm dừng sẽ đọc lại từ đầu câu (giới hạn của trình duyệt). Mọi góp ý xin vui lòng gửi về email: tuanctvn199@gmail.com</li></ul><button id="btnCloseGuide" type="button">Đóng</button>';
+      ? '<h2>Quick guide</h2><em>Short instructions on how to use the sutta reader.</em>' +
+        '<ul>' +
+          '<li>📖 <strong>Library</strong>: open the catalogue and pick a sutta.</li>' +
+          '<li>🔎 <strong>Search</strong>: type name / ID / keyword to filter.</li>' +
+          '<li>⚙ <strong>Settings</strong>: languages, layout (stack), segment labels, font size, TTS.</li>' +
+          '<li>🔗 <strong>Share</strong>: the URL hash (<code>#dn9</code>) reflects the current sutta — copy the page URL to share.</li>' +
+          '<li>⏸ <strong>TTS note</strong>: pause restarts the current sentence (browser limitation).</li>' +
+        '</ul>' +
+        '<h2 style="margin-top:14px;font-size:18px">Keyboard</h2>' +
+        '<ul>' +
+          '<li><kbd>J</kbd> / <kbd>K</kbd> — next / previous segment</li>' +
+          '<li><kbd>N</kbd> / <kbd>P</kbd> — next / previous sutta</li>' +
+          '<li><kbd>g</kbd> / <kbd>G</kbd> — top / bottom of sutta</li>' +
+          '<li><kbd>/</kbd> — open search · <kbd>?</kbd> — this guide · <kbd>Esc</kbd> — close</li>' +
+        '</ul>' +
+        '<em style="margin-top:8px">Feedback: tuanctvn199@gmail.com</em>' +
+        '<button id="btnCloseGuide" type="button">Close</button>'
+      : '<h2>Hướng dẫn nhanh</h2><em>Một số hướng dẫn cơ bản để sử dụng trang đọc kinh.</em>' +
+        '<ul>' +
+          '<li>📖 <strong>Thư viện</strong>: mở mục lục và chọn bài.</li>' +
+          '<li>🔎 <strong>Tìm kiếm</strong>: gõ tên / mã / từ khoá để lọc.</li>' +
+          '<li>⚙ <strong>Cài đặt</strong>: ngôn ngữ, bố cục, phân đoạn, cỡ chữ, TTS.</li>' +
+          '<li>🔗 <strong>Chia sẻ</strong>: địa chỉ URL (<code>#dn9</code>) tự cập nhật theo bài đang mở — sao chép link để chia sẻ.</li>' +
+          '<li>⏸ <strong>Lưu ý TTS</strong>: tạm dừng sẽ đọc lại từ đầu câu (giới hạn trình duyệt).</li>' +
+        '</ul>' +
+        '<h2 style="margin-top:14px;font-size:18px">Phím tắt</h2>' +
+        '<ul>' +
+          '<li><kbd>J</kbd> / <kbd>K</kbd> — đoạn sau / đoạn trước</li>' +
+          '<li><kbd>N</kbd> / <kbd>P</kbd> — bài sau / bài trước</li>' +
+          '<li><kbd>g</kbd> / <kbd>G</kbd> — đầu / cuối bài kinh</li>' +
+          '<li><kbd>/</kbd> — mở tìm · <kbd>?</kbd> — hướng dẫn · <kbd>Esc</kbd> — đóng</li>' +
+        '</ul>' +
+        '<em style="margin-top:8px">Góp ý: tuanctvn199@gmail.com</em>' +
+        '<button id="btnCloseGuide" type="button">Đóng</button>';
     var btnClose = $('btnCloseGuide');
     if (btnClose) btnClose.onclick = closeGuide;
   }
@@ -595,23 +646,31 @@ mql.addEventListener('change', updateVisibleCols);
   };
 
   /* ============================================================
-     Full width
+     Segment visibility (column header + segment ID)
      ============================================================ */
-  function applyWideLayout(on) {
-    isWide = !!on;
-    document.documentElement.classList.toggle('layout-wide', isWide);
-    if (btnFullWidth) {
-      btnFullWidth.classList.toggle('active', isWide);
-      btnFullWidth.setAttribute('aria-pressed', String(isWide));
+  function applySegmentVisibility() {
+    document.documentElement.classList.toggle('hide-seg-key', hideSegKey);
+    document.documentElement.classList.toggle('hide-seg-hdr', hideSegHdr);
+    if (btnSegKey) {
+      btnSegKey.classList.toggle('active', !hideSegKey);
+      btnSegKey.setAttribute('aria-pressed', String(!hideSegKey));
+    }
+    if (btnSegHdr) {
+      btnSegHdr.classList.toggle('active', !hideSegHdr);
+      btnSegHdr.setAttribute('aria-pressed', String(!hideSegHdr));
     }
   }
-  if (btnFullWidth) {
-    applyWideLayout(isWide);
-    btnFullWidth.addEventListener('click', function () {
-      applyWideLayout(!isWide);
-      storage.set(WIDE_STORAGE_KEY, isWide ? '1' : '0');
-    });
-  }
+  if (btnSegKey) btnSegKey.onclick = function () {
+    hideSegKey = !hideSegKey;
+    storage.set(SEG_KEY_STORAGE_KEY, hideSegKey ? '1' : '0');
+    applySegmentVisibility();
+  };
+  if (btnSegHdr) btnSegHdr.onclick = function () {
+    hideSegHdr = !hideSegHdr;
+    storage.set(SEG_HDR_STORAGE_KEY, hideSegHdr ? '1' : '0');
+    applySegmentVisibility();
+  };
+  applySegmentVisibility();
 
   /* ============================================================
      Zoom + Line height sliders
@@ -675,17 +734,63 @@ mql.addEventListener('change', updateVisibleCols);
   if (btnLhReset)   btnLhReset.onclick   = function () { lineHeightLevel = 1.85; applyLineHeight(); saveLineHeight(); };
 
   /* ============================================================
-     Anchor scroll
+     Anchor scroll + active segment + reading progress
      FIX: Properly disconnect observer on page unload to prevent memory leak
      ============================================================ */
   var anchorObserver = null;
+  var currentSegObserver = null;
   var firstVisibleKey = null;
   var firstVisibleOffsetFromGrid = 0;
+  var currentWrap = null;
+  var progressFillEl = $('readingProgressFill');
 
   function getScrollRoot() {
-    // FIX: On mobile (<=500px), if grid has overflow-y:auto it's still the scroll root.
-    // We always use grid as scroll root since CSS fix keeps it scrollable.
-    return grid;
+    // Title block + sutraGrid cùng nằm trong #readerArea (scroll container).
+    return readerArea || grid;
+  }
+
+  function updateReadingProgress() {
+    if (!progressFillEl || !grid) return;
+    var wraps = grid.querySelectorAll('.sutra-row-wrap');
+    var total = wraps.length;
+    if (!total) { progressFillEl.style.width = '0%'; return; }
+    // Progress theo số đoạn đã đọc — ổn định khi toggle ngôn ngữ/bố cục (không phụ thuộc pixel)
+    var idx = 0;
+    if (currentWrap) {
+      var wArr = Array.prototype.slice.call(wraps);
+      var found = wArr.indexOf(currentWrap);
+      if (found >= 0) idx = found;
+    } else if (readerArea && readerArea.scrollTop <= 4) {
+      idx = 0;
+    }
+    var pct = (idx + 1) / total * 100;
+    progressFillEl.style.width = Math.max(0, Math.min(100, pct)).toFixed(2) + '%';
+  }
+
+  function setupCurrentSegmentObserver() {
+    if (currentSegObserver) { currentSegObserver.disconnect(); currentSegObserver = null; }
+    var scrollRoot = getScrollRoot();
+    if (!scrollRoot) return;
+    currentSegObserver = new IntersectionObserver(function (entries) {
+      // Pick the wrap closest to the viewport center
+      var best = null, bestDist = Infinity;
+      var rootRect = scrollRoot.getBoundingClientRect();
+      var rootMid  = rootRect.top + rootRect.height / 2;
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        var r = e.target.getBoundingClientRect();
+        var mid = r.top + r.height / 2;
+        var dist = Math.abs(mid - rootMid);
+        if (dist < bestDist) { bestDist = dist; best = e.target; }
+      });
+      if (best && best !== currentWrap) {
+        if (currentWrap) currentWrap.classList.remove('current');
+        best.classList.add('current');
+        currentWrap = best;
+        updateReadingProgress();
+      }
+    }, { root: scrollRoot, rootMargin: '-40% 0px -45% 0px', threshold: 0 });
+    scrollRoot.querySelectorAll('.sutra-row-wrap').forEach(function (w) { currentSegObserver.observe(w); });
   }
 
   function setupAnchorObserver() {
@@ -748,8 +853,13 @@ mql.addEventListener('change', updateVisibleCols);
       }
       
       var scrollTarget = row.closest('.sutra-row-wrap') || row;
+      // Dùng getBoundingClientRect để lấy offset chính xác so với scroll container
+      // (sutraGrid giờ không còn là scroll root → offsetTop không còn tương thích).
+      var rootRect = scrollRoot.getBoundingClientRect();
+      var tgtRect  = scrollTarget.getBoundingClientRect();
+      var relativeTop = tgtRect.top - rootRect.top + scrollRoot.scrollTop;
       var max = Math.max(0, scrollRoot.scrollHeight - scrollRoot.clientHeight);
-      var y = scrollTarget.offsetTop - (Number.isFinite(off) ? off : 0);
+      var y = relativeTop - (Number.isFinite(off) ? off : 0);
       y = Math.max(0, Math.min(y, max));
       scrollRoot.scrollTop = y;
       toggleBackTop(scrollRoot.scrollTop > 0);
@@ -772,22 +882,21 @@ mql.addEventListener('change', updateVisibleCols);
   });
 
   /* ============================================================
-     Back to top
+     Back to top + scroll listener
      ============================================================ */
   var suppressBackTop = false;
   function toggleBackTop(show) { if (!btnBackTop) return; btnBackTop.classList.toggle('visible', show); }
 
-  if (grid) grid.addEventListener('scroll', throttle(function () {
-    if (!suppressBackTop) toggleBackTop(grid.scrollTop > 0);
-    saveScrollAnchorNow();
-  }, 120));
+  // Legacy stubs — title nay cuộn cùng nội dung nên không cần auto-hide header nữa
+  var headerEl = card ? card.querySelector('.header') : null;
+  var mobileLastScrollTop = 0;
+  function setMobileHeaderHidden() { /* no-op; giữ để không vỡ các caller cũ */ }
 
-  if (btnBackTop && grid) btnBackTop.onclick = function () {
+  if (btnBackTop && readerArea) btnBackTop.onclick = function () {
     suppressBackTop = true;
     toggleBackTop(false);
-    setMobileHeaderHidden(false);  // Show header when going back to top
     mobileLastScrollTop = 0;
-    grid.scrollTo({ top: 0, behavior: 'smooth' });
+    readerArea.scrollTo({ top: 0, behavior: 'smooth' });
     var done = function () {
       suppressBackTop = false;
       toggleBackTop(false);
@@ -796,12 +905,12 @@ mql.addEventListener('change', updateVisibleCols);
         storage.remove(KEY_ANCHOR_O(currentSutraId));
       }
     };
-    if ('onscrollend' in grid) {
-      grid.addEventListener('scrollend', done, { once: true });
+    if ('onscrollend' in readerArea) {
+      readerArea.addEventListener('scrollend', done, { once: true });
     } else {
       var prev = -1;
       var poll = function () {
-        var st = grid.scrollTop;
+        var st = readerArea.scrollTop;
         if (st === 0 && st === prev) { done(); return; }
         prev = st;
         requestAnimationFrame(poll);
@@ -810,93 +919,58 @@ mql.addEventListener('change', updateVisibleCols);
     }
   };
 
-  /* ============================================================
-     Mobile auto-hide header
-     Ẩn header khi cuộn xuống, hiện lại khi cuộn lên hoặc ở đầu trang.
-     Chỉ hoạt động trên mobile (≤500px).
-     ============================================================ */
-  var headerEl = card ? card.querySelector('.header') : null;
-  var mobileLastScrollTop = 0;
-  var mobileHeaderHidden = false;
-  var MOBILE_SCROLL_THRESHOLD = 1;  // Ngưỡng pixel tối thiểu để trigger
-
-  function isMobileViewport() {
-    return window.innerWidth <= 500;
-  }
-
-function setMobileHeaderHidden(hide) {
-    if (!headerEl || !isMobileViewport()) return;
-    if (hide === mobileHeaderHidden) return;
-    mobileHeaderHidden = hide;
-
-    if (hide) {
-      // Tính chiều cao thực tế của header để đẩy nó lên trên
-      var h = headerEl.offsetHeight;
-      headerEl.style.marginTop = '-' + h + 'px';
-      headerEl.style.opacity = '0';
-      headerEl.style.pointerEvents = 'none'; // Chống click nhầm khi đang tàng hình
-    } else {
-      headerEl.style.marginTop = '0px';
-      headerEl.style.opacity = '1';
-      headerEl.style.pointerEvents = 'auto';
-    }
-  }
-
-if (grid) {
-    var isHeaderScrollTicking = false;
-
-    // 1. Logic UI cần mượt mà (ẩn/hiện header) -> Dùng requestAnimationFrame
-    grid.addEventListener('scroll', function () {
-      if (!isHeaderScrollTicking) {
-        window.requestAnimationFrame(function () {
-          if (isMobileViewport() && headerEl) {
-            var st = grid.scrollTop;
-            // Chỉ chạy khi không bị scroll bounce (kéo quá đà trên iOS)
-            if (st >= 0 && st <= grid.scrollHeight - grid.clientHeight) {
-              if (st <= 10) {
-                setMobileHeaderHidden(false);
-              } else if (st > 50 && st > mobileLastScrollTop) {
-                setMobileHeaderHidden(true);
-              }
-              mobileLastScrollTop = st;
-            }
-          }
-          isHeaderScrollTicking = false;
-        });
-        isHeaderScrollTicking = true;
-      }
-    }, { passive: true });
-
-    // 2. Logic tác vụ ngầm (Save anchor, Back to top) -> Dùng throttle 120ms để nhẹ máy
-    grid.addEventListener('scroll', throttle(function () {
-      if (!suppressBackTop) toggleBackTop(grid.scrollTop > 0);
+  if (readerArea) {
+    // Scroll listener — throttled cho save anchor + back-to-top + progress
+    readerArea.addEventListener('scroll', throttle(function () {
+      if (!suppressBackTop) toggleBackTop(readerArea.scrollTop > 0);
       saveScrollAnchorNow();
+      updateReadingProgress();
     }, 120), { passive: true });
   }
 
   /* ============================================================
      Menu build
      ============================================================ */
+  // Rút gọn code bài kinh: "SN 1 – Vagga 1" → "SN 1.1", "DN 7" → "DN 7"
+  function shortenCode(code) {
+    if (!code) return '';
+    var m = String(code).match(/^([A-Za-z]+)\s*(\d+)\s*[–\-]\s*Vagga\s+(\d+)/i);
+    if (m) return m[1].toUpperCase() + ' ' + m[2] + '.' + m[3];
+    return String(code).replace(/\s+/g, ' ').trim();
+  }
+
+  // Bỏ số thứ tự kiểu "01. " ở đầu title (trùng với vagga number đã có trong code).
+  // Giữ số La Mã "I. " / "II. " vì là cấu trúc ngữ nghĩa, không trùng lặp.
+  function cleanTitleLabel(t) {
+    if (!t) return '';
+    return String(t).replace(/^\d+\.\s+/, '').trim();
+  }
+
   function buildSuttaLinkHtml(s) {
-    var codePrefix = s.code ? s.code + ' – ' : '';
-    var viLabel = s.titleVi || '', enLabel = s.titleEn || '', paliLabel = s.titlePali || '';
+    var shortCode = shortenCode(s.code || '');
+    var viLabel   = cleanTitleLabel(s.titleVi || '');
+    var enLabel   = cleanTitleLabel(s.titleEn || '');
+    var paliLabel = s.titlePali || '';
     var mainText, subText;
     if (uiLang === 'en') {
-      mainText = codePrefix + (enLabel || viLabel || paliLabel || s.id);
+      mainText = enLabel || viLabel || paliLabel || s.id;
       subText  = paliLabel || viLabel || '';
     } else {
-      mainText = codePrefix + (viLabel || enLabel || paliLabel || s.id);
+      mainText = viLabel || enLabel || paliLabel || s.id;
       subText  = paliLabel || enLabel || '';
     }
+    // Search index giữ cả code gốc + tất cả label để tìm kiếm linh hoạt
     FLAT_SUTTAS.push({
       id: s.id, main: mainText, sub: subText,
-      flat: (mainText + ' ' + viLabel + ' ' + enLabel + ' ' + paliLabel).toLowerCase()
+      flat: ((s.code || '') + ' ' + shortCode + ' ' + mainText + ' ' + (s.titleVi||'') + ' ' + (s.titleEn||'') + ' ' + paliLabel).toLowerCase()
     });
-    return '<a href="#" class="menu-sutta-link" role="treeitem" data-id="' + escapeAttr(s.id) + '" aria-label="' + escapeAttr(mainText) + '">' +
-        '<div class="sutra-label">' +
-          '<div class="sutra-label-main">' + escapeHtml(mainText) + '</div>' +
-          (subText ? '<div class="sutra-label-sub">' + escapeHtml(subText) + '</div>' : '') +
-        '</div></a>';
+    var ariaLabel = (shortCode ? shortCode + ' — ' : '') + mainText;
+    return '<a href="#" class="menu-sutta-link" role="treeitem" data-id="' + escapeAttr(s.id) + '" aria-label="' + escapeAttr(ariaLabel) + '">' +
+        '<span class="sutra-code">' + escapeHtml(shortCode) + '</span>' +
+        '<span class="sutra-label">' +
+          '<span class="sutra-label-main">' + escapeHtml(mainText) + '</span>' +
+          (subText ? '<span class="sutra-label-sub">' + escapeHtml(subText) + '</span>' : '') +
+        '</span></a>';
   }
 
   function buildMenuChildren(children, parentId) {
@@ -1074,33 +1148,34 @@ if (grid) {
   function findMetaById(id) {
    var index = window.SUTRA_INDEX || [];
     var found = null;
-    
-    // Thêm tham số currentParent để nhớ xem đang đứng ở thư mục nào
-    function walk(children, currentParent) {
+
+    // currentParent = group/nikaya ngay phía trên bài kinh
+    // rootNikaya = nikaya gốc (ngoài cùng) — cần cho các bài lồng trong group,
+    // ví dụ SN: Nikāya → Group "Chủ đề 1: Chư Thiên" → Sutta. Nếu không track
+    // rootNikaya thì header sẽ mất tên "Tương Ưng Bộ".
+    function walk(children, currentParent, rootNikaya) {
       if (!children || !children.length || found) return;
       for (var i = 0; i < children.length; i++) {
         if (found) return;
         var ch = children[i];
-        
-        if (ch.type === 'sutta' && ch.id === id) { 
-          // Dùng Object.assign để copy data, tránh làm hư data gốc
+
+        if (ch.type === 'sutta' && ch.id === id) {
           found = Object.assign({}, ch);
-          // Gắn thêm cục data của thư mục cha vào bài kinh
-          found.parentGroup = currentParent; 
-          return; 
+          found.parentGroup = currentParent;
+          found.rootNikaya = rootNikaya;
+          return;
         }
-        
+
         if (ch.type === 'group') {
-          // Khi chui vào thư mục con, báo cho nó biết cha của nó chính là 'ch'
-          walk(ch.children || [], ch);
+          walk(ch.children || [], ch, rootNikaya);
         }
       }
     }
-    
-    // Vòng lặp đầu tiên, cha của nó là chính nó (index[i])
-    for (var i = 0; i < index.length; i++) { 
-      walk(index[i].children || [], index[i]); 
-      if (found) break; 
+
+    // Vòng đầu: cha = nikaya, root cũng = nikaya
+    for (var i = 0; i < index.length; i++) {
+      walk(index[i].children || [], index[i], index[i]);
+      if (found) break;
     }
     return found;
   }
@@ -1117,6 +1192,8 @@ if (grid) {
   function createRow(r) {
     var wrap = document.createElement('div'); wrap.className = 'sutra-row-wrap';
     var keyRaw = String(r.key || '');
+    // Row kết thúc ":0.3" = tiêu đề sub-sutta trong vagga bundle → style riêng
+    if (/:0\.3$/.test(keyRaw)) wrap.classList.add('is-subtitle');
     var keyShort = '';
     if (keyRaw.includes(':')) {
       var parts = keyRaw.split(':');
@@ -1165,17 +1242,125 @@ if (grid) {
       || getByExactOrSuffix(merged.paliMap, exactKey, suffix) || '';
   }
 
+  // Epigraphs — 2 lời kinh luân phiên trên footer (Pali + dịch + citation).
+  // Cả 2 đều từ Kinh Đại Bát Niết-Bàn (DN 16). User click citation → mở đúng bài.
+  var EPIGRAPHS = [
+    {
+      pali: 'Vayadhammā saṅkhārā, appamādena sampādetha',
+      vi: 'Các pháp hữu vi đều vô thường, hãy tinh tấn — chớ có buông lung',
+      en: 'All conditioned things are subject to decay. Strive on with diligence.',
+      citeId: 'dn16',
+      citeLabel: 'DN 16'
+    },
+    {
+      pali: 'Attadīpā viharatha, attasaraṇā, anaññasaraṇā',
+      vi: 'Hãy tự mình thắp đuốc lên mà đi, tự mình là chỗ nương tựa, không nương tựa gì khác',
+      en: 'Dwell as your own island, your own refuge, with no other refuge',
+      citeId: 'dn16',
+      citeLabel: 'DN 16'
+    }
+  ];
+
+  // Dedications — 3 câu Pāli kinh điển + dịch nghĩa, dùng cho welcome screen
+  var DEDICATIONS = [
+    {
+      pali: 'Namo tassa bhagavato arahato sammāsambuddhassa',
+      vi: 'Kính lễ Đức Thế Tôn, bậc A-la-hán, Chánh Đẳng Giác',
+      en: 'Homage to the Blessed One, the Worthy, the Perfectly Self-Enlightened'
+    },
+    {
+      pali: 'Sabbe saṅkhārā aniccā',
+      vi: 'Tất cả các hành đều vô thường',
+      en: 'All conditioned things are impermanent'
+    },
+    {
+      pali: 'Attadīpā viharatha, attasaraṇā, anaññasaraṇā',
+      vi: 'Hãy tự mình thắp đuốc lên mà đi, tự mình là chỗ nương tựa, không nương tựa gì khác',
+      en: 'Dwell as your own island, your own refuge, with no other refuge'
+    }
+  ];
+
+  var RECOMMENDED_SUTTAS = [
+    { id: 'dn16', code: 'DN 16', vi: 'Kinh Đại Bát Niết-Bàn', en: 'The Great Passing',      pali: 'Mahāparinibbāna' },
+    { id: 'dn22', code: 'DN 22', vi: 'Kinh Đại Niệm Xứ',      en: 'The Great Mindfulness', pali: 'Mahāsatipaṭṭhāna' },
+    { id: 'mn10', code: 'MN 10', vi: 'Kinh Niệm Xứ',          en: 'Foundations of Mindfulness', pali: 'Satipaṭṭhāna' },
+    { id: 'mn118',code: 'MN 118',vi: 'Kinh Nhập Tức Xuất Tức Niệm', en: 'Mindfulness of Breathing', pali: 'Ānāpānasati' }
+  ];
+
+  function buildDhammaWheelSvg() {
+    return '<svg class="welcome-ornament" viewBox="0 0 100 100" aria-hidden="true">' +
+      '<circle class="wheel-rim" cx="50" cy="50" r="34" stroke-width="1.4"/>' +
+      '<circle class="wheel-rim" cx="50" cy="50" r="26" stroke-width="1"/>' +
+      '<circle class="wheel-hub" cx="50" cy="50" r="4"/>' +
+      '<g class="wheel-spoke" stroke-width="1.1">' +
+        '<line x1="50" y1="16" x2="50" y2="84"/>' +
+        '<line x1="16" y1="50" x2="84" y2="50"/>' +
+        '<line x1="26" y1="26" x2="74" y2="74"/>' +
+        '<line x1="74" y1="26" x2="26" y2="74"/>' +
+      '</g>' +
+      '</svg>';
+  }
+
+  function buildRecommendedHtml() {
+    var isEn = uiLang === 'en';
+    var heading = isEn ? 'Suggested readings' : 'Gợi ý bài đọc';
+    var cards = RECOMMENDED_SUTTAS.map(function (r) {
+      var main = isEn ? r.pali : r.vi;
+      var sub  = isEn ? r.vi   : r.en;
+      return '<button class="rec-card" type="button" data-id="' + escapeAttr(r.id) + '">' +
+             '<span class="rec-code">' + escapeHtml(r.code) + '</span>' +
+             '<span class="rec-name">' +
+               '<span class="rec-name-main">' + escapeHtml(main) + '</span>' +
+               '<span class="rec-name-sub">' + escapeHtml(sub) + '</span>' +
+             '</span>' +
+             '</button>';
+    }).join('');
+    return '<div class="rec-title">' + escapeHtml(heading) + '</div><div class="rec-list">' + cards + '</div>';
+  }
+
+  function buildDedicationHtml() {
+    var isEn = uiLang === 'en';
+    var items = DEDICATIONS.map(function (d) {
+      var tr = isEn ? d.en : d.vi;
+      return '<div class="ded-item">' +
+               '<div class="ded-pali">' + escapeHtml(d.pali) + '</div>' +
+               '<div class="ded-tr">' + escapeHtml(tr) + '</div>' +
+             '</div>';
+    }).join('');
+    return '<div class="welcome-dedication" role="region" aria-label="Dedication">' + items + '</div>';
+  }
+
   function renderWelcomeScreen() {
     if (!grid || currentSutraId) return;
-    if (uiLang === 'en') {
-      if (titleEl) titleEl.textContent = 'Sutta reading collection';
-      if (subtitleEl) subtitleEl.textContent = 'Tap "Library" to select a sutta, or ❓ for the guide.';
-      grid.innerHTML = '<div class="welcome-screen"><div class="welcome-box"><strong>Welcome!</strong><br><br>• Tap  <strong>"Library"</strong> to choose a sutta.<br>• Tap ⚙ <strong>Settings</strong> to adjust layout/TTS.<br>• Tap ❓ <strong>Guide</strong> for help.</div></div>';
-    } else {
-      if (titleEl) titleEl.textContent = 'Chào mừng bạn đến với trang lưu trữ kinh';
-      if (subtitleEl) subtitleEl.textContent = 'Bấm vào "Thư Viện" để chọn bài kinh, hoặc ❓ để xem hướng dẫn.';
-      grid.innerHTML = '<div class="welcome-screen"><div class="welcome-box"><strong>Xin chào!</strong><br><br>• Bấm  <strong>"Thư Viện"</strong> để chọn bài.<br>• Bấm ⚙ <strong>Cài đặt</strong> để chỉnh bố cục/TTS.<br>• Bấm ❓ <strong>Hướng dẫn</strong> trong Setting để xem cách dùng. *Trong quá trình dịch có thể có sai sót, vui lòng đối chiếu gốc Pali, và tiếng Anh. Mọi góp ý chỉnh sửa xin vui lòng emil: tuanctvn199@gmail.com</div></div>';
-    }
+    if (superTitleEl) superTitleEl.textContent = '';
+    if (titleMetaEl)  titleMetaEl.textContent  = '';
+    var isEn = uiLang === 'en';
+    if (titleEl) titleEl.textContent = isEn ? 'Sutta Archive' : 'Kho lưu trữ Kinh';
+    if (subtitleEl) subtitleEl.textContent = isEn
+      ? 'A trilingual reader — Pāli · English · Vietnamese'
+      : 'Đọc song ngữ — Pāli · English · Tiếng Việt';
+    var welcomeText = isEn
+      ? '<strong>Welcome</strong>Tap <em>Library</em> to choose a sutta, ⚙ <em>Settings</em> to adjust display and TTS, ❓ <em>Guide</em> for tips.'
+      : '<strong>Xin chào</strong>Bấm <em>Thư viện</em> để chọn bài, ⚙ <em>Cài đặt</em> chỉnh hiển thị/TTS, ❓ <em>Hướng dẫn</em> xem cách dùng. Bản dịch có thể còn sai sót — vui lòng đối chiếu bản Pāli & English. Góp ý: tuanctvn199@gmail.com';
+    var kbdHint = isEn
+      ? 'Keys: <kbd>J</kbd>/<kbd>K</kbd> next/prev segment · <kbd>N</kbd>/<kbd>P</kbd> next/prev sutta · <kbd>/</kbd> search · <kbd>?</kbd> guide'
+      : 'Phím: <kbd>J</kbd>/<kbd>K</kbd> đoạn sau/trước · <kbd>N</kbd>/<kbd>P</kbd> bài sau/trước · <kbd>/</kbd> tìm · <kbd>?</kbd> hướng dẫn';
+
+    grid.innerHTML =
+      '<div class="welcome-screen">' +
+        buildDhammaWheelSvg() +
+        buildDedicationHtml() +
+        '<div class="welcome-box">' + welcomeText + '<div class="kbd-hint">' + kbdHint + '</div></div>' +
+        buildRecommendedHtml() +
+      '</div>';
+
+    // Click recommended sutta → open
+    grid.querySelectorAll('.rec-card').forEach(function (c) {
+      c.addEventListener('click', function () {
+        var id = c.getAttribute('data-id');
+        if (id) openSutra(id);
+      });
+    });
   }
 
   /* ============================================================
@@ -1185,8 +1370,16 @@ if (grid) {
      ============================================================ */
   async function renderSutra(id) {
     if (!id || !grid) return;
+    // Nếu đổi sang bài kinh KHÁC, chỉ save anchor của bài cũ.
+    // Sau đó ép cuộn về đầu NGAY để tránh overflow-anchor của browser giữ vị trí cũ.
+    var switchingSutra = currentSutraId && currentSutraId !== id;
     saveScrollAnchorNow(); resetTts(true, false);
     if (anchorObserver) { anchorObserver.disconnect(); anchorObserver = null; }
+    if (currentSegObserver) { currentSegObserver.disconnect(); currentSegObserver = null; }
+    currentWrap = null;
+    if (progressFillEl) progressFillEl.style.width = '0%';
+    // Reset vị trí cuộn ngay lập tức khi chuyển bài — tránh "carry over" vị trí cũ
+    if (switchingSutra && readerArea) readerArea.scrollTop = 0;
 
     // FIX: Clear cached rows immediately
     cachedRows = [];
@@ -1218,6 +1411,8 @@ if (grid) {
     updateNavButtons();
 
     if (!merged || !merged.rows || !merged.rows.length) {
+      if (superTitleEl) superTitleEl.textContent = '';
+      if (titleMetaEl)  titleMetaEl.innerHTML  = '';
       if (titleEl) titleEl.textContent = uiLang === 'en' ? 'Sutta data not found' : 'Không tìm thấy dữ liệu bài kinh';
       if (subtitleEl) subtitleEl.textContent = (uiLang === 'en' ? 'ID: ' : 'Mã bài: ') + id;
       grid.innerHTML = ''; isRendering = false;
@@ -1227,37 +1422,80 @@ if (grid) {
    var titleFromBilara    = (pickTextForUiLangSuffix(merged, id, ':0.2') || '').trim();
     var subtitleFromBilara = (pickTextForUiLangSuffix(merged, id, ':0.1') || '').trim();
     var meta = findMetaById(id) || {};
-    
+
     var titleFallback    = uiLang === 'en'
       ? meta.titleEn || meta.titleVi || meta.titlePali || meta.title || id
       : meta.titleVi || meta.titleEn || meta.titlePali || meta.title || id;
 
-    // Lấy tên chương (group) từ thông tin cha mà ta vừa gắn vào ở Bước 1
+    // Parent group (mức ngay trên bài) — có thể là nhóm con (vd "Chủ đề 1: Chư Thiên") hoặc chính Nikaya (DN/MN flat)
     var parentLabelVi = meta.parentGroup ? (meta.parentGroup.labelVi || meta.parentGroup.key) : '';
     var parentLabelEn = meta.parentGroup ? (meta.parentGroup.labelEn || meta.parentGroup.key) : '';
+    // Root Nikaya (ngoài cùng) — luôn giữ được tên "Tương Ưng Bộ"/"Trung Bộ"/…
+    var rootLabelVi   = meta.rootNikaya  ? (meta.rootNikaya.labelVi  || meta.rootNikaya.key)  : '';
+    var rootLabelEn   = meta.rootNikaya  ? (meta.rootNikaya.labelEn  || meta.rootNikaya.key)  : '';
 
-    var subtitleFallback = uiLang === 'en'
-      ? meta.subtitleEn || parentLabelEn || meta.subtitleVi || ''
-      : meta.subtitleVi || parentLabelVi || meta.subtitleEn || '';
+    // Rút gọn label kiểu "X Nikāya - Y Kinh" → "Y Kinh" (vi) / "X Nikāya" (en).
+    // Giữ nguyên hậu tố "Kinh" cho trang trọng ("Trường Bộ Kinh", "Trung Bộ Kinh", v.v.).
+    function extractShortLabel(label, lang) {
+      if (!label) return '';
+      var parts = label.split(/\s+-\s+/);
+      if (lang === 'vi') {
+        return (parts[1] || parts[0] || '').trim();
+      }
+      return (parts[0] || label).trim();
+    }
+    var rootShort   = extractShortLabel(uiLang === 'en' ? rootLabelEn   : rootLabelVi,   uiLang);
+    var parentShort = extractShortLabel(uiLang === 'en' ? parentLabelEn : parentLabelVi, uiLang);
 
     if (titleEl) titleEl.textContent = titleFromBilara || titleFallback;
-    
-    // QUAN TRỌNG: Đảo ngược sự ưu tiên. Ưu tiên lấy subtitleFallback (chứa tên Chương từ JSON)
-    // Nếu trong JSON không có thì mới lấy đỡ subtitleFromBilara (ví dụ chữ "1.1")
-    if (subtitleEl) subtitleEl.textContent = subtitleFallback || subtitleFromBilara;
 
-    var rowsForViewRaw = (merged.rows || []).filter(function (r) { 
-    var k = String(r.key || '');
-    // Chỉ giấu tiêu đề nếu nó thuộc chính xác ID kinh được chọn ban đầu
-    return !(k.startsWith(id + ':0.')); 
-});
+    // Super-title: [Nikaya gốc · (Group con nếu khác Nikaya) · Mã bài]
+    //   DN 7  → "Trường Bộ · DN 7"                           (group === nikaya → dedup)
+    //   SN vagga → "Tương Ưng Bộ · Chủ đề 1: Chư Thiên · SN 1 – Vagga 3"  (lồng 2 tầng)
+    if (superTitleEl) {
+      var superParts = [];
+      if (rootShort) superParts.push(rootShort);
+      if (parentShort && parentShort !== rootShort) superParts.push(parentShort);
+      var codeTxt = (meta.code || '').trim();
+      if (codeTxt) superParts.push(codeTxt);
+      superTitleEl.textContent = superParts.join(' · ');
+    }
+
+    // Subtitle: tên Pāli của bài (ví dụ "Jāliya Sutta") — italic, phía dưới H1
+    if (subtitleEl) {
+      var paliName = (meta.titlePali || subtitleFromBilara || '').trim();
+      subtitleEl.textContent = paliName;
+    }
+
+    // Meta: tên đối lập ngôn ngữ (en khi ui=vi, vi khi ui=en) — dòng phụ dưới cùng
+    if (titleMetaEl) {
+      var altName = uiLang === 'en' ? (meta.titleVi || '') : (meta.titleEn || '');
+      titleMetaEl.textContent = altName;
+    }
+
+    // Quy ước bilara:
+    //   :0.1 = tên Nikāya + số bài  (vd "Saṁyutta Nikāya 1.11")
+    //   :0.2 = tên Vagga            (vd "2. Nandanavagga")
+    //   :0.3 = tên sub-sutta        (vd "Nandanasutta") — GIỮ vì đánh dấu đoạn đầu mỗi sub-sutta
+    //   :N.M (N>=1) = nội dung
+    // Cho vagga bundle (nhiều sub-sutta), :0.1 & :0.2 bị lặp cho từng sub-sutta →
+    // ẩn tất cả :0.1/:0.2 bất kể prefix. Header đã hiển thị Nikāya & Vagga rồi.
+    // Ngoài ra vẫn phòng vệ lọc chính id đang mở (single-sutta có thể đặt title ở :0.3).
+    var normId = String(id).replace(/([A-Za-z]+)0*(\d)/g, '$1$2');
+    var prefixA = id + ':0.';
+    var prefixB = normId + ':0.';
+    var rowsForViewRaw = (merged.rows || []).filter(function (r) {
+      var k = String(r.key || '');
+      if (/:0\.[12]$/.test(k)) return false;
+      return !(k.startsWith(prefixA) || k.startsWith(prefixB));
+    });
     var singleLang = getSingleVisibleLang(); lastSingleLangMode = singleLang;
     var rowsForView = singleLang ? mergeRowsToParagraphRows(rowsForViewRaw, singleLang) : rowsForViewRaw;
 
     grid.innerHTML = '';
     cachedRows = [];
     applyVisibility();
-	if (grid) grid.scrollTop = 0;
+	if (readerArea) readerArea.scrollTop = 0;
     var i = 0, BATCH = 220;
     function renderBatch() {
       // FIX: Also reset isRendering when token is stale
@@ -1279,7 +1517,8 @@ if (grid) {
          grid.setAttribute('aria-busy', 'false');
         requestAnimationFrame(function () { requestAnimationFrame(function () {
           updateVisibleCols(); restoreScrollByAnchor(id);
-          setupAnchorObserver(); setTtsUiState('idle'); updateNavButtons();
+          setupAnchorObserver(); setupCurrentSegmentObserver(); updateReadingProgress();
+          setTtsUiState('idle'); updateNavButtons();
 		  isRendering = false;
         }); });
         scheduleNextPreload(id);
@@ -1301,7 +1540,43 @@ if (grid) {
     } catch(e){}
   }
 
-  function openSutra(id) { renderSutra(id); }
+  function openSutra(id, opts) {
+    if (!id) return;
+    renderSutra(id);
+    // Deep link: cập nhật URL hash (#dn9) để copy-paste được — không reload
+    if (!opts || !opts.skipHash) {
+      try {
+        var desired = '#' + id;
+        if (location.hash !== desired) {
+          history.replaceState(null, '', desired);
+        }
+      } catch (e) { /* ignore */ }
+    }
+  }
+
+  // Parse hash khi load lần đầu & khi nhấn back/forward: "#dn9" → dn09
+  function readSuttaIdFromHash() {
+    var h = (location.hash || '').replace(/^#/, '').trim();
+    if (!h) return '';
+    var raw = h.split(/[:?&]/)[0].toLowerCase();
+    if (!raw) return '';
+    // Khớp chính xác (ví dụ đã là "dn09")
+    if (Array.isArray(SUTRA_ORDER) && SUTRA_ORDER.indexOf(raw) !== -1) return raw;
+    // Cho phép nhập rút gọn: "dn9" → thử "dn09", "dn009"
+    var m = raw.match(/^([a-z]+)(\d+)(.*)$/);
+    if (m && Array.isArray(SUTRA_ORDER) && SUTRA_ORDER.length) {
+      var prefix = m[1], num = m[2], suffix = m[3] || '';
+      for (var pad = num.length + 1; pad <= 4; pad++) {
+        var padded = prefix + num.padStart(pad, '0') + suffix;
+        if (SUTRA_ORDER.indexOf(padded) !== -1) return padded;
+      }
+    }
+    return raw;
+  }
+  window.addEventListener('hashchange', function () {
+    var sid = readSuttaIdFromHash();
+    if (sid && sid !== currentSutraId) openSutra(sid, { skipHash: true });
+  });
 
   /* ============================================================
      Prev / Next
@@ -1354,6 +1629,11 @@ if (grid) {
       var finalNavText = (parentLabel ? parentLabel + ' · ' : '') + title;
 
       navTitle.textContent = finalNavText;
+      navTitle.setAttribute('title', uiLang === 'en'
+        ? 'Click to locate in Library'
+        : 'Bấm để xem vị trí trong Thư viện');
+      navTitle.setAttribute('aria-label',
+        finalNavText + ' — ' + (uiLang === 'en' ? 'click to open Library' : 'bấm để mở Thư viện'));
     }
   }
 
@@ -1365,6 +1645,58 @@ if (grid) {
     var idx = SUTRA_ORDER.indexOf(currentSutraId);
     if (idx !== -1 && idx < SUTRA_ORDER.length - 1) openSutra(SUTRA_ORDER[idx + 1]);
   };
+
+  // Click vào status-title giữa footer → mở Library + expand đúng nikaya/group chứa bài đang đọc,
+  // rồi scroll tới mục đó để dễ định hướng & chọn bài lân cận.
+  function revealCurrentSuttaInMenu() {
+    if (!sutraMenuPanel || !sutraMenuList || !currentSutraId) return;
+    togglePanel(settingsPanel, false);
+    togglePanel(sutraMenuPanel, true);
+
+    var safeId = safeCssEscape(currentSutraId);
+    var link = sutraMenuList.querySelector('.menu-sutta-link[data-id="' + safeId + '"]');
+    if (!link) return;
+
+    // Mở hết menu-list ancestor (xoá .collapsed + cập nhật aria của toggle tương ứng)
+    var node = link.parentElement;
+    while (node && node !== sutraMenuList) {
+      if (node.classList && node.classList.contains('menu-list') && node.classList.contains('collapsed')) {
+        node.classList.remove('collapsed');
+        var panelId = node.id;
+        if (panelId) {
+          var toggle = sutraMenuList.querySelector('.menu-toggle[data-target="' + panelId + '"]');
+          if (toggle) {
+            toggle.setAttribute('aria-expanded', 'true');
+            var chev = toggle.querySelector('.chevron');
+            if (chev) chev.textContent = '▾';
+          }
+        }
+      }
+      node = node.parentElement;
+    }
+
+    // Đợi panel hoàn tất animation mở (~220ms) rồi scroll
+    setTimeout(function () {
+      try { link.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { link.scrollIntoView(); }
+    }, 240);
+  }
+
+  var navTitleEl = $('navTitle');
+  if (navTitleEl) {
+    navTitleEl.setAttribute('role', 'button');
+    navTitleEl.setAttribute('tabindex', '0');
+    navTitleEl.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (!currentSutraId) return;
+      revealCurrentSuttaInMenu();
+    });
+    navTitleEl.addEventListener('keydown', function (e) {
+      if ((e.key === 'Enter' || e.key === ' ') && currentSutraId) {
+        e.preventDefault();
+        revealCurrentSuttaInMenu();
+      }
+    });
+  }
 
   /* ============================================================
      TTS
@@ -1414,10 +1746,15 @@ if (grid) {
     clearRowHighlight();
     if (index < 0 || index >= cachedRows.length) return;
     var row = cachedRows[index]; row.classList.add('reading');
-    var top = row.offsetTop, bottom = top + row.offsetHeight;
-    var viewTop = grid.scrollTop, viewBottom = viewTop + grid.clientHeight;
-    if (top < viewTop || bottom > viewBottom)
-      grid.scrollTo({ top: Math.max(0, top - 20), behavior: 'auto' });
+    if (!readerArea) return;
+    // readerArea là scroll container; dùng getBoundingClientRect cho offset chính xác
+    var rootRect = readerArea.getBoundingClientRect();
+    var rowRect  = row.getBoundingClientRect();
+    var relativeTop = rowRect.top - rootRect.top + readerArea.scrollTop;
+    var viewTop = readerArea.scrollTop, viewBottom = viewTop + readerArea.clientHeight;
+    if (relativeTop < viewTop || relativeTop + rowRect.height > viewBottom) {
+      readerArea.scrollTo({ top: Math.max(0, relativeTop - 20), behavior: 'auto' });
+    }
   }
 
   function pickVoice(langPrefix) {
@@ -1524,6 +1861,112 @@ if (grid) {
   if (btnStopTts)  btnStopTts.onclick  = stopTtsByUiLang;
 
   /* ============================================================
+     Keyboard shortcuts (j/k segment · p/n sutta · / search · ? guide)
+     ============================================================ */
+  function jumpSegment(delta) {
+    if (!grid) return;
+    var wraps = Array.from(grid.querySelectorAll('.sutra-row-wrap'));
+    if (!wraps.length) return;
+    var idx = currentWrap ? wraps.indexOf(currentWrap) : -1;
+    if (idx < 0) idx = 0;
+    var next = Math.max(0, Math.min(wraps.length - 1, idx + delta));
+    if (next !== idx && wraps[next]) {
+      wraps[next].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  document.addEventListener('keydown', function (e) {
+    // Bỏ qua khi đang gõ trong input / textarea
+    if (e.target && e.target.matches && e.target.matches('input, textarea, [contenteditable="true"]')) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    // Guide & panel vẫn dùng Escape riêng — không can thiệp ở đây
+    var k = e.key;
+    switch (k) {
+      case 'j': case 'J':
+        jumpSegment(1); e.preventDefault(); break;
+      case 'k': case 'K':
+        jumpSegment(-1); e.preventDefault(); break;
+      case 'n': case 'N':
+        if (btnNext && !btnNext.disabled) { btnNext.click(); e.preventDefault(); }
+        break;
+      case 'p': case 'P':
+        if (btnPrev && !btnPrev.disabled) { btnPrev.click(); e.preventDefault(); }
+        break;
+      case '/':
+        if (btnSutraMenu) {
+          var isOpen = sutraMenuPanel && sutraMenuPanel.classList.contains('open');
+          if (!isOpen) btnSutraMenu.click();
+          setTimeout(function () { if (searchInput) searchInput.focus(); }, 80);
+          e.preventDefault();
+        }
+        break;
+      case '?':
+        if (btnGuide) { btnGuide.click(); e.preventDefault(); }
+        break;
+      case 'g':
+        if (readerArea) { readerArea.scrollTo({ top: 0, behavior: 'smooth' }); e.preventDefault(); }
+        break;
+      case 'G':
+        if (readerArea) { readerArea.scrollTo({ top: readerArea.scrollHeight, behavior: 'smooth' }); e.preventDefault(); }
+        break;
+    }
+  });
+
+  /* ============================================================
+     Epigraph rotation (above footer)
+     ============================================================ */
+  var epPaliEl  = $('epPali');
+  var epTrEl    = $('epTr');
+  var epCiteEl  = $('epCite');
+  var epInnerEl = document.querySelector('.epigraph-inner');
+  var epIdx = 0, epPaused = false, epTimer = null;
+
+  function paintEpigraph() {
+    if (!epPaliEl || !epTrEl || !epCiteEl) return;
+    var e = EPIGRAPHS[epIdx];
+    epPaliEl.textContent = e.pali;
+    epTrEl.textContent   = uiLang === 'en' ? e.en : e.vi;
+    epCiteEl.textContent = e.citeLabel;
+    epCiteEl.setAttribute('data-id', e.citeId);
+    epCiteEl.setAttribute('aria-label',
+      (uiLang === 'en' ? 'Open source sutta ' : 'Mở bài kinh nguồn ') + e.citeLabel);
+    epCiteEl.setAttribute('title',
+      uiLang === 'en' ? 'Open source sutta' : 'Mở bài kinh nguồn');
+  }
+  function rotateEpigraph() {
+    if (epPaused || !epInnerEl || EPIGRAPHS.length < 2) return;
+    epIdx = (epIdx + 1) % EPIGRAPHS.length;
+    epInnerEl.style.opacity = '0';
+    setTimeout(function () {
+      paintEpigraph();
+      epInnerEl.style.opacity = '';
+    }, 450);
+  }
+  function startEpigraph() {
+    if (epTimer) clearInterval(epTimer);
+    epTimer = setInterval(rotateEpigraph, 16000);
+  }
+  function stopEpigraph() {
+    if (epTimer) { clearInterval(epTimer); epTimer = null; }
+  }
+  if (epCiteEl) {
+    epCiteEl.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      var id = epCiteEl.getAttribute('data-id');
+      if (id) openSutra(id);
+    });
+  }
+  if (epInnerEl) {
+    epInnerEl.addEventListener('mouseenter', function () { epPaused = true; });
+    epInnerEl.addEventListener('mouseleave', function () { epPaused = false; });
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') stopEpigraph(); else startEpigraph();
+  });
+  paintEpigraph();
+  startEpigraph();
+
+  /* ============================================================
      UI Lang switch
      ============================================================ */
   function initUiLang() {
@@ -1535,6 +1978,7 @@ if (grid) {
       storage.set(LANG_STORAGE_KEY, uiLang); window.SUTRA_UI_LANG = uiLang;
       renderUiLangFlag(); applyUiLanguageToSearchUi(); applyUiLanguageToSettingsPanel(); renderGuideDialog();
       buildSutraMenuFromIndex(); highlightActiveInMenu(); updateNavButtons();
+      paintEpigraph();  // repaint dịch nghĩa epigraph theo ngôn ngữ mới
       if (currentSutraId) renderSutra(currentSutraId); else renderWelcomeScreen();
     });
   }
@@ -1550,7 +1994,9 @@ if (grid) {
     if (btnVie)  { btnVie.classList.toggle('active',  showVie);  btnVie.setAttribute('aria-pressed',  String(showVie)); }
     if (btnLayout) { btnLayout.classList.toggle('active', card ? card.classList.contains('stack') : false); }
     applyVisibility(); loadZoom(); loadLineHeight(); buildSutraMenuFromIndex(); initDelegations();
-    var startId = storage.get(KEY_LAST);
+    // Ưu tiên ID trong URL hash (#dn9) > ID mở lần trước
+    var hashId  = readSuttaIdFromHash();
+    var startId = hashId || storage.get(KEY_LAST);
     if (startId) openSutra(startId); else renderWelcomeScreen();
     if (!synthSupported) {
       [btnReadTts, btnPauseTts, btnStopTts].forEach(function (b) { if (b) b.disabled = true; });
@@ -1564,7 +2010,8 @@ if (grid) {
 })();
 
 /* ============================================================
-   Dark mode (separate IIFE)
+   Dark mode (separate IIFE) — icon moon/sun được swap qua CSS
+   theo [data-theme="dark"], không cần đổi textContent nữa.
    ============================================================ */
 (function () {
   var btn = document.getElementById('btnDarkMode');
@@ -1573,30 +2020,32 @@ if (grid) {
   var STORAGE_KEY = 'sutra-dark-mode';
   var html = document.documentElement;
 
+  function updateTitle() {
+    var isDark = html.getAttribute('data-theme') === 'dark';
+    btn.title = isDark ? 'Chế độ sáng' : 'Chế độ tối';
+  }
+
   var saved = null;
   try { saved = localStorage.getItem(STORAGE_KEY); } catch(e){}
 
-  if (saved === 'dark') {
-    html.setAttribute('data-theme', 'dark');
-    btn.textContent = '☀️'; btn.title = 'Chế độ sáng';
-  }
-
+  if (saved === 'dark') html.setAttribute('data-theme', 'dark');
   if (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches) {
     html.setAttribute('data-theme', 'dark');
-    btn.textContent = '☀️'; btn.title = 'Chế độ sáng';
     try { localStorage.setItem(STORAGE_KEY, 'dark'); } catch(e){}
   }
+  updateTitle();
 
   btn.addEventListener('click', function () {
     var isDark = html.getAttribute('data-theme') === 'dark';
     if (isDark) {
       html.removeAttribute('data-theme');
-      btn.textContent = '🌙'; btn.title = 'Chế độ tối';
       try { localStorage.setItem(STORAGE_KEY, 'light'); } catch(e){}
     } else {
       html.setAttribute('data-theme', 'dark');
-      btn.textContent = '☀️'; btn.title = 'Chế độ sáng';
       try { localStorage.setItem(STORAGE_KEY, 'dark'); } catch(e){}
     }
+    updateTitle();
   });
 })();
+
+/* Top bar giữ cố định "Namo tassa..." — không rotate. */
