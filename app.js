@@ -1018,6 +1018,29 @@ mql.addEventListener('change', updateVisibleCols);
     for (var i = 0; i < children.length; i++) {
       var child = children[i];
       if (child.type === 'group') {
+        // AUTO-FLATTEN mọi group: chỉ render sutta đầu tiên, dùng label của group làm title.
+        // User click "Chủ đề N: ..." là load vagga 1 của chủ đề. Các vagga 2+ vẫn truy cập
+        // được qua search (FLAT_SUTTAS có index id) hoặc URL hash (#sn1_v2).
+        var firstSutta = null;
+        if (Array.isArray(child.children)) {
+          for (var j = 0; j < child.children.length; j++) {
+            if (child.children[j].type === 'sutta') { firstSutta = child.children[j]; break; }
+          }
+        }
+        if (firstSutta) {
+          // Cắt "– Vagga N" khỏi code: menu chỉ trỏ vagga 1 nên hiển thị "SN 13" gọn hơn
+          var cleanCode = String(firstSutta.code || '').replace(/\s*[–\-]\s*Vagga\s+\d+\s*$/i, '').trim();
+          var flattened = Object.assign({}, firstSutta, {
+            code:    cleanCode || firstSutta.code,
+            titleVi: child.labelVi || firstSutta.titleVi,
+            titleEn: child.labelEn || firstSutta.titleEn
+            // titlePali giữ nguyên từ vagga 1 (vd "Paṭhama Vagga", "Kassapa Vagga"...)
+          });
+          html += buildSuttaLinkHtml(flattened);
+          continue;
+        }
+
+        // Fallback: group không có direct sutta child (chỉ chứa sub-groups) → render toggle
         var grpId = safeDomId(parentId + '-' + child.key);
         var label = uiLang === 'en'
           ? child.labelEn || child.labelVi || child.key

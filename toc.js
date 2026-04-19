@@ -1462,9 +1462,9 @@ window.SUTRA_INDEX = [
     labelVi: "Nhóm Mười Một Pháp",
     labelEn: "Ekādasakanipāta (The Book of the Elevens)",
     children:[
-	  { type: "sutta", id: "an11_v1", code: "", titlePali: "Yasavagga", titleVi: "I. Phẩm Y Chỉ", titleEn: "Reliance Chapter" },
-	  { type: "sutta", id: "an11_v2", code: "", titlePali: "Anussativagga", titleVi: "II. Phẩm Tùy Niệm", titleEn: "Recollections Chapter" },
-	  { type: "sutta", id: "an11_v3", code: "", titlePali: "Sāmaggīvagga", titleVi: "III. Phẩm Tổng Kết", titleEn: "Harmony / Recapitulation Chapter" }
+	  { type: "sutta", id: "an11_v1", code: "AN 11 – Vagga 1", titlePali: "Yasavagga", titleVi: "I. Phẩm Y Chỉ", titleEn: "Reliance Chapter" },
+	  { type: "sutta", id: "an11_v2", code: "AN 11 – Vagga 2", titlePali: "Anussativagga", titleVi: "II. Phẩm Tùy Niệm", titleEn: "Recollections Chapter" },
+	  { type: "sutta", id: "an11_v3", code: "AN 11 – Vagga 3", titlePali: "Sāmaggīvagga", titleVi: "III. Phẩm Tổng Kết", titleEn: "Harmony / Recapitulation Chapter" }
 	  ]
   }
 ]

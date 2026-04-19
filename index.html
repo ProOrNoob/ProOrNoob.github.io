@@ -1371,9 +1371,17 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
   gap: 0;
   min-width: 0;
 }
+/* Force single-line + ellipsis để mọi row cùng chiều cao — rhythm đều, không bị wrap */
+.sutra-label-main,
+.sutra-label-sub {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
 .sutra-label-main {
   font-family: var(--serif);
-  font-style: italic;
+  font-style: normal;
   font-size: 15px;
   font-weight: 400;
   color: var(--ink);
@@ -2144,6 +2152,6 @@ button:not(:focus-visible), a:not(:focus-visible),
 </div>
 
 <script src="toc.js?v=3" defer></script>
-<script src="app.js?v=15" defer></script>
+<script src="app.js?v=21" defer></script>
 </body>
 </html>
