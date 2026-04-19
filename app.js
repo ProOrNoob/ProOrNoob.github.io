@@ -264,10 +264,17 @@
 
   function isNumberedHeadingLine(text) { return /^\d+\.\s*/.test((text||'').trim()); }
 
+  // Lấy "scope" của segment để phân paragraph: "sn1.11:3.5" → "sn1.11:3"
+  // Khi scope thay đổi (major section hoặc sub-sutta khác), ngắt đoạn mới.
+  function getMajorScope(key) {
+    var m = String(key || '').match(/^(.+):(\d+)/);
+    return m ? (m[1] + ':' + m[2]) : null;
+  }
+
   function mergeRowsToParagraphRows(rows, lang) {
     var out = [];
     if (!Array.isArray(rows)||!rows.length) return out;
-    var buf = '', bufKey = null;
+    var buf = '', bufKey = null, currentScope = null;
     var flush = function () {
       var text = (buf||'').trim();
       if (!text) { buf=''; bufKey=null; return; }
@@ -277,20 +284,40 @@
       if (lang==='vie') r.vie=text;
       out.push(r); buf=''; bufKey=null;
     };
+    var pushStandalone = function (key, t) {
+      var rr = { key: key, pali:'', eng:'', vie:'' };
+      if (lang==='pali') rr.pali=t;
+      if (lang==='eng') rr.eng=t;
+      if (lang==='vie') rr.vie=t;
+      out.push(rr);
+    };
     for (var i = 0; i < rows.length; i++) {
       var r = rows[i];
       var key = String(r.key||'');
       var raw = lang==='pali'?(r.pali||''):lang==='eng'?(r.eng||''):(r.vie||'');
       var t = (raw||'').trim();
       if (!t) continue;
+
+      // Metadata/title rows (vd :0.3 sub-sutta title) → standalone, không merge
+      if (/:0\.\d/.test(key)) {
+        flush();
+        pushStandalone(key, t);
+        currentScope = null;
+        continue;
+      }
+      // Heading "1. Paribbājakakathā" → standalone
       if (isNumberedHeadingLine(t)) {
         flush();
-        var rr = { key: key, pali:'', eng:'', vie:'' };
-        if (lang==='pali') rr.pali=t;
-        if (lang==='eng') rr.eng=t;
-        if (lang==='vie') rr.vie=t;
-        out.push(rr); continue;
+        pushStandalone(key, t);
+        currentScope = null;
+        continue;
       }
+
+      // Ngắt paragraph khi scope đổi (major section hoặc sub-sutta mới)
+      var scope = getMajorScope(key);
+      if (currentScope !== null && scope !== currentScope) flush();
+      currentScope = scope;
+
       if (!buf) { buf=t; bufKey=key; } else buf+=' '+t;
     }
     flush(); return out;
@@ -337,6 +364,7 @@
     setText('settingsTtsUiLabel',     isEn ? 'Text-to-Speech'      : 'Text-to-Speech');
     setText('settingsSegmentLabel',   isEn ? 'Segments'             : 'Phân đoạn');
     setText('settingsSegmentSub',     isEn ? 'Show / hide'          : 'Hiện / ẩn');
+    setText('settingsInterfaceLabel', isEn ? 'Interface'            : 'Giao diện');
 
     var note = $('settingsTtsNote');
     if (note) note.innerHTML = isEn
@@ -377,39 +405,59 @@
     if (!dlg) return;
     var isEn = uiLang === 'en';
     dlg.innerHTML = isEn
-      ? '<h2>Quick guide</h2><em>Short instructions on how to use the sutta reader.</em>' +
+      ? '<h2>Quick guide</h2>' +
+        '<em>Trilingual sutta reader — Pāli · English · Vietnamese</em>' +
+        '<h3>Navigation</h3>' +
         '<ul>' +
-          '<li>📖 <strong>Library</strong>: open the catalogue and pick a sutta.</li>' +
-          '<li>🔎 <strong>Search</strong>: type name / ID / keyword to filter.</li>' +
-          '<li>⚙ <strong>Settings</strong>: languages, layout (stack), segment labels, font size, TTS.</li>' +
-          '<li>🔗 <strong>Share</strong>: the URL hash (<code>#dn9</code>) reflects the current sutta — copy the page URL to share.</li>' +
-          '<li>⏸ <strong>TTS note</strong>: pause restarts the current sentence (browser limitation).</li>' +
+          '<li>📚 <strong>Library</strong> (bottom-left): open catalogue. Nikāya headers stick at top; click to collapse.</li>' +
+          '<li>🔎 <strong>Search</strong>: type sutta name, code (e.g. "DN 7", "MN 10"), or Pāli title.</li>' +
+          '<li>‹ TRƯỚC / SAU › <strong>Prev / Next</strong>: navigate to neighbouring sutta within same nikāya.</li>' +
+          '<li>🎯 <strong>Sutta path</strong> (centre of footer): click to reveal current sutta in Library.</li>' +
+          '<li>🔗 <strong>Share</strong>: URL hash updates live (<code>#dn16</code>). Copy URL to share — recipient lands on the exact sutta. Segment-level citation inside the epigraph under Namo tassa opens source sutta on click.</li>' +
         '</ul>' +
-        '<h2 style="margin-top:14px;font-size:18px">Keyboard</h2>' +
+        '<h3>Settings panel (⚙ bottom-right)</h3>' +
+        '<ul>' +
+          '<li><strong>Row 1 — Interface</strong>: 🌙/☀ theme toggle · <strong>VI/EN</strong> UI language · <strong>?</strong> this guide.</li>' +
+          '<li><strong>Row 2 — Languages</strong>: Pāli · English · Việt. Toggle column visibility (at least one must stay on).</li>' +
+          '<li><strong>Row 3 — Layout &amp; Segments</strong>: ☰ <em>Stacked</em> puts language columns vertically · ▦ <em>Segment</em> shows PALI/ENGLISH/… labels · # <em>ID</em> shows segment codes like "DN16.1.1".</li>' +
+          '<li><strong>Row 4 — Display</strong>: font size slider (A) · line-height slider (☰). ↺ buttons below reset each to default.</li>' +
+          '<li><strong>Row 5 — Read aloud (TTS)</strong>: ▶ play · ⏸ pause · ⏹ stop. Uses browser speech engine. <em>Note:</em> pausing restarts the current sentence (browser limitation). Vietnamese TTS on Android needs Google TTS engine installed.</li>' +
+        '</ul>' +
+        '<h3>Keyboard (desktop)</h3>' +
         '<ul>' +
           '<li><kbd>J</kbd> / <kbd>K</kbd> — next / previous segment</li>' +
           '<li><kbd>N</kbd> / <kbd>P</kbd> — next / previous sutta</li>' +
-          '<li><kbd>g</kbd> / <kbd>G</kbd> — top / bottom of sutta</li>' +
-          '<li><kbd>/</kbd> — open search · <kbd>?</kbd> — this guide · <kbd>Esc</kbd> — close</li>' +
+          '<li><kbd>g</kbd> / <kbd>G</kbd> — jump to top / bottom of sutta</li>' +
+          '<li><kbd>/</kbd> — open Library + focus search · <kbd>?</kbd> — this guide · <kbd>Esc</kbd> — close any panel</li>' +
         '</ul>' +
-        '<em style="margin-top:8px">Feedback: tuanctvn199@gmail.com</em>' +
+        '<em>Feedback / typo reports: tuanctvn199@gmail.com</em>' +
         '<button id="btnCloseGuide" type="button">Close</button>'
-      : '<h2>Hướng dẫn nhanh</h2><em>Một số hướng dẫn cơ bản để sử dụng trang đọc kinh.</em>' +
+      : '<h2>Hướng dẫn nhanh</h2>' +
+        '<em>Trang đọc kinh song ngữ — Pāli · English · Tiếng Việt</em>' +
+        '<h3>Điều hướng</h3>' +
         '<ul>' +
-          '<li>📖 <strong>Thư viện</strong>: mở mục lục và chọn bài.</li>' +
-          '<li>🔎 <strong>Tìm kiếm</strong>: gõ tên / mã / từ khoá để lọc.</li>' +
-          '<li>⚙ <strong>Cài đặt</strong>: ngôn ngữ, bố cục, phân đoạn, cỡ chữ, TTS.</li>' +
-          '<li>🔗 <strong>Chia sẻ</strong>: địa chỉ URL (<code>#dn9</code>) tự cập nhật theo bài đang mở — sao chép link để chia sẻ.</li>' +
-          '<li>⏸ <strong>Lưu ý TTS</strong>: tạm dừng sẽ đọc lại từ đầu câu (giới hạn trình duyệt).</li>' +
+          '<li>📚 <strong>Thư viện</strong> (góc dưới trái): mở mục lục. Tên Nikāya dính trên cùng; click vào để thu/mở cả Nikāya.</li>' +
+          '<li>🔎 <strong>Tìm kiếm</strong>: gõ tên bài, mã (ví dụ "DN 7", "MN 10"), hoặc tên Pāli để lọc.</li>' +
+          '<li>‹ TRƯỚC / SAU › <strong>Chuyển bài</strong>: sang bài kế tiếp trong cùng Nikāya.</li>' +
+          '<li>🎯 <strong>Tên bài ở giữa footer</strong>: click để xem vị trí bài hiện tại trong Thư viện.</li>' +
+          '<li>🔗 <strong>Chia sẻ link</strong>: URL tự cập nhật theo bài (<code>#dn16</code>). Copy URL gửi — người nhận mở trúng bài. Dải câu Pāli dưới Namo tassa có nút "DN 16"… click sẽ mở đến bài kinh nguồn của câu đó.</li>' +
         '</ul>' +
-        '<h2 style="margin-top:14px;font-size:18px">Phím tắt</h2>' +
+        '<h3>Bảng Cài đặt (⚙ góc dưới phải)</h3>' +
+        '<ul>' +
+          '<li><strong>Hàng 1 — Giao diện</strong>: 🌙/☀ sáng/tối · <strong>VI/EN</strong> ngôn ngữ giao diện · <strong>?</strong> Hướng dẫn này.</li>' +
+          '<li><strong>Hàng 2 — Ngôn ngữ</strong>: Pāli · English · Việt. Bật/tắt từng cột (phải giữ tối thiểu 1).</li>' +
+          '<li><strong>Hàng 3 — Bố cục &amp; Phân đoạn</strong>: ☰ <em>Xếp dọc</em> gom cột ngôn ngữ theo chiều dọc · ▦ <em>Segment</em> hiện nhãn PALI/ENGLISH/… trên mỗi đoạn · # <em>ID</em> hiện mã đoạn dạng "DN16.1.1".</li>' +
+          '<li><strong>Hàng 4 — Hiển thị</strong>: slider cỡ chữ (A) · slider giãn dòng (☰). Nút ↺ phía dưới để đưa về mặc định.</li>' +
+          '<li><strong>Hàng 5 — Đọc kinh (TTS)</strong>: ▶ phát · ⏸ tạm dừng · ⏹ dừng. Dùng giọng đọc có sẵn của trình duyệt. <em>Lưu ý:</em> tạm dừng sẽ đọc lại câu hiện tại từ đầu (giới hạn browser). TTS tiếng Việt trên Android cần cài Google TTS Engine.</li>' +
+        '</ul>' +
+        '<h3>Phím tắt (desktop)</h3>' +
         '<ul>' +
           '<li><kbd>J</kbd> / <kbd>K</kbd> — đoạn sau / đoạn trước</li>' +
           '<li><kbd>N</kbd> / <kbd>P</kbd> — bài sau / bài trước</li>' +
-          '<li><kbd>g</kbd> / <kbd>G</kbd> — đầu / cuối bài kinh</li>' +
-          '<li><kbd>/</kbd> — mở tìm · <kbd>?</kbd> — hướng dẫn · <kbd>Esc</kbd> — đóng</li>' +
+          '<li><kbd>g</kbd> / <kbd>G</kbd> — nhảy đầu / cuối bài kinh</li>' +
+          '<li><kbd>/</kbd> — mở Thư viện + focus ô tìm · <kbd>?</kbd> — Hướng dẫn · <kbd>Esc</kbd> — đóng panel</li>' +
         '</ul>' +
-        '<em style="margin-top:8px">Góp ý: tuanctvn199@gmail.com</em>' +
+        '<em>Góp ý / báo lỗi dịch: tuanctvn199@gmail.com</em>' +
         '<button id="btnCloseGuide" type="button">Đóng</button>';
     var btnClose = $('btnCloseGuide');
     if (btnClose) btnClose.onclick = closeGuide;
@@ -750,30 +798,14 @@ mql.addEventListener('change', updateVisibleCols);
   var firstVisibleKey = null;
   var firstVisibleOffsetFromGrid = 0;
   var currentWrap = null;
-  var progressFillEl = $('readingProgressFill');
 
   function getScrollRoot() {
     // Title block + sutraGrid cùng nằm trong #readerArea (scroll container).
     return readerArea || grid;
   }
 
-  function updateReadingProgress() {
-    if (!progressFillEl || !grid) return;
-    var wraps = grid.querySelectorAll('.sutra-row-wrap');
-    var total = wraps.length;
-    if (!total) { progressFillEl.style.width = '0%'; return; }
-    // Progress theo số đoạn đã đọc — ổn định khi toggle ngôn ngữ/bố cục (không phụ thuộc pixel)
-    var idx = 0;
-    if (currentWrap) {
-      var wArr = Array.prototype.slice.call(wraps);
-      var found = wArr.indexOf(currentWrap);
-      if (found >= 0) idx = found;
-    } else if (readerArea && readerArea.scrollTop <= 4) {
-      idx = 0;
-    }
-    var pct = (idx + 1) / total * 100;
-    progressFillEl.style.width = Math.max(0, Math.min(100, pct)).toFixed(2) + '%';
-  }
+  /* Progress bar đã bỏ — giữ function no-op để các caller cũ không lỗi */
+  function updateReadingProgress() { /* no-op */ }
 
   function setupCurrentSegmentObserver() {
     if (currentSegObserver) { currentSegObserver.disconnect(); currentSegObserver = null; }
@@ -795,7 +827,6 @@ mql.addEventListener('change', updateVisibleCols);
         if (currentWrap) currentWrap.classList.remove('current');
         best.classList.add('current');
         currentWrap = best;
-        updateReadingProgress();
       }
     }, { root: scrollRoot, rootMargin: '-40% 0px -45% 0px', threshold: 0 });
     scrollRoot.querySelectorAll('.sutra-row-wrap').forEach(function (w) { currentSegObserver.observe(w); });
@@ -1015,6 +1046,16 @@ mql.addEventListener('change', updateVisibleCols);
       }
       return;
     }
+    // Rút gọn label nikaya: "Digha Nikaya - Trường Bộ Kinh" → "DN - Trường Bộ Kinh"
+    function shortenNikayaLabel(fullLabel, key) {
+      if (!fullLabel) return key || '';
+      var parts = String(fullLabel).split(/\s+-\s+/);
+      if (parts.length >= 2 && key) {
+        return key + ' - ' + parts.slice(1).join(' - ');
+      }
+      return fullLabel;
+    }
+
     var html = '';
     for (var i = 0; i < index.length; i++) {
       var sec = index[i];
@@ -1022,9 +1063,12 @@ mql.addEventListener('change', updateVisibleCols);
       var label = uiLang === 'en'
         ? sec.labelEn || sec.labelVi || sec.key
         : sec.labelVi || sec.labelEn || sec.key;
+      var shortLabel = shortenNikayaLabel(label, sec.key);
       html += '<li class="menu-block" role="treeitem" aria-expanded="false">' +
         '<button class="menu-toggle" type="button" data-target="' + escapeAttr(secId) + '" aria-expanded="false" aria-controls="' + escapeAttr(secId) + '">' +
-        '<span>' + escapeHtml(label) + '</span><span class="chevron" aria-hidden="true">▸</span>' +
+        '<span class="nikaya-full">' + escapeHtml(label) + '</span>' +
+        '<span class="nikaya-short">' + escapeHtml(shortLabel) + '</span>' +
+        '<span class="chevron" aria-hidden="true">▸</span>' +
         '</button>' +
         '<div id="' + escapeAttr(secId) + '" class="menu-list collapsed" role="group">' +
         '<div class="menu-nikaya-sticky" data-label="' + escapeAttr(label) + '" aria-hidden="true">' + escapeHtml(label) + '</div>' +
@@ -1385,7 +1429,6 @@ mql.addEventListener('change', updateVisibleCols);
     if (anchorObserver) { anchorObserver.disconnect(); anchorObserver = null; }
     if (currentSegObserver) { currentSegObserver.disconnect(); currentSegObserver = null; }
     currentWrap = null;
-    if (progressFillEl) progressFillEl.style.width = '0%';
     // Reset vị trí cuộn ngay lập tức khi chuyển bài — tránh "carry over" vị trí cũ
     if (switchingSutra && readerArea) readerArea.scrollTop = 0;
 
