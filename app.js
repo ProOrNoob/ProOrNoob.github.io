@@ -1998,11 +1998,6 @@ mql.addEventListener('change', updateVisibleCols);
     epPaliEl.textContent = e.pali;
     epTrEl.textContent   = uiLang === 'en' ? e.en : e.vi;
     epCiteEl.textContent = e.citeLabel;
-    epCiteEl.setAttribute('data-id', e.citeId);
-    epCiteEl.setAttribute('aria-label',
-      (uiLang === 'en' ? 'Open source sutta ' : 'Mở bài kinh nguồn ') + e.citeLabel);
-    epCiteEl.setAttribute('title',
-      uiLang === 'en' ? 'Open source sutta' : 'Mở bài kinh nguồn');
   }
   function rotateEpigraph() {
     if (epPaused || !epInnerEl || EPIGRAPHS.length < 2) return;
@@ -2019,13 +2014,6 @@ mql.addEventListener('change', updateVisibleCols);
   }
   function stopEpigraph() {
     if (epTimer) { clearInterval(epTimer); epTimer = null; }
-  }
-  if (epCiteEl) {
-    epCiteEl.addEventListener('click', function (ev) {
-      ev.stopPropagation();
-      var id = epCiteEl.getAttribute('data-id');
-      if (id) openSutra(id);
-    });
   }
   if (epInnerEl) {
     epInnerEl.addEventListener('mouseenter', function () { epPaused = true; });

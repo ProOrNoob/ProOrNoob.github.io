@@ -831,25 +831,14 @@ html.hide-seg-hdr .vie { margin-top: 0; }
   min-width: 0;
 }
 .ep-cite {
-  background: none;
-  border: 0;
   font-family: var(--mono);
   font-size: 10px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: inherit;
-  cursor: pointer;
-  padding: 0 4px;
-  transition: color .15s;
-  flex-shrink: 0;
-}
-.ep-cite::before { content: "— "; opacity: 0.6; }
-.ep-cite:hover {
   color: var(--accent);
-}
-.ep-cite:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  padding: 0;
+  flex-shrink: 0;
+  font-weight: 500;
 }
 
 /* Active segment (the one centered in the viewport while scrolling) */
@@ -1948,10 +1937,11 @@ button:not(:focus-visible), a:not(:focus-visible),
     <!-- EPIGRAPH — dải lời kinh ngay dưới Namo tassa (trên title block) -->
     <aside class="epigraph" role="complementary" aria-label="Lời kinh">
       <div class="epigraph-inner">
+        <span class="ep-cite" id="epCite"></span>
+        <span class="ep-sep" aria-hidden="true">·</span>
         <span class="ep-pali" id="epPali"></span>
         <span class="ep-sep" aria-hidden="true">·</span>
         <span class="ep-tr" id="epTr"></span>
-        <button class="ep-cite" id="epCite" type="button"></button>
       </div>
     </aside>
 
@@ -2152,6 +2142,6 @@ button:not(:focus-visible), a:not(:focus-visible),
 </div>
 
 <script src="toc.js?v=3" defer></script>
-<script src="app.js?v=14" defer></script>
+<script src="app.js?v=15" defer></script>
 </body>
 </html>
