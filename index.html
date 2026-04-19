@@ -1294,6 +1294,11 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
   transition: background .12s;
   position: relative;
 }
+/* Defensive: nếu JS cũ không render .sutra-code, layout vẫn không vỡ */
+.menu-sutta-link:not(:has(.sutra-code)) {
+  grid-template-columns: 1fr;
+  padding-left: 38px;
+}
 /* Mức indent 2: bài kinh lồng trong group (SN / AN) — thụt vào thêm 1 tab */
 .menu-subblock .menu-sutta-link {
   padding-left: 54px;
@@ -2063,7 +2068,7 @@ button:not(:focus-visible), a:not(:focus-visible),
   <div class="guide-dialog"></div>
 </div>
 
-<script src="toc.js" defer></script>
-<script src="app.js" defer></script>
+<script src="toc.js?v=2" defer></script>
+<script src="app.js?v=2" defer></script>
 </body>
 </html>
