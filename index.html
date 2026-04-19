@@ -1808,11 +1808,13 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
     max-width: 100%;
   }
   .bar-in {
-    padding: 6px 10px;
+    /* Thêm khoảng cách trên để Namo tassa không sát top screen (có cả safe-area cho notched phones) */
+    padding: calc(12px + env(safe-area-inset-top, 0px)) 10px 8px;
     gap: 8px;
     grid-template-columns: auto minmax(0, 1fr) auto;
   }
-  /* Epigraph giờ nằm dưới Namo tassa (trên title), giữ hiển thị trên mobile */
+  /* Mobile: ẩn epigraph (dải lời kinh chạy chữ) cho gọn — user có thể đọc full ở Welcome */
+  .epigraph { display: none; }
   .header { padding: 24px 22px 20px; }
   #title { font-size: calc(26px * var(--sutra-font-scale)); }
   #subtitle { font-size: calc(14px * var(--sutra-font-scale)); }
