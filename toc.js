@@ -41,8 +41,6 @@ window.SUTRA_INDEX = [
   { type: "sutta", id: "dn33", code: "DN 33", titlePali: "Saṅgīti Sutta", titleVi: "Kinh Kết Tập", titleEn: "The Recitation" },
   { type: "sutta", id: "dn34", code: "DN 34", titlePali: "Dasuttara Sutta", titleVi: "Kinh Thập Thượng", titleEn: "Up to Ten" }
 ]
-
-
   },
 
   /* ====================== MAJJHIMA NIKĀYA (MN) ====================== */
@@ -63,7 +61,6 @@ window.SUTRA_INDEX = [
   { type: "sutta", id: "mn08", code: "MN 8", titlePali: "Sallekha Sutta", titleVi: "Kinh Tẩy Trừ", titleEn: "Effacement" },
   { type: "sutta", id: "mn09", code: "MN 9", titlePali: "Sammādiṭṭhi Sutta", titleVi: "Kinh Chánh Tri Kiến", titleEn: "Right View" },
   { type: "sutta", id: "mn10", code: "MN 10", titlePali: "Satipaṭṭhāna Sutta", titleVi: "Kinh Niệm Xứ", titleEn: "The Foundations of Mindfulness" },
-
   { type: "sutta", id: "mn11", code: "MN 11", titlePali: "Cūḷasīhanāda Sutta", titleVi: "Kinh Tiểu Sư Tử Hống", titleEn: "The Shorter Discourse on the Lion’s Roar" },
   { type: "sutta", id: "mn12", code: "MN 12", titlePali: "Mahāsīhanāda Sutta", titleVi: "Kinh Đại Sư Tử Hống", titleEn: "The Greater Discourse on the Lion’s Roar" },
   { type: "sutta", id: "mn13", code: "MN 13", titlePali: "Mahādukkhakkhandha Sutta", titleVi: "Kinh Đại Khổ Uẩn", titleEn: "The Greater Mass of Suffering" },
@@ -74,7 +71,6 @@ window.SUTRA_INDEX = [
   { type: "sutta", id: "mn18", code: "MN 18", titlePali: "Madhupiṇḍika Sutta", titleVi: "Kinh Bánh Mật", titleEn: "The Honeyball" },
   { type: "sutta", id: "mn19", code: "MN 19", titlePali: "Dvedhāvitakka Sutta", titleVi: "Kinh Hai Loại Tư Duy", titleEn: "Two Kinds of Thought" },
   { type: "sutta", id: "mn20", code: "MN 20", titlePali: "Vitakkasaṇṭhāna Sutta", titleVi: "Kinh Đối Trị Tư Duy", titleEn: "The Removal of Distracting Thoughts" },
-
   { type: "sutta", id: "mn21", code: "MN 21", titlePali: "Kakacūpama Sutta", titleVi: "Kinh Ví Dụ Cái Cưa", titleEn: "The Simile of the Saw" },
   { type: "sutta", id: "mn22", code: "MN 22", titlePali: "Alagaddūpama Sutta", titleVi: "Kinh Ví Dụ Con Rắn", titleEn: "The Simile of the Snake" },
   { type: "sutta", id: "mn23", code: "MN 23", titlePali: "Vammika Sutta", titleVi: "Kinh Tổ Mối", titleEn: "The Ant-hill" },
@@ -85,7 +81,6 @@ window.SUTRA_INDEX = [
   { type: "sutta", id: "mn28", code: "MN 28", titlePali: "Mahāhatthipadopama Sutta", titleVi: "Kinh Dấu Chân Voi Lớn", titleEn: "The Greater Elephant Footprint Simile" },
   { type: "sutta", id: "mn29", code: "MN 29", titlePali: "Mahāsāropama Sutta", titleVi: "Kinh Ví Dụ Lõi Cây Lớn", titleEn: "The Greater Discourse on the Simile of the Heartwood" },
   { type: "sutta", id: "mn30", code: "MN 30", titlePali: "Cūḷasāropama Sutta", titleVi: "Kinh Ví Dụ Lõi Cây Nhỏ", titleEn: "The Shorter Discourse on the Heartwood" },
-
   { type: "sutta", id: "mn31", code: "MN 31", titlePali: "Cūḷagosiṅga Sutta", titleVi: "Kinh Rừng Gosiṅga Nhỏ", titleEn: "The Shorter Gosiṅga Forest Discourse" },
   { type: "sutta", id: "mn32", code: "MN 32", titlePali: "Mahāgosiṅga Sutta", titleVi: "Kinh Rừng Gosiṅga Lớn", titleEn: "The Greater Gosiṅga Forest Discourse" },
   { type: "sutta", id: "mn33", code: "MN 33", titlePali: "Mahāgopālaka Sutta", titleVi: "Kinh Người Chăn Bò Lớn", titleEn: "The Greater Cowherd Discourse" },
@@ -96,7 +91,6 @@ window.SUTRA_INDEX = [
   { type: "sutta", id: "mn38", code: "MN 38", titlePali: "Mahātaṇhāsaṅkhaya Sutta", titleVi: "Kinh Diệt Ái Lớn", titleEn: "The Greater Discourse on the Destruction of Craving" },
   { type: "sutta", id: "mn39", code: "MN 39", titlePali: "Mahāassapura Sutta", titleVi: "Kinh Đại Assapura", titleEn: "The Greater Discourse at Assapura" },
   { type: "sutta", id: "mn40", code: "MN 40", titlePali: "Cūḷaassapura Sutta", titleVi: "Kinh Tiểu Assapura", titleEn: "The Shorter Discourse at Assapura" },
-
   { type: "sutta", id: "mn41", code: "MN 41", titlePali: "Sāleyyaka Sutta", titleVi: "Kinh Sāleyyaka", titleEn: "The People of Sālā" },
   { type: "sutta", id: "mn42", code: "MN 42", titlePali: "Verañjaka Sutta", titleVi: "Kinh Verañja", titleEn: "At Verañjā" },
   { type: "sutta", id: "mn43", code: "MN 43", titlePali: "Mahāvedalla Sutta", titleVi: "Kinh Đại Vấn Đáp", titleEn: "The Greater Set of Questions and Answers" },
@@ -117,7 +111,6 @@ window.SUTRA_INDEX = [
   { type: "sutta", id: "mn58", code: "MN 58", titlePali: "Abhayarājakumāra Sutta", titleVi: "Kinh Thái Tử Abhaya", titleEn: "To Prince Abhaya" },
   { type: "sutta", id: "mn59", code: "MN 59", titlePali: "Bahuvedanīya Sutta", titleVi: "Kinh Nhiều Cảm Thọ", titleEn: "The Many Kinds of Feeling" },
   { type: "sutta", id: "mn60", code: "MN 60", titlePali: "Apaṇṇaka Sutta", titleVi: "Kinh Không Thể Sai Lầm", titleEn: "The Incontrovertible Teaching" },
-
   { type: "sutta", id: "mn61", code: "MN 61", titlePali: "Ambalaṭṭhikā Rāhulovāda Sutta", titleVi: "Kinh Giáo Giới Rāhula tại Amba", titleEn: "Advice to Rāhula at Ambalaṭṭhikā" },
   { type: "sutta", id: "mn62", code: "MN 62", titlePali: "Mahārāhulovāda Sutta", titleVi: "Kinh Đại Giáo Giới Rāhula", titleEn: "The Greater Discourse on Advice to Rāhula" },
   { type: "sutta", id: "mn63", code: "MN 63", titlePali: "Cūḷamālukya Sutta", titleVi: "Kinh Tiểu Māluṅkyā", titleEn: "The Shorter Discourse to Māluṅkyāputta" },
@@ -128,7 +121,6 @@ window.SUTRA_INDEX = [
   { type: "sutta", id: "mn68", code: "MN 68", titlePali: "Naḷakapāna Sutta", titleVi: "Kinh Naḷakapāna", titleEn: "At Naḷakapāna" },
   { type: "sutta", id: "mn69", code: "MN 69", titlePali: "Goliyāni Sutta", titleVi: "Kinh Goliyāni", titleEn: "At Goliyāni" },
   { type: "sutta", id: "mn70", code: "MN 70", titlePali: "Kīṭāgiri Sutta", titleVi: "Kinh Kīṭāgiri", titleEn: "At Kīṭāgiri" },
-
   { type: "sutta", id: "mn71", code: "MN 71", titlePali: "Tevijjavacchagotta Sutta", titleVi: "Kinh Tevijja Vacchagotta", titleEn: "To Vacchagotta on the Threefold Knowledge" },
   { type: "sutta", id: "mn72", code: "MN 72", titlePali: "Aggivacchagotta Sutta", titleVi: "Kinh Aggivacchagotta", titleEn: "To Vacchagotta on Fire" },
   { type: "sutta", id: "mn73", code: "MN 73", titlePali: "Mahāvacchagotta Sutta", titleVi: "Kinh Đại Vacchagotta", titleEn: "The Greater Discourse to Vacchagotta" },
@@ -139,7 +131,6 @@ window.SUTRA_INDEX = [
   { type: "sutta", id: "mn78", code: "MN 78", titlePali: "Samaṇamuṇḍika Sutta", titleVi: "Kinh Sa Môn Trọc Đầu", titleEn: "The Shaveling Ascetic" },
   { type: "sutta", id: "mn79", code: "MN 79", titlePali: "Cūḷasakuludāyi Sutta", titleVi: "Kinh Tiểu Sakuludāyi", titleEn: "The Shorter Discourse to Sakuludāyī" },
   { type: "sutta", id: "mn80", code: "MN 80", titlePali: "Vekhanassa Sutta", titleVi: "Kinh Vekhanassa", titleEn: "To Vekhanassa" },
-
   { type: "sutta", id: "mn81", code: "MN 81", titlePali: "Ghaṭikāra Sutta", titleVi: "Kinh Ghaṭikāra", titleEn: "With Ghaṭikāra" },
   { type: "sutta", id: "mn82", code: "MN 82", titlePali: "Raṭṭhapāla Sutta", titleVi: "Kinh Raṭṭhapāla", titleEn: "About Raṭṭhapāla" },
   { type: "sutta", id: "mn83", code: "MN 83", titlePali: "Maghadeva Sutta", titleVi: "Kinh Maghadeva", titleEn: "On King Maghadeva" },
@@ -150,7 +141,6 @@ window.SUTRA_INDEX = [
   { type: "sutta", id: "mn88", code: "MN 88", titlePali: "Bāhitika Sutta", titleVi: "Kinh Bāhitika", titleEn: "About the Cloak" },
   { type: "sutta", id: "mn89", code: "MN 89", titlePali: "Dhammacetiya Sutta", titleVi: "Kinh Bảo Tháp Pháp", titleEn: "Monuments to the Dhamma" },
   { type: "sutta", id: "mn90", code: "MN 90", titlePali: "Kaṇṇakatthala Sutta", titleVi: "Kinh Kaṇṇakatthala", titleEn: "At Kaṇṇakatthala" },
-
   { type: "sutta", id: "mn91", code: "MN 91", titlePali: "Brahmāyu Sutta", titleVi: "Kinh Bà La Môn Brahmāyu", titleEn: "With Brahmāyu" },
   { type: "sutta", id: "mn92", code: "MN 92", titlePali: "Sela Sutta", titleVi: "Kinh Sela", titleEn: "With Sela" },
   { type: "sutta", id: "mn93", code: "MN 93", titlePali: "Assalāyana Sutta", titleVi: "Kinh Assalāyana", titleEn: "To Assalāyana" },
@@ -161,7 +151,6 @@ window.SUTRA_INDEX = [
   { type: "sutta", id: "mn98", code: "MN 98", titlePali: "Vāseṭṭha Sutta", titleVi: "Kinh Vāseṭṭha", titleEn: "With Vāseṭṭha" },
   { type: "sutta", id: "mn99", code: "MN 99", titlePali: "Subha Sutta", titleVi: "Kinh Subha", titleEn: "To Subha" },
   { type: "sutta", id: "mn100", code: "MN 100", titlePali: "Saṅgārava Sutta", titleVi: "Kinh Saṅgārava", titleEn: "To Saṅgārava" },
-
   { type: "sutta", id: "mn101", code: "MN 101", titlePali: "Devadaha Sutta", titleVi: "Kinh Devadaha", titleEn: "At Devadaha" },
   { type: "sutta", id: "mn102", code: "MN 102", titlePali: "Pañcattaya Sutta", titleVi: "Kinh Năm Quan Điểm", titleEn: "Five and Three" },
   { type: "sutta", id: "mn103", code: "MN 103", titlePali: "Kinti Sutta", titleVi: "Kinh Kinti", titleEn: "What Do You Think of Me?" },
@@ -172,7 +161,6 @@ window.SUTRA_INDEX = [
   { type: "sutta", id: "mn108", code: "MN 108", titlePali: "Gopakamoggallāna Sutta", titleVi: "Kinh Gopaka Moggallāna", titleEn: "With Gopaka Moggallāna" },
   { type: "sutta", id: "mn109", code: "MN 109", titlePali: "Mahāpuṇṇama Sutta", titleVi: "Kinh Đêm Trăng Tròn Lớn", titleEn: "The Greater Full-Moon Night" },
   { type: "sutta", id: "mn110", code: "MN 110", titlePali: "Cūḷapuṇṇama Sutta", titleVi: "Kinh Đêm Trăng Tròn Nhỏ", titleEn: "The Smaller Full-Moon Night" },
-
   { type: "sutta", id: "mn111", code: "MN 111", titlePali: "Anupada Sutta", titleVi: "Kinh Từng Bước", titleEn: "One by One as They Occurred" },
   { type: "sutta", id: "mn112", code: "MN 112", titlePali: "Chabbisodhana Sutta", titleVi: "Kinh Sáu Thanh Tịnh", titleEn: "The Sixfold Purity" },
   { type: "sutta", id: "mn113", code: "MN 113", titlePali: "Sappurisa Sutta", titleVi: "Kinh Người Chân Chánh", titleEn: "The True Person" },
@@ -183,7 +171,6 @@ window.SUTRA_INDEX = [
   { type: "sutta", id: "mn118", code: "MN 118", titlePali: "Ānāpānasati Sutta", titleVi: "Kinh Niệm Hơi Thở", titleEn: "Mindfulness of Breathing" },
   { type: "sutta", id: "mn119", code: "MN 119", titlePali: "Kāyagatāsati Sutta", titleVi: "Kinh Niệm Thân", titleEn: "Mindfulness of the Body" },
   { type: "sutta", id: "mn120", code: "MN 120", titlePali: "Saṅkhārupapatti Sutta", titleVi: "Kinh Sanh Theo Nghiệp", titleEn: "Reappearance by Volitional Formations" },
-
   { type: "sutta", id: "mn121", code: "MN 121", titlePali: "Cūḷasuññata Sutta", titleVi: "Kinh Không Nhỏ", titleEn: "The Shorter Discourse on Emptiness" },
   { type: "sutta", id: "mn122", code: "MN 122", titlePali: "Mahāsuññata Sutta", titleVi: "Kinh Không Lớn", titleEn: "The Greater Discourse on Emptiness" },
   { type: "sutta", id: "mn123", code: "MN 123", titlePali: "Acchariyabbhuta Sutta", titleVi: "Kinh Hy Hữu Vị Tằng Hữu", titleEn: "Wonderful and Marvellous" },
@@ -194,7 +181,6 @@ window.SUTRA_INDEX = [
   { type: "sutta", id: "mn128", code: "MN 128", titlePali: "Upakkilesa Sutta", titleVi: "Kinh Nhiễm Ô", titleEn: "The Corruptions" },
   { type: "sutta", id: "mn129", code: "MN 129", titlePali: "Bālapaṇḍita Sutta", titleVi: "Kinh Người Ngu – Người Trí", titleEn: "The Fool and the Wise" },
   { type: "sutta", id: "mn130", code: "MN 130", titlePali: "Devadūta Sutta", titleVi: "Kinh Sứ Giả Chư Thiên", titleEn: "The Divine Messengers" },
-
   { type: "sutta", id: "mn131", code: "MN 131", titlePali: "Bhaddekaratta Sutta", titleVi: "Kinh Một Đêm An Lành", titleEn: "One Fortunate Attachment to the Present" },
   { type: "sutta", id: "mn132", code: "MN 132", titlePali: "Ānandabhaddekaratta Sutta", titleVi: "Kinh Một Đêm An Lành với Ananda", titleEn: "Ānanda and One Fortunate Attachment to the Present" },
   { type: "sutta", id: "mn133", code: "MN 133", titlePali: "Mahākaccānabhaddekaratta Sutta", titleVi: "Kinh Một Đêm An Lành với Mahākaccāna", titleEn: "Mahākaccāna and One Fortunate Attachment to the Present" },
@@ -205,7 +191,6 @@ window.SUTRA_INDEX = [
   { type: "sutta", id: "mn138", code: "MN 138", titlePali: "Uddesavibhaṅga Sutta", titleVi: "Kinh Phân Biệt Tóm Tắt", titleEn: "The Exposition of a Summary" },
   { type: "sutta", id: "mn139", code: "MN 139", titlePali: "Araṇavibhaṅga Sutta", titleVi: "Kinh Phân Biệt Không Tranh Cãi", titleEn: "The Exposition of Non-Conflict" },
   { type: "sutta", id: "mn140", code: "MN 140", titlePali: "Dhātuvibhaṅga Sutta", titleVi: "Kinh Phân Biệt Các Giới", titleEn: "The Exposition of the Elements" },
-
   { type: "sutta", id: "mn141", code: "MN 141", titlePali: "Saccavibhaṅga Sutta", titleVi: "Kinh Phân Biệt Thánh Đế", titleEn: "The Exposition of the Truths" },
   { type: "sutta", id: "mn142", code: "MN 142", titlePali: "Dakkhiṇāvibhaṅga Sutta", titleVi: "Kinh Phân Biệt Bố Thí", titleEn: "The Exposition of Offerings" },
   { type: "sutta", id: "mn143", code: "MN 143", titlePali: "Anāthapiṇḍikovāda Sutta", titleVi: "Kinh Giáo Giới Cấp Cô Độc", titleEn: "Advice to Anāthapiṇḍika" },
@@ -216,7 +201,6 @@ window.SUTRA_INDEX = [
   { type: "sutta", id: "mn148", code: "MN 148", titlePali: "Chachakka Sutta", titleVi: "Kinh Sáu Bộ Sáu", titleEn: "The Analysis of the Six Sets of Six" },
   { type: "sutta", id: "mn149", code: "MN 149", titlePali: "Mahāsaḷāyatanika Sutta", titleVi: "Kinh Đại Sáu Xứ", titleEn: "The Great Sixfold Sense Base" },
   { type: "sutta", id: "mn150", code: "MN 150", titlePali: "Nagaravindeyya Sutta", titleVi: "Kinh Nagaravindeyya", titleEn: "At Nagaravinda" },
-
   { type: "sutta", id: "mn151", code: "MN 151", titlePali: "Piṇḍapātapārisuddhi Sutta", titleVi: "Kinh Thanh Tịnh Thọ Dụng", titleEn: "The Purification of Alms-food" },
   { type: "sutta", id: "mn152", code: "MN 152", titlePali: "Indriyabhāvanā Sutta", titleVi: "Kinh Tu Tập Các Căn", titleEn: "The Development of the Faculties" }
 
@@ -1203,7 +1187,7 @@ window.SUTRA_INDEX = [
         }
       ]
     }
- 
+
 ]
 },
 
@@ -1337,28 +1321,24 @@ window.SUTRA_INDEX = [
     labelVi: "Nhóm Năm Pháp",
     labelEn: "Pañcakanipāta (The Book of the Fives)",
     children:[
-
     { type: "sutta", id: "an5_v1",  code: "AN 5 – Vagga 1",  titlePali: "Sekhabalavagga",        titleVi: "01. Phẩm Sức Mạnh Hữu Học",  titleEn: "Strength of a Trainee" },
     { type: "sutta", id: "an5_v2",  code: "AN 5 – Vagga 2",  titlePali: "Balavagga",             titleVi: "02. Phẩm Sức Mạnh",          titleEn: "Strength" },
     { type: "sutta", id: "an5_v3",  code: "AN 5 – Vagga 3",  titlePali: "Pañcaṅgikavagga",       titleVi: "03. Phẩm Năm Phần",          titleEn: "The Five Factors" },
     { type: "sutta", id: "an5_v4",  code: "AN 5 – Vagga 4",  titlePali: "Sumanavagga",           titleVi: "04. Phẩm Sumana",            titleEn: "Sumana" },
     { type: "sutta", id: "an5_v5",  code: "AN 5 – Vagga 5",  titlePali: "Muṇḍavagga",            titleVi: "05. Phẩm Vua Muṇḍa",         titleEn: "King Muṇḍa" },
     { type: "sutta", id: "an5_v6",  code: "AN 5 – Vagga 6",  titlePali: "Nīvaraṇavagga",         titleVi: "06. Phẩm Triền Cái",         titleEn: "The Hindrances" },
-
     { type: "sutta", id: "an5_v7",  code: "AN 5 – Vagga 7",  titlePali: "Saṅgāravavagga",        titleVi: "07. Phẩm Tướng",             titleEn: "Marks and Signs" },
     { type: "sutta", id: "an5_v8",  code: "AN 5 – Vagga 8",  titlePali: "Yodhājīvavagga",        titleVi: "08. Phẩm Chiến Sĩ",          titleEn: "Warriors" },
     { type: "sutta", id: "an5_v9",  code: "AN 5 – Vagga 9",  titlePali: "Theravagga",            titleVi: "09. Phẩm Trưởng Lão",        titleEn: "Elders" },
     { type: "sutta", id: "an5_v10", code: "AN 5 – Vagga 10", titlePali: "Kakkudhavagga",         titleVi: "10. Phẩm Kakudha",           titleEn: "Kakudha" },
     { type: "sutta", id: "an5_v11", code: "AN 5 – Vagga 11", titlePali: "Anāvāsavagga",          titleVi: "11. Phẩm An Ổn Trú",         titleEn: "Without Dwelling" },
     { type: "sutta", id: "an5_v12", code: "AN 5 – Vagga 12", titlePali: "Andhakavindavagga",     titleVi: "12. Phẩm Andhakavinda",      titleEn: "Andhakavinda" },
-
     { type: "sutta", id: "an5_v13", code: "AN 5 – Vagga 13", titlePali: "Gilānavagga",           titleVi: "13. Phẩm Bệnh",              titleEn: "The Sick" },
     { type: "sutta", id: "an5_v14", code: "AN 5 – Vagga 14", titlePali: "Rājavagga",              titleVi: "14. Phẩm Vua",               titleEn: "Kings" },
     { type: "sutta", id: "an5_v15", code: "AN 5 – Vagga 15", titlePali: "Tikandikavagga",        titleVi: "15. Phẩm Tikandikā",         titleEn: "Tikandikā" },
     { type: "sutta", id: "an5_v16", code: "AN 5 – Vagga 16", titlePali: "Saddhammavagga",        titleVi: "16. Phẩm Diệu Pháp",         titleEn: "The True Dhamma" },
     { type: "sutta", id: "an5_v17", code: "AN 5 – Vagga 17", titlePali: "Hīnavagga",             titleVi: "17. Phẩm Hiểm Họa",          titleEn: "The Low / Inferior" },
     { type: "sutta", id: "an5_v18", code: "AN 5 – Vagga 18", titlePali: "Duṭṭhā­cāravagga",       titleVi: "18. Phẩm Năm Cư Sĩ",         titleEn: "Five Kinds of Lay Followers" },
-
     { type: "sutta", id: "an5_v19", code: "AN 5 – Vagga 19", titlePali: "Araññavagga",           titleVi: "19. Phẩm Rừng",              titleEn: "The Forest" },
     { type: "sutta", id: "an5_v20", code: "AN 5 – Vagga 20", titlePali: "Brāhmaṇavagga",         titleVi: "20. Phẩm Bà-la-môn",         titleEn: "Brahmins" },
     { type: "sutta", id: "an5_v21", code: "AN 5 – Vagga 21", titlePali: "Kimbilāvagga",          titleVi: "21. Phẩm Kimbila",           titleEn: "Kimbila" },
@@ -1405,8 +1385,7 @@ window.SUTRA_INDEX = [
  { type: "sutta", id: "an7_v7", code: "AN 7 – Vagga 7", titlePali: "Mahāvagga", titleVi: "07. Đại Phẩm", titleEn: "Great Chapter" },
  { type: "sutta", id: "an7_v8", code: "AN 7 – Vagga 8", titlePali: "Vinayavagga", titleVi: "08. Phẩm Về Luật", titleEn: "Discipline Chapter" },
  { type: "sutta", id: "an7_v9", code: "AN 7 – Vagga 9", titlePali: "Peyyālavagga", titleVi: "09. Phẩm Các Kinh Không Nhiếp", titleEn: "Miscellaneous / Repetition Chapter" }
-  
-
+ 
   ]
   },
   {
@@ -1415,7 +1394,7 @@ window.SUTRA_INDEX = [
     labelVi: "Nhóm Tám Pháp",
     labelEn: "Aṭṭhakanipāta (The Book of the Eights)",
     children:  [
-{ type: "sutta", id: "an8_v1", code: "AN 8 – Vagga 1", titlePali: "Metta­vagga", titleVi: "01. Phẩm Từ", titleEn: "Loving-kindness Chapter" },
+ { type: "sutta", id: "an8_v1", code: "AN 8 – Vagga 1", titlePali: "Metta­vagga", titleVi: "01. Phẩm Từ", titleEn: "Loving-kindness Chapter" },
  { type: "sutta", id: "an8_v2", code: "AN 8 – Vagga 2", titlePali: "Mahā­vagga", titleVi: "02. Phẩm Lớn", titleEn: "Great Chapter" },
  { type: "sutta", id: "an8_v3", code: "AN 8 – Vagga 3", titlePali: "Gaha­pati­vagga", titleVi: "03. Phẩm Gia Chủ", titleEn: "Householders Chapter" },
  { type: "sutta", id: "an8_v4", code: "AN 8 – Vagga 4", titlePali: "Dāna­vagga", titleVi: "04. Phẩm Bố Thí", titleEn: "Giving Chapter" },
@@ -1444,8 +1423,6 @@ window.SUTRA_INDEX = [
  { type: "sutta", id: "an9_v8", code: "AN 9 – Vagga 8", titlePali: "Sammappadhāna­vagga", titleVi: "08. Phẩm Chánh Cần", titleEn: "Right Effort Chapter" },
  { type: "sutta", id: "an9_v9", code: "AN 9 – Vagga 9", titlePali: "Cittāvāsa­vagga", titleVi: "09. Phẩm Bổn Như Ý Túc", titleEn: "Bases of Psychic Power Chapter" },
  { type: "sutta", id: "an9_v10", code: "AN 9 – Vagga 10", titlePali: "Tanhā­vagga", titleVi: "10. Phẩm Tham", titleEn: "Craving Chapter" }
-    
-
   ]
   },
   {
@@ -1454,23 +1431,18 @@ window.SUTRA_INDEX = [
     labelVi: "Nhóm Mười Pháp",
     labelEn: "Dasakanipāta (The Book of the Tens)",
     children: [
-
     { type: "sutta", id: "an10_v1",  code: "AN 10 – Vagga 1",  titlePali: "Ānisaṃsavagga",        titleVi: "01. Phẩm Lợi Ích",            titleEn: "Benefits Chapter" },
     { type: "sutta", id: "an10_v2",  code: "AN 10 – Vagga 2",  titlePali: "Nissayavagga",         titleVi: "02. Phẩm Hộ Trì",              titleEn: "Support / Protection Chapter" },
     { type: "sutta", id: "an10_v3",  code: "AN 10 – Vagga 3",  titlePali: "Mahāvagga",            titleVi: "03. Phẩm Lớn",                 titleEn: "Great Chapter" },
-
     { type: "sutta", id: "an10_v4",  code: "AN 10 – Vagga 4",  titlePali: "Upālivagga",           titleVi: "04. Phẩm Upāli và Ānanda",     titleEn: "Upāli and Ānanda Chapter" },
     { type: "sutta", id: "an10_v5",  code: "AN 10 – Vagga 5",  titlePali: "Akkosavagga",          titleVi: "05. Phẩm Mắng Nhiếc",          titleEn: "Abuse Chapter" },
     { type: "sutta", id: "an10_v6",  code: "AN 10 – Vagga 6",  titlePali: "Cittavaggā",           titleVi: "06. Phẩm Tâm Của Mình",        titleEn: "One’s Own Mind Chapter" },
-
     { type: "sutta", id: "an10_v7",  code: "AN 10 – Vagga 7",  titlePali: "Yamakavagga",          titleVi: "07. Phẩm Song Đôi",            titleEn: "Pairs Chapter" },
     { type: "sutta", id: "an10_v8",  code: "AN 10 – Vagga 8",  titlePali: "Paṇidhānavagga",       titleVi: "08. Phẩm Ước Nguyện",          titleEn: "Aspirations Chapter" },
     { type: "sutta", id: "an10_v9",  code: "AN 10 – Vagga 9",  titlePali: "Theravagga",           titleVi: "09. Phẩm Trưởng Lão",          titleEn: "Elders Chapter" },
-
     { type: "sutta", id: "an10_v10", code: "AN 10 – Vagga 10", titlePali: "Upāsakavagga",         titleVi: "10. Phẩm Nam Cư Sĩ",           titleEn: "Male Lay Followers Chapter" },
     { type: "sutta", id: "an10_v11", code: "AN 10 – Vagga 11", titlePali: "Samaṇā­vagga",          titleVi: "11. Phẩm Sa-môn Tượng",        titleEn: "Ascetic Types Chapter" },
     { type: "sutta", id: "an10_v12", code: "AN 10 – Vagga 12", titlePali: "Pantesuvagga",         titleVi: "12. Phẩm Đi Xuống",            titleEn: "Decline Chapter" },
-
     { type: "sutta", id: "an10_v13", code: "AN 10 – Vagga 13", titlePali: "Saṃyojanavagga",       titleVi: "13. Phẩm Thân Tình",           titleEn: "Fetters Chapter" },
     { type: "sutta", id: "an10_v14", code: "AN 10 – Vagga 14", titlePali: "Indriyavagga",         titleVi: "14. Phẩm Thiện Lương",         titleEn: "Wholesome Faculties Chapter" },
     { type: "sutta", id: "an10_v15", code: "AN 10 – Vagga 15", titlePali: "Magga­vagga",           titleVi: "15. Phẩm Thánh Đạo",           titleEn: "The Noble Path Chapter" },
@@ -1490,11 +1462,10 @@ window.SUTRA_INDEX = [
     labelVi: "Nhóm Mười Một Pháp",
     labelEn: "Ekādasakanipāta (The Book of the Elevens)",
     children:[
-
-  { type: "sutta", id: "an11_v1", code: "AN 11 – Vagga 1", titlePali: "Yasavagga", titleVi: "01. Phẩm Y Chỉ", titleEn: "Reliance Chapter" },
- { type: "sutta", id: "an11_v2", code: "AN 11 – Vagga 2", titlePali: "Anussativagga", titleVi: "02. Phẩm Tùy Niệm", titleEn: "Recollections Chapter" },
- { type: "sutta", id: "an11_v3", code: "AN 11 – Vagga 3", titlePali: "Sāmaggīvagga", titleVi: "03. Phẩm Tổng Kết", titleEn: "Harmony / Recapitulation Chapter" }
-  ]
+	  { type: "sutta", id: "an11_v1", code: "", titlePali: "Yasavagga", titleVi: "I. Phẩm Y Chỉ", titleEn: "Reliance Chapter" },
+	  { type: "sutta", id: "an11_v2", code: "", titlePali: "Anussativagga", titleVi: "II. Phẩm Tùy Niệm", titleEn: "Recollections Chapter" },
+	  { type: "sutta", id: "an11_v3", code: "", titlePali: "Sāmaggīvagga", titleVi: "III. Phẩm Tổng Kết", titleEn: "Harmony / Recapitulation Chapter" }
+	  ]
   }
 ]
    }
