@@ -517,6 +517,14 @@ function updateMenuPanelTop() {
     };
   }
 
+  var menuCloseBtn = $('menuCloseBtn');
+  if (menuCloseBtn) {
+    menuCloseBtn.onclick = function (e) {
+      e.stopPropagation();
+      togglePanel(sutraMenuPanel, false);
+    };
+  }
+
   if (btnSettings) {
     btnSettings.onclick = function (e) {
       e.stopPropagation();
@@ -1628,7 +1636,12 @@ mql.addEventListener('change', updateVisibleCols);
       // ==========================================
       var finalNavText = (parentLabel ? parentLabel + ' · ' : '') + title;
 
-      navTitle.textContent = finalNavText;
+      // Wrap parent trong span để CSS ẩn trên mobile (chỉ giữ tên bài kinh cho gọn)
+      var html = '';
+      if (parentLabel) html += '<span class="nav-parent">' + escapeHtml(parentLabel) + ' · </span>';
+      html += escapeHtml(title);
+      navTitle.innerHTML = html;
+
       navTitle.setAttribute('title', uiLang === 'en'
         ? 'Click to locate in Library'
         : 'Bấm để xem vị trí trong Thư viện');
