@@ -721,8 +721,6 @@ if (!topmost || entry.boundingClientRect.top < topmost.boundingClientRect.top) t
 }
 if (topmost) {
 firstVisibleKey = topmost.target.getAttribute('data-key') || '';
-firstVisibleOffsetFromGrid = Math.max(0,
-topmost.target.getBoundingClientRect().top - scrollRoot.getBoundingClientRect().top);
 }
 }, { root: scrollRoot, rootMargin: '0px 0px -80% 0px', threshold: 0 });
 scrollRoot.querySelectorAll('.sutra-row').forEach(function (r) { anchorObserver.observe(r); });
@@ -739,27 +737,12 @@ storage.remove(KEY_ANCHOR_K(currentSutraId));
 if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] cleared (scrollTop=0) for', currentSutraId);
 return;
 }
-var rootTop = scrollRoot.getBoundingClientRect().top;
-var rows = scrollRoot.querySelectorAll('.sutra-row');
-var topKey = null, bestTop = Infinity, lastAboveKey = null;
-for (var i = 0; i < rows.length; i++) {
-var r = rows[i].getBoundingClientRect();
-if (r.top < rootTop) {
-if (r.bottom > rootTop) lastAboveKey = rows[i].getAttribute('data-key');
-continue;
-}
-if (r.top < bestTop) {
-bestTop = r.top;
-topKey = rows[i].getAttribute('data-key');
-}
-}
-if (!topKey) topKey = lastAboveKey;
-if (!topKey) {
-if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] skip — no visible row found');
+if (!firstVisibleKey) {
+if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] skip — firstVisibleKey chưa set');
 return;
 }
-storage.set(KEY_ANCHOR_K(currentSutraId), topKey);
-if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE]', currentSutraId, '→', topKey, 'scrollTop=' + scrollRoot.scrollTop);
+storage.set(KEY_ANCHOR_K(currentSutraId), firstVisibleKey);
+if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE]', currentSutraId, '→', firstVisibleKey, 'scrollTop=' + scrollRoot.scrollTop);
 }
 function restoreScrollByAnchor(id) {
 var scrollRoot = getScrollRoot();
