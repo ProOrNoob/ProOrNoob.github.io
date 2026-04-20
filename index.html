@@ -339,8 +339,10 @@ body::before {
   width: 100%;
   margin: 0 auto;
   padding-left: 20px;
-  /* Virtual scroll (JS lazy hydration) đảm nhiệm việc này — content-visibility CSS
-     có thể chồng chéo và làm iPad Safari cũ tệ hơn nên bỏ. */
+  /* Virtual scroll (JS lazy hydration) đảm nhiệm virtualization.
+     contain: layout style → khi wrap hydrate/dehydrate, browser chỉ re-layout
+     internals của wrap đó, không cascade sang siblings → scroll mượt hơn trên iPad. */
+  contain: layout style;
 }
 .sutra-row-wrap::before {
   content: "";

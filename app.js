@@ -817,17 +817,17 @@ mql.addEventListener('change', updateVisibleCols);
     var scrollRoot = getScrollRoot();
     if (!scrollRoot) return;
     currentSegObserver = new IntersectionObserver(function (entries) {
-      // Pick the wrap closest to the viewport center
+      // Dùng entry.rootBounds và entry.boundingClientRect (IO cung cấp sẵn, KHÔNG force reflow).
+      // Tránh gọi getBoundingClientRect() trong callback → bỏ sync reflow mỗi lần fire.
       var best = null, bestDist = Infinity;
-      var rootRect = scrollRoot.getBoundingClientRect();
-      var rootMid  = rootRect.top + rootRect.height / 2;
-      entries.forEach(function (e) {
-        if (!e.isIntersecting) return;
-        var r = e.target.getBoundingClientRect();
-        var mid = r.top + r.height / 2;
-        var dist = Math.abs(mid - rootMid);
+      for (var i = 0; i < entries.length; i++) {
+        var e = entries[i];
+        if (!e.isIntersecting || !e.rootBounds || !e.boundingClientRect) continue;
+        var rootMid = e.rootBounds.top + e.rootBounds.height / 2;
+        var mid     = e.boundingClientRect.top + e.boundingClientRect.height / 2;
+        var dist    = Math.abs(mid - rootMid);
         if (dist < bestDist) { bestDist = dist; best = e.target; }
-      });
+      }
       if (best && best !== currentWrap) {
         if (currentWrap) currentWrap.classList.remove('current');
         best.classList.add('current');
@@ -848,12 +848,11 @@ mql.addEventListener('change', updateVisibleCols);
         if (!entry.isIntersecting) continue;
         if (!topmost || entry.boundingClientRect.top < topmost.boundingClientRect.top) topmost = entry;
       }
-      if (topmost) {
+      if (topmost && topmost.rootBounds) {
         firstVisibleKey = topmost.target.getAttribute('data-key') || '';
-        // Giữ offset âm nếu row đã cuộn qua (top < rootTop) — nếu không, restore sẽ kéo row về đầu viewport
-        // khiến vị trí trồi lên so với lúc lưu.
+        // Dùng bounding của IO (không force reflow). Giữ offset âm nếu row đã cuộn qua.
         firstVisibleOffsetFromGrid =
-          topmost.target.getBoundingClientRect().top - scrollRoot.getBoundingClientRect().top;
+          topmost.boundingClientRect.top - topmost.rootBounds.top;
       }
     }, { root: scrollRoot, rootMargin: '0px 0px -80% 0px', threshold: 0 });
     // Virtual scroll: observe wrap (luôn có trong DOM) thay vì .sutra-row (có thể chưa hydrate)
@@ -1370,11 +1369,18 @@ mql.addEventListener('change', updateVisibleCols);
       var row = wrap.querySelector('.sutra-row');
       if (row) row.classList.add('reading');
     }
+    // Đo chiều cao BẤT ĐỒNG BỘ sau 2 frame (layout đã settle) → cache lại cho lần dehydrate.
+    // Tránh gọi offsetHeight lúc dehydrate vì sẽ force sync reflow, rất đắt trên iPad khi cuộn.
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+      if (wrap._hydrated) wrap._cachedH = wrap.offsetHeight;
+    }); });
   }
 
   function dehydrateWrap(wrap) {
     if (!wrap || !wrap._hydrated) return;
-    var h = wrap.offsetHeight;
+    // Dùng chiều cao đã cache (đo 1 lần sau hydrate, không sync reflow ở đây).
+    // Nếu chưa cache kịp thì fallback về estimate — sai số vài px chấp nhận được.
+    var h = wrap._cachedH || VIRT_ESTIMATED_ROW_H;
     while (wrap.firstChild) wrap.removeChild(wrap.firstChild);
     wrap.style.minHeight = h + 'px';
     wrap._hydrated = false;
