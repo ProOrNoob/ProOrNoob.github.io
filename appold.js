@@ -1720,36 +1720,6 @@ if (scrollEl) {
 
   function openSutra(id) { renderSutra(id); }
 
-  // Parse hash lúc load: #an1_v1:1.27.1.3 → mở sutta + scroll đến segment
-  function parseHashAndOpen() {
-    var hash = (location.hash || '').replace(/^#/, '');
-    if (!hash) return null;
-    var parts = hash.split(':');
-    var id = parts[0];
-    var segKey = parts.length > 1 ? hash : null;  // full key nếu có :N.M
-    if (!id) return null;
-    // Mở sutta rồi scroll tới đoạn (nếu có)
-    renderSutra(id).then(function () {
-      if (segKey) {
-        setTimeout(function () {
-          var safe = safeCssEscape(segKey);
-          var row = grid && grid.querySelector('.sutra-row[data-key="' + safe + '"]');
-          if (row && scrollEl) {
-            var wrap = row.closest('.sutra-row-wrap') || row;
-            var rootRect = scrollEl.getBoundingClientRect();
-            var tgtRect  = wrap.getBoundingClientRect();
-            var y = tgtRect.top - rootRect.top + scrollEl.scrollTop - 40;
-            scrollEl.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
-            // Highlight 2 giây
-            wrap.classList.add('seg-flash');
-            setTimeout(function () { wrap.classList.remove('seg-flash'); }, 2000);
-          }
-        }, 300);
-      }
-    }).catch(function(){});
-    return id;
-  }
-
   // ============================================================
   // Random sutta — mở bài ngẫu nhiên
   // ============================================================
@@ -2053,12 +2023,8 @@ if (scrollEl) {
     var _bsk = $('btnSegKey'); if (_bsk) { _bsk.classList.toggle('active', showSegKey); _bsk.setAttribute('aria-pressed', String(showSegKey)); }
     var _bsh = $('btnSegHdr'); if (_bsh) { _bsh.classList.toggle('active', showColHdr); _bsh.setAttribute('aria-pressed', String(showColHdr)); }
     applyVisibility(); applySegKeyHdrVis(); loadZoom(); loadLineHeight(); buildSutraMenuFromIndex(); initDelegations();
-    // Ưu tiên hash URL (deep link) → last-read → welcome
-    var hashOpened = parseHashAndOpen();
-    if (!hashOpened) {
-      var startId = storage.get(KEY_LAST);
-      if (startId) openSutra(startId); else renderWelcomeScreen();
-    }
+    var startId = storage.get(KEY_LAST);
+    if (startId) openSutra(startId); else renderWelcomeScreen();
     if (!synthSupported) {
       [btnReadTts, btnPauseTts, btnStopTts].forEach(function (b) { if (b) b.disabled = true; });
     } else {
