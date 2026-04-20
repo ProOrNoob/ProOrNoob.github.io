@@ -845,8 +845,10 @@ mql.addEventListener('change', updateVisibleCols);
       }
       if (topmost) {
         firstVisibleKey = topmost.target.getAttribute('data-key') || '';
-        firstVisibleOffsetFromGrid = Math.max(0,
-          topmost.target.getBoundingClientRect().top - scrollRoot.getBoundingClientRect().top);
+        // Giữ offset âm nếu row đã cuộn qua (top < rootTop) — nếu không, restore sẽ kéo row về đầu viewport
+        // khiến vị trí trồi lên so với lúc lưu.
+        firstVisibleOffsetFromGrid =
+          topmost.target.getBoundingClientRect().top - scrollRoot.getBoundingClientRect().top;
       }
     }, { root: scrollRoot, rootMargin: '0px 0px -80% 0px', threshold: 0 });
     scrollRoot.querySelectorAll('.sutra-row').forEach(function (r) { anchorObserver.observe(r); });
