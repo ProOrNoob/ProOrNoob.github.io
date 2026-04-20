@@ -1568,11 +1568,12 @@ mql.addEventListener('change', updateVisibleCols);
     var singleLang = getSingleVisibleLang(); lastSingleLangMode = singleLang;
     var rowsForView = singleLang ? mergeRowsToParagraphRows(rowsForViewRaw, singleLang) : rowsForViewRaw;
 
-    grid.innerHTML = '';
+    // ATOMIC SWAP: KHÔNG clear grid trước — giữ nội dung cũ hiển thị cho đến khi batch đầu của
+    // bài mới sẵn sàng, rồi replaceChildren một lần duy nhất. User không thấy frame trắng giữa
+    // clear và paint batch đầu → xoá cảm giác "chớp trắng" khi swipe nhanh.
     cachedRows = [];
-    applyVisibility();
-	if (readerArea) readerArea.scrollTop = 0;
     var i = 0, BATCH = 220;
+    var firstBatch = true;
     function renderBatch() {
       // FIX: Also reset isRendering when token is stale
       if (token !== renderToken) {
@@ -1586,7 +1587,15 @@ mql.addEventListener('change', updateVisibleCols);
         var innerRow = wrap.querySelector ? wrap.querySelector('.sutra-row') : wrap;
         cachedRows.push(innerRow || wrap);
       }
-      grid.appendChild(frag);
+      if (firstBatch) {
+        // Swap atomically: old content bị thay + first batch được chèn trong 1 layout cycle
+        grid.replaceChildren(frag);
+        applyVisibility();
+        if (readerArea) readerArea.scrollTop = 0;
+        firstBatch = false;
+      } else {
+        grid.appendChild(frag);
+      }
       if (i < rowsForView.length) {
         requestAnimationFrame(renderBatch);
       } else {
