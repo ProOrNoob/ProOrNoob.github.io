@@ -1,6 +1,11 @@
 (function () {
   'use strict';
 
+  // ============================================================
+  // DEBUG: đặt = false để ẩn nút + panel khi xong
+  // ============================================================
+  const DEBUG = true;
+
   const $ = (id) => document.getElementById(id);
 
   function escapeHtml(str) {
@@ -2219,6 +2224,115 @@ mql.addEventListener('change', updateVisibleCols);
       setTtsUiState('idle');
     }
     updateMenuPanelTop();
+    initDebugPanel();
+  }
+
+  // ============================================================
+  // DEBUG PANEL — hiện/ẩn qua DEBUG flag trên đầu file. Dùng để xem DOM/
+  // hydration/scroll/cache trên iPad khi không có DevTools console.
+  // ============================================================
+  function initDebugPanel() {
+    var btnDebug = $('btnDebug');
+    var debugPanel = $('debugPanel');
+    var debugBody = $('debugBody');
+    var btnDebugClose = $('btnDebugClose');
+    if (!btnDebug || !debugPanel || !debugBody) return;
+    if (!DEBUG) {
+      btnDebug.hidden = true;
+      debugPanel.hidden = true;
+      return;
+    }
+    btnDebug.hidden = false;
+    var visible = false;
+    var timer = null;
+    var lastFrameT = performance.now();
+    var fps = 0;
+    (function tickFps() {
+      var now = performance.now();
+      var dt = now - lastFrameT;
+      lastFrameT = now;
+      if (dt > 0) fps = Math.round(1000 / dt);
+      requestAnimationFrame(tickFps);
+    })();
+
+    function fmtBytes(n) {
+      if (!Number.isFinite(n)) return '-';
+      if (n > 1024*1024) return (n / (1024*1024)).toFixed(1) + ' MB';
+      if (n > 1024) return (n / 1024).toFixed(1) + ' KB';
+      return n + ' B';
+    }
+
+    function update() {
+      if (!visible) return;
+      var allDom = document.getElementsByTagName('*').length;
+      var wraps = grid ? grid.querySelectorAll('.sutra-row-wrap') : [];
+      var hydrated = 0;
+      for (var i = 0; i < wraps.length; i++) if (wraps[i]._hydrated) hydrated++;
+      var sh = readerArea ? readerArea.scrollHeight : 0;
+      var st = readerArea ? readerArea.scrollTop : 0;
+      var ch = readerArea ? readerArea.clientHeight : 0;
+      var scrollPct = sh > ch ? Math.round(st / (sh - ch) * 100) : 0;
+      var mem = (performance && performance.memory) ? performance.memory : null;
+      var lines = [
+        'Sutta: ' + (currentSutraId || '-'),
+        'Langs: ' + (showPali?'P':'') + (showEng?'E':'') + (showVie?'V':''),
+        '',
+        '── DOM ──',
+        'Total elements:   ' + allDom,
+        'Row wraps:        ' + wraps.length,
+        'Hydrated:         ' + hydrated + ' / ' + wraps.length,
+        'Dehydrated:       ' + (wraps.length - hydrated),
+        '',
+        '── Virtual scroll ──',
+        'virtRowsData len: ' + virtRowsData.length,
+        'Hydrate obs:      ' + (virtHydrateObs ? 'on' : 'off'),
+        'Dehydrate obs:    ' + (virtDehydrateObs ? 'on' : 'off'),
+        '',
+        '── Scroll ──',
+        'scrollTop:        ' + st + ' px',
+        'scrollHeight:     ' + sh + ' px',
+        'clientHeight:     ' + ch + ' px',
+        'Progress:         ' + scrollPct + '%',
+        'FPS:              ' + fps,
+        '',
+        '── Cache ──',
+        'Merged suttas:    ' + MERGED_CACHE.size,
+        'Loaded packs:     ' + LOADED_PACKS.size,
+        'Pending loads:    ' + MERGED_PROMISES.size,
+        '',
+        '── TTS ──',
+        'Lang/index:       ' + (ttsState.activeLang || '-') + ' / ' + ttsState.index,
+        'Playing/Paused:   ' + ttsState.isPlaying + ' / ' + ttsState.isPaused,
+      ];
+      if (mem) {
+        lines.push('');
+        lines.push('── Memory (JS heap) ──');
+        lines.push('used:   ' + fmtBytes(mem.usedJSHeapSize));
+        lines.push('total:  ' + fmtBytes(mem.totalJSHeapSize));
+        lines.push('limit:  ' + fmtBytes(mem.jsHeapSizeLimit));
+      }
+      debugBody.textContent = lines.join('\n');
+    }
+
+    function show() {
+      visible = true;
+      debugPanel.hidden = false;
+      debugPanel.setAttribute('aria-hidden', 'false');
+      update();
+      if (timer) clearInterval(timer);
+      timer = setInterval(update, 500);
+    }
+    function hide() {
+      visible = false;
+      debugPanel.hidden = true;
+      debugPanel.setAttribute('aria-hidden', 'true');
+      if (timer) { clearInterval(timer); timer = null; }
+    }
+    btnDebug.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (visible) hide(); else show();
+    });
+    if (btnDebugClose) btnDebugClose.addEventListener('click', hide);
   }
 
   init();

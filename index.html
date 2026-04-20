@@ -1027,6 +1027,60 @@ html.hide-seg-hdr .vie { margin-top: 0; }
 body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; }
 
 /* ============================================================
+   Debug panel (toggle qua DEBUG flag trong app.js)
+   ============================================================ */
+.debug-panel {
+  position: fixed;
+  right: 12px;
+  bottom: 60px;
+  width: 260px;
+  max-height: 60vh;
+  background: rgba(18, 18, 20, 0.95);
+  color: #d0e6d0;
+  border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
+  border-radius: 6px;
+  z-index: 70;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.45;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.debug-panel[hidden] { display: none; }
+.debug-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-bottom: 1px solid color-mix(in oklab, var(--accent) 30%, transparent);
+  color: var(--accent);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+}
+.debug-close {
+  background: none;
+  border: 0;
+  color: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+#debugBody {
+  margin: 0;
+  padding: 8px 10px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.bar-pill.debug-only { color: var(--accent); }
+
+/* ============================================================
    Panels (library + settings)
    ============================================================ */
 .panel {
@@ -1969,6 +2023,12 @@ button:not(:focus-visible), a:not(:focus-visible),
           </button>
         </div>
         <div class="status-right">
+          <button type="button" id="btnDebug" class="bar-pill debug-only" aria-label="Debug info" title="Debug" hidden>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true">
+              <rect x="4" y="5" width="8" height="9" rx="1.5"/>
+              <path d="M6 3l1 2M10 3l-1 2M2 8h2M12 8h2M2 11h2M12 11h2"/>
+            </svg>
+          </button>
           <button type="button" id="btnSettings" class="bar-pill" aria-label="Cài đặt hiển thị" aria-haspopup="true" aria-expanded="false" title="Settings">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true">
               <circle cx="8" cy="8" r="2"/>
@@ -1979,6 +2039,15 @@ button:not(:focus-visible), a:not(:focus-visible),
         </div>
       </div>
     </footer>
+
+    <!-- DEBUG PANEL -->
+    <div id="debugPanel" class="debug-panel" hidden aria-hidden="true">
+      <div class="debug-head">
+        <span>DEBUG</span>
+        <button type="button" id="btnDebugClose" class="debug-close" aria-label="Đóng debug">×</button>
+      </div>
+      <pre id="debugBody"></pre>
+    </div>
 
     <!-- BACK TO TOP -->
     <button id="btnBackTop" aria-label="Lên đầu trang" title="Back to top">
