@@ -1837,6 +1837,39 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
 }
 
 /* ============================================================
+   iPad / touch-device: ép stack 1-col như mobile để tránh grid 2x2 areas
+   gây tụt FPS trên Safari iPad khi bật đủ 3 ngôn ngữ.
+   Điều kiện: thiết bị cảm ứng (pointer: coarse) HOẶC viewport ≤1024px.
+   Desktop ≥1025px có chuột vẫn dùng grid 2-col như cũ.
+   ============================================================ */
+@media (pointer: coarse), (max-width: 1024px) {
+  .card:not(.stack) #sutraGrid .sutra-row,
+  .card:not(.stack) #sutraGrid:not(.hide-pali):not(.hide-eng):not(.hide-vie) .sutra-row {
+    grid-template-columns: 1fr !important;
+    grid-template-areas: none !important;
+    row-gap: 14px;
+    column-gap: 0 !important;
+  }
+  .card:not(.stack) #sutraGrid .pali-col,
+  .card:not(.stack) #sutraGrid .eng-col,
+  .card:not(.stack) #sutraGrid .vie-col {
+    grid-area: auto !important;
+    grid-column: 1 / -1 !important;
+  }
+  /* Pāli full-size như trong 1-col mode + justify đẹp như mobile */
+  .card:not(.stack) #sutraGrid:not(.hide-pali):not(.hide-eng):not(.hide-vie) .pali-col .pali {
+    font-size: calc(19px * var(--sutra-font-scale));
+    line-height: var(--sutra-line-height);
+  }
+  .card:not(.stack) #sutraGrid .pali,
+  .card:not(.stack) #sutraGrid .eng,
+  .card:not(.stack) #sutraGrid .vie {
+    text-align: justify;
+    text-justify: inter-word;
+  }
+}
+
+/* ============================================================
    Mobile adjustments
    ============================================================ */
 /* Hide Prev/Next text earlier than the full mobile breakpoint */
