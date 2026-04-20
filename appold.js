@@ -840,42 +840,55 @@ mql.addEventListener('change', updateVisibleCols);
     var scrollRoot = getScrollRoot();
     if (!scrollRoot || scrollRoot.scrollTop === 0) {
       storage.remove(KEY_ANCHOR_K(currentSutraId));
-      storage.remove(KEY_ANCHOR_O(currentSutraId));
       return;
     }
     if (!firstVisibleKey) return;
+    // Chỉ lưu key của segment đang ở top viewport — KHÔNG lưu pixel offset
+    // → restore luôn scroll segment đó về top, chính xác theo đoạn kinh.
     storage.set(KEY_ANCHOR_K(currentSutraId), firstVisibleKey);
-    storage.set(KEY_ANCHOR_O(currentSutraId), String(Math.round(firstVisibleOffsetFromGrid)));
   }
 
   function restoreScrollByAnchor(id) {
     var scrollRoot = getScrollRoot();
     if (!scrollRoot) return false;
     try {
-      var key    = storage.get(KEY_ANCHOR_K(id));
-      var offRaw = storage.get(KEY_ANCHOR_O(id));
-      var off    = offRaw ? parseInt(offRaw, 10) : 0;
+      var key = storage.get(KEY_ANCHOR_K(id));
       if (!key) return false;
 
-      // Virtual scroll: tìm index row theo key trong virtAllRows rồi materialize chunk chứa nó
+      // Tìm index của segment theo key
       var foundIdx = -1;
       for (var j = 0; j < virtAllRows.length; j++) {
         if (String(virtAllRows[j].key || '') === key) { foundIdx = j; break; }
       }
-      if (foundIdx >= 0) ensureRowRendered(foundIdx);
+      if (foundIdx < 0) return false;
+
+      // Materialize tất cả chunks TRƯỚC target → mọi row có chiều cao thật → offset chính xác
+      ensureAllChunksUpTo(foundIdx);
 
       var safeKey = safeCssEscape(key);
       var row = scrollRoot.querySelector('.sutra-row[data-key="' + safeKey + '"]');
       if (!row) return false;
       var scrollTarget = row.closest('.sutra-row-wrap') || row;
-      var rootRect = scrollRoot.getBoundingClientRect();
-      var tgtRect  = scrollTarget.getBoundingClientRect();
-      var relativeTop = tgtRect.top - rootRect.top + scrollRoot.scrollTop;
-      var max = Math.max(0, scrollRoot.scrollHeight - scrollRoot.clientHeight);
-      var y = relativeTop - (Number.isFinite(off) ? off : 0);
-      y = Math.max(0, Math.min(y, max));
-      scrollRoot.scrollTop = y;
+
+      // Cuộn sao cho đầu segment nằm ngay top viewport (không offset pixel)
+      function scrollToSegmentTop() {
+        var rootRect = scrollRoot.getBoundingClientRect();
+        var tgtRect  = scrollTarget.getBoundingClientRect();
+        var y = tgtRect.top - rootRect.top + scrollRoot.scrollTop;
+        var max = Math.max(0, scrollRoot.scrollHeight - scrollRoot.clientHeight);
+        y = Math.max(0, Math.min(y, max));
+        if (Math.abs(y - scrollRoot.scrollTop) > 1) scrollRoot.scrollTop = y;
+      }
+
+      scrollToSegmentTop();
       toggleBackTop(scrollRoot.scrollTop > 0);
+
+      // Correction pass — sau khi scroll, IO có thể materialize thêm chunks gần viewport
+      // → layout shift nhẹ → scroll lại cho segment về đúng top
+      requestAnimationFrame(function () { requestAnimationFrame(function () {
+        scrollToSegmentTop();
+        setTimeout(scrollToSegmentTop, 100);
+      }); });
       return true;
     } catch(e) { return false; }
   }
@@ -1168,6 +1181,12 @@ if (scrollEl) {
   }
 
   // Populate FLAT_SUTTAS từ TOÀN BỘ 4 nikaya (search xuyên bộ) — chạy 1 lần lúc build
+  // Strip diacritics: "Brahmajāla" → "brahmajala", "Kinh Phạm Võng" → "kinh pham vong"
+  // Cho phép user gõ không dấu vẫn tìm thấy (VD: "brahmajala" match "Brahmajāla Sutta")
+  function normStr(s) {
+    return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  }
+
   function populateFlatSuttas() {
     FLAT_SUTTAS = [];
     var index = window.SUTRA_INDEX || [];
@@ -1184,7 +1203,8 @@ if (scrollEl) {
           var subText  = uiLang === 'en' ? (paliLabel || viLabel || '') : (paliLabel || enLabel || '');
           FLAT_SUTTAS.push({
             id: ch.id, main: mainText, sub: subText,
-            flat: (mainText + ' ' + viLabel + ' ' + enLabel + ' ' + paliLabel).toLowerCase()
+            // flat đã strip dấu → search không cần gõ dấu
+            flat: normStr(mainText + ' ' + viLabel + ' ' + enLabel + ' ' + paliLabel + ' ' + ch.id)
           });
         }
         else if (ch.type === 'group') walk(ch.children || []);
@@ -1267,7 +1287,7 @@ if (scrollEl) {
   }
 
   function applySearch(query) {
-    var q = (query || '').trim().toLowerCase();
+    var q = normStr((query || '').trim());   // strip dấu query → match không phụ thuộc dấu
     if (!q) return renderSearchResults([], '');
     var matches = FLAT_SUTTAS.filter(function (x) { return x.flat.includes(q); }).slice(0, 80);
     renderSearchResults(matches, query);
@@ -1542,6 +1562,17 @@ if (scrollEl) {
         if (!c.materialized) materializeChunk(c);
         return;
       }
+    }
+  }
+
+  // Materialize TẤT CẢ chunks có rowStart <= rowIdx → dùng khi restore anchor:
+  // các chunk ở trên target phải có chiều cao thật (không còn placeholder 120px/row)
+  // để offset của target row được tính chính xác → scroll khớp vị trí cũ.
+  function ensureAllChunksUpTo(rowIdx) {
+    for (var k = 0; k < virtChunks.length; k++) {
+      var c = virtChunks[k];
+      if (c.rowStart > rowIdx) break;
+      if (!c.materialized) materializeChunk(c);
     }
   }
 
