@@ -26,7 +26,7 @@ window.SUTRA_INDEX = [
   { type: "sutta", id: "dn18", code: "DN 18", titlePali: "Janavasabha Sutta", titleVi: "Kinh Mahāgovinda", titleEn: "With Janavasabha" },
   { type: "sutta", id: "dn19", code: "DN 19", titlePali: "Mahāgovinda Sutta", titleVi: "Kinh Đại Govinda", titleEn: "The Great Steward" },
   { type: "sutta", id: "dn20", code: "DN 20", titlePali: "Mahāsamaya Sutta", titleVi: "Kinh Đại Hội", titleEn: "The Great Assembly" },
-  { type: "sutta", id: "dn21", code: "DN 21", titlePali: "Sakkapañha Sutta", titleVi: "Kinh Vấn Đạo của Đế Thích", titleEn: "Sakka’s Questions" },
+  { type: "sutta", id: "dn21", code: "DN 21", titlePali: "Sakkapañha Sutta", titleVi: "Kinh Đế Thích Vấn Đạo", titleEn: "Sakka’s Questions" },
   { type: "sutta", id: "dn22", code: "DN 22", titlePali: "Mahāsatipaṭṭhāna Sutta", titleVi: "Kinh Đại Niệm Xứ", titleEn: "The Great Foundations of Mindfulness" },
   { type: "sutta", id: "dn23", code: "DN 23", titlePali: "Pāyāsi Sutta", titleVi: "Kinh Pāyāsi", titleEn: "With Pāyāsi" },
   { type: "sutta", id: "dn24", code: "DN 24", titlePali: "Pāṭika Sutta", titleVi: "Kinh Pāṭika", titleEn: "About Pāṭika" },
