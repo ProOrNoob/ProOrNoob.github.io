@@ -5,6 +5,8 @@
   // DEBUG: đặt = false để ẩn nút + panel
   // ============================================================
   const DEBUG = true;
+  // Enable anchor save/restore console logs khi DEBUG bật
+  if (DEBUG) window.DEBUG_ANCHOR = true;
 
   const $ = (id) => document.getElementById(id);
 
@@ -840,12 +842,15 @@ mql.addEventListener('change', updateVisibleCols);
     var scrollRoot = getScrollRoot();
     if (!scrollRoot || scrollRoot.scrollTop === 0) {
       storage.remove(KEY_ANCHOR_K(currentSutraId));
+      if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] cleared (scrollTop=0) for', currentSutraId);
       return;
     }
-    if (!firstVisibleKey) return;
-    // Chỉ lưu key của segment đang ở top viewport — KHÔNG lưu pixel offset
-    // → restore luôn scroll segment đó về top, chính xác theo đoạn kinh.
+    if (!firstVisibleKey) {
+      if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] skip — no firstVisibleKey yet');
+      return;
+    }
     storage.set(KEY_ANCHOR_K(currentSutraId), firstVisibleKey);
+    if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE]', currentSutraId, '→', firstVisibleKey, 'scrollTop=' + scrollRoot.scrollTop);
   }
 
   function restoreScrollByAnchor(id) {
@@ -853,6 +858,7 @@ mql.addEventListener('change', updateVisibleCols);
     if (!scrollRoot) return false;
     try {
       var key = storage.get(KEY_ANCHOR_K(id));
+      if (window.DEBUG_ANCHOR) console.log('[ANCHOR RESTORE] id=' + id + ' key=' + key);
       if (!key) return false;
 
       // Tìm index của segment theo key
@@ -860,37 +866,50 @@ mql.addEventListener('change', updateVisibleCols);
       for (var j = 0; j < virtAllRows.length; j++) {
         if (String(virtAllRows[j].key || '') === key) { foundIdx = j; break; }
       }
+      if (window.DEBUG_ANCHOR) console.log('[ANCHOR RESTORE] foundIdx=' + foundIdx + ' in virtAllRows.length=' + virtAllRows.length);
       if (foundIdx < 0) return false;
 
-      // Materialize tất cả chunks TRƯỚC target → mọi row có chiều cao thật → offset chính xác
       ensureAllChunksUpTo(foundIdx);
+      if (window.DEBUG_ANCHOR) {
+        var matCnt = 0;
+        for (var mc = 0; mc < virtChunks.length; mc++) if (virtChunks[mc].materialized) matCnt++;
+        console.log('[ANCHOR RESTORE] chunks materialized after ensureAllChunksUpTo: ' + matCnt + '/' + virtChunks.length);
+      }
 
       var safeKey = safeCssEscape(key);
       var row = scrollRoot.querySelector('.sutra-row[data-key="' + safeKey + '"]');
+      if (window.DEBUG_ANCHOR) console.log('[ANCHOR RESTORE] DOM row found:', !!row);
       if (!row) return false;
       var scrollTarget = row.closest('.sutra-row-wrap') || row;
 
-      // Cuộn sao cho đầu segment nằm ngay top viewport (không offset pixel)
-      function scrollToSegmentTop() {
+      function scrollToSegmentTop(label) {
         var rootRect = scrollRoot.getBoundingClientRect();
         var tgtRect  = scrollTarget.getBoundingClientRect();
         var y = tgtRect.top - rootRect.top + scrollRoot.scrollTop;
         var max = Math.max(0, scrollRoot.scrollHeight - scrollRoot.clientHeight);
         y = Math.max(0, Math.min(y, max));
-        if (Math.abs(y - scrollRoot.scrollTop) > 1) scrollRoot.scrollTop = y;
+        var oldTop = scrollRoot.scrollTop;
+        if (Math.abs(y - oldTop) > 1) scrollRoot.scrollTop = y;
+        if (window.DEBUG_ANCHOR) {
+          console.log('[ANCHOR RESTORE ' + label + '] tgt.top=' + tgtRect.top.toFixed(0) +
+            ' root.top=' + rootRect.top.toFixed(0) +
+            ' relTop=' + (tgtRect.top - rootRect.top).toFixed(0) +
+            ' targetY=' + y.toFixed(0) + ' oldScrollTop=' + oldTop + ' → newScrollTop=' + scrollRoot.scrollTop);
+        }
       }
 
-      scrollToSegmentTop();
+      scrollToSegmentTop('initial');
       toggleBackTop(scrollRoot.scrollTop > 0);
 
-      // Correction pass — sau khi scroll, IO có thể materialize thêm chunks gần viewport
-      // → layout shift nhẹ → scroll lại cho segment về đúng top
       requestAnimationFrame(function () { requestAnimationFrame(function () {
-        scrollToSegmentTop();
-        setTimeout(scrollToSegmentTop, 100);
+        scrollToSegmentTop('rAF-correction');
+        setTimeout(function () { scrollToSegmentTop('timeout-correction'); }, 100);
       }); });
       return true;
-    } catch(e) { return false; }
+    } catch(e) {
+      if (window.DEBUG_ANCHOR) console.error('[ANCHOR RESTORE] error:', e);
+      return false;
+    }
   }
 
   // FIX: Clean up observer on page unload to prevent memory leak
@@ -2109,13 +2128,29 @@ if (scrollEl) {
       if (!visible) return;
       var allDom = document.getElementsByTagName('*').length;
       var wraps = grid ? grid.querySelectorAll('.sutra-row-wrap') : [];
-      // Old version: scroll container là #sutraGrid (không phải #readerArea)
       var sc = grid;
       var sh = sc ? sc.scrollHeight : 0;
       var st = sc ? sc.scrollTop : 0;
       var ch = sc ? sc.clientHeight : 0;
       var scrollPct = sh > ch ? Math.round(st / (sh - ch) * 100) : 0;
       var mem = (performance && performance.memory) ? performance.memory : null;
+
+      // Anchor info
+      var anchorKey = currentSutraId ? storage.get(KEY_ANCHOR_K(currentSutraId)) : null;
+      var matChunks = 0, totalChunks = virtChunks ? virtChunks.length : 0;
+      if (virtChunks) {
+        for (var vc = 0; vc < virtChunks.length; vc++) {
+          if (virtChunks[vc].materialized) matChunks++;
+        }
+      }
+      // Tìm index của anchor key (nếu còn)
+      var anchorIdx = -1;
+      if (anchorKey && virtAllRows) {
+        for (var ai = 0; ai < virtAllRows.length; ai++) {
+          if (String(virtAllRows[ai].key || '') === anchorKey) { anchorIdx = ai; break; }
+        }
+      }
+
       var lines = [
         '--- OLD VERSION (appold.js) ---',
         'Sutta: ' + (currentSutraId || '-'),
@@ -2124,10 +2159,19 @@ if (scrollEl) {
         '── DOM ──',
         'Total elements:   ' + allDom,
         'Row wraps:        ' + wraps.length,
-        'cachedRows len:   ' + cachedRows.length,
-        '(old không có virtual scroll — tất cả row đều trong DOM đầy đủ)',
         '',
-        '── Scroll (#sutraGrid) ──',
+        '── Virtual scroll ──',
+        'Total chunks:     ' + totalChunks,
+        'Materialized:     ' + matChunks + ' / ' + totalChunks,
+        'virtAllRows len:  ' + (virtAllRows ? virtAllRows.length : 0),
+        '',
+        '── Anchor (lưu trong localStorage) ──',
+        'Current top key:  ' + (firstVisibleKey || '-'),
+        'Saved key:        ' + (anchorKey || '(none)'),
+        'Saved idx:        ' + (anchorIdx >= 0 ? anchorIdx : 'not-found'),
+        'Match chunk:      ' + (anchorIdx >= 0 ? Math.floor(anchorIdx / 50) : '-'),
+        '',
+        '── Scroll ──',
         'scrollTop:        ' + st + ' px',
         'scrollHeight:     ' + sh + ' px',
         'clientHeight:     ' + ch + ' px',
