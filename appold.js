@@ -250,8 +250,9 @@
   /* ============================================================
      UI Language flags
      ============================================================ */
-  var FLAG_VI = '<svg viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" role="presentation" aria-hidden="true"><rect width="48" height="32" fill="#da251d"/><polygon fill="#ffde00" points="24,6 27.1,14.3 36,14.3 28.8,19.3 31.7,27 24,22.1 16.3,27 19.2,19.3 12,14.3 20.9,14.3"/></svg>';
-  var FLAG_EN = '<svg viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" role="presentation" aria-hidden="true"><rect width="48" height="32" fill="#012169"/><path d="M0 0 L20 13 H16 L0 3 Z M48 0 L28 13 H32 L48 3 Z M0 32 L20 19 H16 L0 29 Z M48 32 L28 19 H32 L48 29 Z" fill="#ffffff"/><path d="M0 0 L20 13 H17 L0 2 Z M48 0 L28 13 H31 L48 2 Z M0 32 L20 19 H17 L0 30 Z M48 32 L28 19 H31 L48 30 Z" fill="#c8102e"/><path d="M20 0 H28 V12 H48 V20 H28 V32 H20 V20 H0 V12 H20 Z" fill="#ffffff"/><path d="M21.5 0 H26.5 V13.5 H48 V18.5 H26.5 V32 H21.5 V18.5 H0 V13.5 H21.5 Z" fill="#c8102e"/></svg>';
+  // Lang icon dạng chữ đơn giản (Option C) — không dùng cờ màu → subtle, hợp theme dark
+  var FLAG_VI = '<span class="lang-letters">VN</span>';
+  var FLAG_EN = '<span class="lang-letters">EN</span>';
 
   function renderUiLangFlag() {
     if (!btnUiLang) return;
@@ -602,10 +603,15 @@ function updateMenuPanelTop() {
   /* ============================================================
      View prefs
      ============================================================ */
+  // Toggle state cho Segment ID + Col Header (default: hiện cả 2)
+  var showSegKey = true;
+  var showColHdr = true;
+
   function saveViewPrefs() {
     storage.set(KEY_VIEW, JSON.stringify({
       showPali: showPali, showEng: showEng, showVie: showVie,
-      stack: card ? card.classList.contains('stack') : false
+      stack: card ? card.classList.contains('stack') : false,
+      showSegKey: showSegKey, showColHdr: showColHdr
     }));
   }
   function loadViewPrefs() {
@@ -617,7 +623,14 @@ function updateMenuPanelTop() {
       if (typeof v.showEng  === 'boolean') showEng  = v.showEng;
       if (typeof v.showVie  === 'boolean') showVie  = v.showVie;
       if (card && typeof v.stack === 'boolean') card.classList.toggle('stack', v.stack);
+      if (typeof v.showSegKey === 'boolean') showSegKey = v.showSegKey;
+      if (typeof v.showColHdr === 'boolean') showColHdr = v.showColHdr;
     } catch(e){}
+  }
+  function applySegKeyHdrVis() {
+    if (!grid) return;
+    grid.classList.toggle('hide-seg-key', !showSegKey);
+    grid.classList.toggle('hide-col-header', !showColHdr);
   }
 
 // Tạo một listener cho màn hình hẹp (<= 500px)
@@ -682,6 +695,26 @@ mql.addEventListener('change', updateVisibleCols);
     btnLayout.classList.toggle('active', isStack);
     btnLayout.setAttribute('aria-pressed', String(isStack));
     updateVisibleCols(); saveViewPrefs();
+  };
+
+  // Toggle Segment ID (mã đoạn AN1.11.1.1)
+  var btnSegKey = $('btnSegKey');
+  if (btnSegKey) btnSegKey.onclick = function () {
+    showSegKey = !showSegKey;
+    btnSegKey.classList.toggle('active', showSegKey);
+    btnSegKey.setAttribute('aria-pressed', String(showSegKey));
+    applySegKeyHdrVis();
+    saveViewPrefs();
+  };
+
+  // Toggle Col Header (nhãn PALI/ENGLISH/VIETNAMESE)
+  var btnSegHdr = $('btnSegHdr');
+  if (btnSegHdr) btnSegHdr.onclick = function () {
+    showColHdr = !showColHdr;
+    btnSegHdr.classList.toggle('active', showColHdr);
+    btnSegHdr.setAttribute('aria-pressed', String(showColHdr));
+    applySegKeyHdrVis();
+    saveViewPrefs();
   };
 
   /* ============================================================
@@ -851,10 +884,31 @@ mql.addEventListener('change', updateVisibleCols);
   var suppressBackTop = false;
   function toggleBackTop(show) { if (!btnBackTop) return; btnBackTop.classList.toggle('visible', show); }
 
-  if (scrollEl) scrollEl.addEventListener('scroll', throttle(function () {
-    if (!suppressBackTop) toggleBackTop(scrollEl.scrollTop > 0);
-    saveScrollAnchorNow();
-  }, 120), { passive: true });
+  // Progress bar update — chạy mỗi rAF frame khi scroll, không throttle để mượt
+  var progressBarTicking = false;
+  function updateProgressBar() {
+    if (!scrollEl) return;
+    var sh = scrollEl.scrollHeight, ch = scrollEl.clientHeight, st = scrollEl.scrollTop;
+    var pct = sh > ch ? (st / (sh - ch)) * 100 : 0;
+    document.documentElement.style.setProperty('--read-progress', pct.toFixed(1) + '%');
+  }
+
+  if (scrollEl) {
+    scrollEl.addEventListener('scroll', function () {
+      if (!progressBarTicking) {
+        progressBarTicking = true;
+        requestAnimationFrame(function () {
+          updateProgressBar();
+          progressBarTicking = false;
+        });
+      }
+    }, { passive: true });
+
+    scrollEl.addEventListener('scroll', throttle(function () {
+      if (!suppressBackTop) toggleBackTop(scrollEl.scrollTop > 0);
+      saveScrollAnchorNow();
+    }, 120), { passive: true });
+  }
 
   if (btnBackTop && scrollEl) btnBackTop.onclick = function () {
     suppressBackTop = true;
@@ -1333,6 +1387,11 @@ if (scrollEl) {
     if (isSectionNum) wrap.classList.add('is-section-num');
     // Row là "source" (url) — thêm class để style mờ/gạch đầu
     if (/:source$/i.test(keyRaw)) wrap.classList.add('is-source');
+    // Sub-chapter header: :0.1 (Nikāya + số), :0.2 (tên Vagga), :0.3 (tên sub-sutta)
+    // Áp class .is-subtitle để render style heading (căn giữa, italic, to hơn nội dung)
+    if (/:0\.[123]$/.test(keyRaw)) wrap.classList.add('is-subtitle');
+    // Set data-key trên wrap (để CSS selector [data-key$=":0.1"] match được cho border phân cách chương)
+    wrap.setAttribute('data-key', keyRaw);
 
     var keyShort = '';
     if (keyRaw.includes(':')) {
@@ -1343,7 +1402,8 @@ if (scrollEl) {
     if (keyShort) {
       var seg = document.createElement('div');
       seg.className = 'sutra-seg-key'; seg.textContent = keyShort;
-      seg.setAttribute('aria-hidden', 'true'); wrap.appendChild(seg);
+      seg.setAttribute('aria-hidden', 'true');
+      wrap.appendChild(seg);
     }
     var row = document.createElement('div');
     row.className = 'sutra-row'; row.setAttribute('data-key', keyRaw);
@@ -1488,13 +1548,21 @@ if (scrollEl) {
       titleMetaEl.textContent = altName;
     }
 
-    // Partition rows: :0.1/:0.2 bỏ đi (đã ở header). :source đẩy xuống CUỐI. Còn lại giữ thứ tự.
+    // Partition rows:
+    //   - :0.1/:0.2 của CHÍNH bài (id) → bỏ (đã hiển thị ở header)
+    //   - :0.1/:0.2 của sub-chapter (vd an1.11:0.1 khi id=an1_v1) → GIỮ làm phân đoạn
+    //   - :source → đẩy cuối
+    //   - Còn lại giữ thứ tự
+    var normId = String(id).replace(/([A-Za-z]+)0*(\d)/g, '$1$2');
+    var mainPrefix1 = id + ':0.';
+    var mainPrefix2 = normId + ':0.';
     var mainRows = [];
     var sourceRows = [];
     (merged.rows || []).forEach(function (r) {
       var k = String(r.key || '');
-      if (k.includes(':0.')) return;           // metadata header rows — skip
-      if (/:source$/i.test(k)) sourceRows.push(r);  // source rows → cuối
+      // Chỉ skip :0.X của main sutta id (tiêu đề chính đã ở header)
+      if (k.startsWith(mainPrefix1) || k.startsWith(mainPrefix2)) return;
+      if (/:source$/i.test(k)) sourceRows.push(r);
       else mainRows.push(r);
     });
     var rowsForViewRaw = mainRows.concat(sourceRows);
@@ -1548,6 +1616,48 @@ if (scrollEl) {
   }
 
   function openSutra(id) { renderSutra(id); }
+
+  // Parse hash lúc load: #an1_v1:1.27.1.3 → mở sutta + scroll đến segment
+  function parseHashAndOpen() {
+    var hash = (location.hash || '').replace(/^#/, '');
+    if (!hash) return null;
+    var parts = hash.split(':');
+    var id = parts[0];
+    var segKey = parts.length > 1 ? hash : null;  // full key nếu có :N.M
+    if (!id) return null;
+    // Mở sutta rồi scroll tới đoạn (nếu có)
+    renderSutra(id).then(function () {
+      if (segKey) {
+        setTimeout(function () {
+          var safe = safeCssEscape(segKey);
+          var row = grid && grid.querySelector('.sutra-row[data-key="' + safe + '"]');
+          if (row && scrollEl) {
+            var wrap = row.closest('.sutra-row-wrap') || row;
+            var rootRect = scrollEl.getBoundingClientRect();
+            var tgtRect  = wrap.getBoundingClientRect();
+            var y = tgtRect.top - rootRect.top + scrollEl.scrollTop - 40;
+            scrollEl.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+            // Highlight 2 giây
+            wrap.classList.add('seg-flash');
+            setTimeout(function () { wrap.classList.remove('seg-flash'); }, 2000);
+          }
+        }, 300);
+      }
+    }).catch(function(){});
+    return id;
+  }
+
+  // ============================================================
+  // Random sutta — mở bài ngẫu nhiên
+  // ============================================================
+  var btnRandom = $('btnRandom');
+  if (btnRandom) btnRandom.onclick = function () {
+    if (!SUTRA_ORDER.length) return;
+    var i = Math.floor(Math.random() * SUTRA_ORDER.length);
+    openSutra(SUTRA_ORDER[i]);
+    // Đóng Settings panel
+    togglePanel(settingsPanel, false);
+  };
 
   /* ============================================================
      Prev / Next
@@ -1830,9 +1940,16 @@ if (scrollEl) {
     if (btnEng)  { btnEng.classList.toggle('active',  showEng);  btnEng.setAttribute('aria-pressed',  String(showEng)); }
     if (btnVie)  { btnVie.classList.toggle('active',  showVie);  btnVie.setAttribute('aria-pressed',  String(showVie)); }
     if (btnLayout) { btnLayout.classList.toggle('active', card ? card.classList.contains('stack') : false); }
-    applyVisibility(); loadZoom(); loadLineHeight(); buildSutraMenuFromIndex(); initDelegations();
-    var startId = storage.get(KEY_LAST);
-    if (startId) openSutra(startId); else renderWelcomeScreen();
+    // Áp state cho btnSegKey + btnSegHdr theo prefs đã load
+    var _bsk = $('btnSegKey'); if (_bsk) { _bsk.classList.toggle('active', showSegKey); _bsk.setAttribute('aria-pressed', String(showSegKey)); }
+    var _bsh = $('btnSegHdr'); if (_bsh) { _bsh.classList.toggle('active', showColHdr); _bsh.setAttribute('aria-pressed', String(showColHdr)); }
+    applyVisibility(); applySegKeyHdrVis(); loadZoom(); loadLineHeight(); buildSutraMenuFromIndex(); initDelegations();
+    // Ưu tiên hash URL (deep link) → last-read → welcome
+    var hashOpened = parseHashAndOpen();
+    if (!hashOpened) {
+      var startId = storage.get(KEY_LAST);
+      if (startId) openSutra(startId); else renderWelcomeScreen();
+    }
     if (!synthSupported) {
       [btnReadTts, btnPauseTts, btnStopTts].forEach(function (b) { if (b) b.disabled = true; });
     } else {
@@ -1854,11 +1971,15 @@ if (scrollEl) {
     var btnDebugClose = $('btnDebugClose');
     if (!btnDebug || !debugPanel || !debugBody) return;
     if (!DEBUG) {
-      btnDebug.hidden = true;
+      // Dùng visibility: hidden (không phải display:none / hidden attr) để giữ chỗ →
+      // khi tắt DEBUG, 2 nút reset bên phải không bị dịch chuyển.
+      btnDebug.style.visibility = 'hidden';
+      btnDebug.setAttribute('aria-hidden', 'true');
+      btnDebug.setAttribute('tabindex', '-1');
       debugPanel.hidden = true;
       return;
     }
-    btnDebug.hidden = false;
+    btnDebug.style.visibility = '';
     var visible = false;
     var timer = null;
     var lastFrameT = performance.now();
