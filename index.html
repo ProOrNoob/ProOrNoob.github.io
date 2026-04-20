@@ -1794,11 +1794,11 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
 }
 
 @media (max-width: 720px) {
-  /* Mobile: Namo tassa to hơn + bỏ decorative lines 2 bên để fit */
+  /* Mobile: Namo tassa cân xứng, không tràn + bỏ decorative lines 2 bên để fit */
   .bar-center {
-    font-size: 12.5px;
+    font-size: 11px;
     font-weight: 400;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.05em;
     gap: 0;
     min-width: 0;
   }
@@ -1846,7 +1846,8 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
   /* Mobile đã tự stack → ẩn luôn nút "Xếp dọc" trong Settings */
   #layoutRow { display: none !important; }
 
-  .status-in { padding: 4px 8px; gap: 6px; grid-template-columns: auto 1fr auto; }
+  /* padding 12px 2 bên: Library & Settings thụt vô 12px để cân với nút scroll-to-top (right: 12px) */
+  .status-in { padding: 4px 12px; gap: 6px; grid-template-columns: auto 1fr auto; }
   .status-title { font-size: 13px; padding: 0 10px; max-width: 55vw; }
   /* Mobile: ẩn nikaya prefix, chỉ giữ tên bài kinh cho gọn */
   .status-title .nav-parent { display: none; }
