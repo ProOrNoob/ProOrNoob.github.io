@@ -388,17 +388,13 @@ body::before {
 }
 #sutraGrid::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-/* Row chunks — nhóm 50 rows thành 1 block, áp content-visibility ở CHUNK level
-   (ít boundary hơn → browser xử lý nhẹ hơn; giảm DOM paint/layout cost rõ rệt). */
+/* Row chunks — nhóm 50 rows thành 1 block. KHÔNG dùng content-visibility vì
+   JS materialize/dematerialize đã handle lazy rendering. Double mechanism gây
+   oscillation khi scroll restore (browser recalculate heights conflict với JS). */
 .row-chunk {
   display: flex;
   flex-direction: column;
   gap: 36px;
-  /* content-visibility: auto — browser skip paint/layout chunk ngoài viewport.
-     contain-intrinsic-size: ước tính chiều cao chunk ~50 rows × 80-100px = 4000-5000px.
-     Browser tự remember actual size sau lần render đầu (keyword `auto`). */
-  content-visibility: auto;
-  contain-intrinsic-size: auto 4500px;
 }
 
 /* Section number row (ví dụ "7", "VII") — căn giữa, to hơn, như tiêu đề đoạn */
@@ -2463,7 +2459,7 @@ button:not(:focus-visible), a:not(:focus-visible),
   <div class="guide-dialog"></div>
 </div>
 
-<script src="toc.js?v=25" defer></script>
-<script src="appold.js?v=25" defer></script>
+<script src="toc.js?v=28" defer></script>
+<script src="appold.js?v=28" defer></script>
 </body>
 </html>

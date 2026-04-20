@@ -5,8 +5,7 @@
   // DEBUG: đặt = false để ẩn nút + panel
   // ============================================================
   const DEBUG = true;
-  // Enable anchor save/restore console logs khi DEBUG bật
-  if (DEBUG) window.DEBUG_ANCHOR = true;
+  // window.DEBUG_ANCHOR = true;  // Bật lại nếu cần debug anchor save/restore trong console
 
   const $ = (id) => document.getElementById(id);
 
@@ -845,12 +844,34 @@ mql.addEventListener('change', updateVisibleCols);
       if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] cleared (scrollTop=0) for', currentSutraId);
       return;
     }
-    if (!firstVisibleKey) {
-      if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] skip — no firstVisibleKey yet');
+
+    // Query DOM trực tiếp — tìm row đầu tiên có top >= viewport top (conventional anchor).
+    // Tránh dùng firstVisibleKey cached (có thể out-of-date khi chunks thay đổi).
+    var rootTop = scrollRoot.getBoundingClientRect().top;
+    var rows = scrollRoot.querySelectorAll('.sutra-row');
+    var topKey = null, bestTop = Infinity, lastAboveKey = null;
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i].getBoundingClientRect();
+      if (r.top < rootTop) {
+        // Row top nằm trên viewport top — giữ làm fallback (user cuộn cuối trang)
+        if (r.bottom > rootTop) lastAboveKey = rows[i].getAttribute('data-key');
+        continue;
+      }
+      // Row đầu tiên có top >= rootTop → topmost visible
+      if (r.top < bestTop) {
+        bestTop = r.top;
+        topKey = rows[i].getAttribute('data-key');
+      }
+    }
+    // Nếu không tìm được row >= rootTop (user ở cuối trang), fallback row cuối đang spanning
+    if (!topKey) topKey = lastAboveKey;
+
+    if (!topKey) {
+      if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] skip — no visible row found');
       return;
     }
-    storage.set(KEY_ANCHOR_K(currentSutraId), firstVisibleKey);
-    if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE]', currentSutraId, '→', firstVisibleKey, 'scrollTop=' + scrollRoot.scrollTop);
+    storage.set(KEY_ANCHOR_K(currentSutraId), topKey);
+    if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE]', currentSutraId, '→', topKey, 'scrollTop=' + scrollRoot.scrollTop);
   }
 
   function restoreScrollByAnchor(id) {
