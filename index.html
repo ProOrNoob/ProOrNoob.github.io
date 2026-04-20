@@ -144,12 +144,45 @@ body::before {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 5px 24px;
+  padding: 10px 24px 8px;   /* desktop: dòng Namo có khoảng thở trên, không sát edge */
   font-family: var(--mono);
   font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-3);
+  position: relative;       /* container cho btnGuide absolute + progress bar */
+}
+
+/* Nút Guide (?) ở góc phải top-bar — subtle, không nổi bằng Namo */
+.top-bar-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  color: var(--ink-4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  padding: 0;
+  transition: color .15s, background .15s;
+}
+.top-bar-icon:hover {
+  color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 10%, transparent);
+}
+.top-bar-icon:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (max-width: 720px) {
+  .top-bar-icon { right: 8px; width: 26px; height: 26px; }
+  .top-bar-icon svg { width: 14px; height: 14px; }
 }
 .bar-center {
   text-align: center;
@@ -229,30 +262,33 @@ body::before {
    ============================================================ */
 .header {
   flex: 0 0 auto;
-  padding: 32px 32px 28px;
+  padding: 10px 32px 14px;   /* top giảm mạnh — sát top-bar */
   text-align: center;
   border-bottom: 1px solid var(--rule);
 }
+/* Supertitle: "TRUNG BỘ KINH · MN 23 · VAMMIKA SUTTA" — cùng 1 style cho cả 3 phần */
 #supertitle {
   font-family: var(--mono);
   font-size: 10.5px;
   font-weight: 500;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--accent);
-  margin-bottom: 14px;
+  margin-bottom: 8px;
   min-height: 12px;
-  line-height: 1.2;
+  line-height: 1.3;
+  /* KHÔNG dùng var(--sutra-font-scale) — slider cỡ chữ chỉ áp cho nội dung */
 }
 #supertitle:empty { display: none; }
+/* H1 title — font Vietnamese-friendly, cỡ cố định (không scale theo slider) */
 #title {
   margin: 0;
-  font-family: var(--serif);
-  font-weight: 300;
+  font-family: var(--serif-vi);
+  font-weight: 400;
   font-style: normal;
-  font-size: calc(38px * var(--sutra-font-scale));
-  letter-spacing: -0.012em;
-  line-height: 1.1;
+  font-size: 24px;  /* Cố định — thu nhỏ từ 30px, không dùng var scale */
+  letter-spacing: 0;
+  line-height: 1.2;
   color: var(--ink);
   text-transform: none;
   white-space: normal;
@@ -260,21 +296,14 @@ body::before {
   text-overflow: unset;
 }
 #subtitle {
-  margin-top: 10px;
-  font-family: var(--serif-pali);
-  font-style: italic;
-  font-weight: 400;
-  font-size: calc(18px * var(--sutra-font-scale));
-  color: var(--ink-3);
-  letter-spacing: 0;
-  line-height: 1.3;
+  /* Subtitle Pali đã gộp vào supertitle → ẩn */
+  display: none !important;
 }
-#subtitle:empty { display: none; }
 #titleMeta {
-  margin-top: 22px;
-  font-family: var(--serif);
+  margin-top: 10px;
+  font-family: var(--serif-vi);
   font-style: italic;
-  font-size: 13.5px;
+  font-size: 12.5px;
   color: var(--ink-3);
   letter-spacing: 0;
   display: flex;
@@ -282,6 +311,7 @@ body::before {
   justify-content: center;
   gap: 10px;
   flex-wrap: wrap;
+  /* KHÔNG scale theo slider */
 }
 #titleMeta:empty { display: none; }
 #titleMeta .sep {
@@ -321,7 +351,7 @@ body::before {
 }
 #readerArea::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-/* COMPAT appold.js: #sutraGrid là scroll container trực tiếp (không có #readerArea) */
+/* #sutraGrid — scroll container (header cố định trên, content cuộn trong đây) */
 #sutraGrid {
   flex: 1 1 auto;
   min-height: 0;
@@ -344,6 +374,57 @@ body::before {
 }
 #sutraGrid::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
+/* Row chunks — nhóm 50 rows thành 1 block. KHÔNG dùng content-visibility vì
+   JS materialize/dematerialize đã handle lazy rendering. Double mechanism gây
+   oscillation khi scroll restore (browser recalculate heights conflict với JS). */
+.row-chunk {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+/* Section number row (ví dụ "7", "VII") — căn giữa, to hơn, như tiêu đề đoạn */
+.sutra-row-wrap.is-section-num .sutra-row {
+  grid-template-columns: 1fr !important;
+  grid-template-areas: none !important;
+  text-align: center;
+  padding: 10px 0 16px;
+  /* border-top bỏ — đã có border-top ở subtitle block :0.1 phân cách chương mới */
+  border-bottom: 1px solid var(--rule-2);
+  margin: 0 0 6px;
+}
+.sutra-row-wrap.is-section-num .sutra-col { grid-area: auto !important; grid-column: 1 / -1 !important; align-items: center; }
+.sutra-row-wrap.is-section-num .sutra-col-header,
+.sutra-row-wrap.is-section-num .sutra-seg-key { display: none; }
+.sutra-row-wrap.is-section-num .eng-col,
+.sutra-row-wrap.is-section-num .vie-col { display: none; }  /* chỉ hiện 1 số, đỡ lặp 3 lần */
+.sutra-row-wrap.is-section-num .pali {
+  font-family: var(--serif);
+  font-style: normal;
+  font-weight: 400;
+  font-size: calc(28px * var(--sutra-font-scale));
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+/* SOURCE row cuối bài — style mờ, chữ nhỏ, bớt nổi bật */
+.sutra-row-wrap.is-source {
+  margin-top: 40px;
+  border-top: 1px dashed var(--rule-2);
+  padding-top: 20px;
+  opacity: 0.55;
+}
+.sutra-row-wrap.is-source .sutra-col-header,
+.sutra-row-wrap.is-source .sutra-seg-key { opacity: 0.6; }
+.sutra-row-wrap.is-source .pali,
+.sutra-row-wrap.is-source .eng,
+.sutra-row-wrap.is-source .vie {
+  font-size: calc(12px * var(--sutra-font-scale));
+  font-style: italic;
+  font-weight: 400;
+  word-break: break-all;
+}
+
 .sutra-row-wrap {
   display: flex;
   flex-direction: column;
@@ -352,6 +433,7 @@ body::before {
   width: 100%;
   margin: 0 auto;
   padding-left: 20px;
+  /* content-visibility bỏ khỏi row-wrap — áp lên chunk (group 50 rows) ở dưới */
   /* KHÔNG dùng contain — test cho thấy OLD với 20k DOM không contain chạy 60 FPS
      còn NEW 3k DOM có contain chỉ 2 FPS → contain trên 1.227 element phản tác dụng iPad. */
 }
@@ -366,53 +448,35 @@ body::before {
 }
 .sutra-row-wrap:hover::before { background: color-mix(in oklab, var(--accent) 50%, var(--rule-2)); }
 
-/* Ornament divider every 8 segments for reading rhythm
-   (loại trừ sub-sutta heading — nó tự có dấu phân cách riêng) */
-.sutra-row-wrap:nth-of-type(8n+1):not(:first-of-type):not(.is-subtitle) { margin-top: 22px; }
-.sutra-row-wrap:nth-of-type(8n+1):not(:first-of-type):not(.is-subtitle)::after {
-  content: '❦';
-  position: absolute;
-  top: -26px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: var(--serif);
-  font-size: 14px;
-  color: var(--accent);
-  opacity: 0.32;
-  letter-spacing: 0;
-  line-height: 1;
-  pointer-events: none;
-  user-select: none;
-}
+/* Ornament divider 8n — ĐÃ XOÁ theo yêu cầu (icon ❦ random không hợp lý) */
 
-/* Sub-sutta heading: khi row có data-key kết thúc ":0.3" (vd "sn1.11:0.3")
-   → xử lý như tiêu đề phụ của sub-sutta trong vagga bundle */
+/* Sub-chapter headers (:0.1 = Nikāya+số, :0.2 = Vagga name, :0.3 = sub-sutta name)
+   Nhóm 3 dòng này sát nhau cho gọn; border-top ở dòng :0.1 để phân cách chương mới */
 .sutra-row-wrap.is-subtitle {
-  margin-top: 36px;
-  padding-top: 14px;
+  margin-top: 0;
+  padding-top: 0;
   padding-left: 0;
 }
-/* Sub-sutta đầu tiên của bài (ngay dưới header) không cần đẩy xuống nhiều */
-.sutra-row-wrap.is-subtitle:first-of-type {
+/* Dòng đầu tiên của sub-chapter (:0.1) → border-top + khoảng cách phân cách rõ */
+.sutra-row-wrap.is-subtitle[data-key$=":0.1"] {
+  margin-top: 18px;
+  padding-top: 22px;
+  border-top: 1px solid var(--rule-2);
+}
+/* Bỏ border cho dòng :0.1 ĐẦU TIÊN của cả bài (ngay dưới header chính) */
+.sutra-row-wrap.is-subtitle[data-key$=":0.1"]:first-of-type {
   margin-top: 0;
   padding-top: 4px;
+  border-top: none;
 }
 .sutra-row-wrap.is-subtitle::before { display: none; }
 .sutra-row-wrap.is-subtitle .sutra-seg-key { display: none; }
-.sutra-row-wrap.is-subtitle::after {
-  content: '·';
-  position: absolute;
-  top: -2px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 14px;
-  color: var(--accent);
-  opacity: 0.45;
-  letter-spacing: 0.4em;
-  line-height: 1;
-  pointer-events: none;
+/* Bỏ luôn dấu · giữa các subtitle — dùng spacing trực tiếp */
+
+/* Subtitle liền kề nhau (:0.1 → :0.2 → :0.3) — kéo sát lại, bỏ phần lớn gap 36px của grid */
+.sutra-row-wrap.is-subtitle + .sutra-row-wrap.is-subtitle {
+  margin-top: -28px;
 }
-.sutra-row-wrap.is-subtitle:first-of-type::after { display: none; }
 .sutra-row-wrap.is-subtitle .sutra-row {
   grid-template-columns: 1fr !important;
   grid-template-areas: none !important;
@@ -427,17 +491,17 @@ body::before {
   font-weight: 400;
   font-size: calc(18px * var(--sutra-font-scale));
   color: var(--ink);
-  line-height: 1.25;
+  line-height: 1.3;
   text-align: center;
 }
 .sutra-row-wrap.is-subtitle .eng,
 .sutra-row-wrap.is-subtitle .vie {
   font-family: var(--serif);
   font-style: italic;
-  font-size: calc(12.5px * var(--sutra-font-scale));
+  font-size: calc(16px * var(--sutra-font-scale));  /* min 16 đồng bộ */
   color: var(--ink-3);
   text-align: center;
-  line-height: 1.3;
+  line-height: 1.35;
 }
 .sutra-row-wrap.is-subtitle .vie { font-family: var(--serif-vi); }
 
@@ -504,7 +568,7 @@ body::before {
 .pali {
   font-family: var(--serif-pali);
   font-style: italic;
-  font-size: calc(19px * var(--sutra-font-scale));
+  font-size: calc(16px * var(--sutra-font-scale));  /* tối thiểu 16 để iPad không auto-zoom */
   font-weight: 400;
   color: var(--ink);
   line-height: var(--sutra-line-height);
@@ -534,14 +598,22 @@ body::before {
 .card:not(.stack) #sutraGrid:not(.hide-pali):not(.hide-eng):not(.hide-vie) .eng-col  { grid-area: eng; }
 .card:not(.stack) #sutraGrid:not(.hide-pali):not(.hide-eng):not(.hide-vie) .vie-col  { grid-area: vie; }
 .card:not(.stack) #sutraGrid:not(.hide-pali):not(.hide-eng):not(.hide-vie) .pali-col .pali {
-  font-size: calc(22px * var(--sutra-font-scale));
-  line-height: calc(var(--sutra-line-height) * 0.92);
+  font-size: calc(17px * var(--sutra-font-scale));   /* 3-lang full-width top: hơi nhỉnh 1px để nhấn Pāli */
+  line-height: calc(var(--sutra-line-height) * 0.95);
 }
 
 /* Hide columns */
 .hide-pali .pali-col,
 .hide-eng .eng-col,
 .hide-vie .vie-col { display: none; }
+
+/* Toggle Segment ID (#sutraGrid.hide-seg-key): ẩn mã đoạn kiểu AN1.11.1.1 */
+#sutraGrid.hide-seg-key .sutra-seg-key { display: none; }
+#sutraGrid.hide-seg-key .sutra-row-wrap { padding-left: 0; }
+#sutraGrid.hide-seg-key .sutra-row-wrap::before { display: none; }
+
+/* Toggle Col Headers (#sutraGrid.hide-col-header): ẩn nhãn PALI/ENGLISH/VIETNAMESE */
+#sutraGrid.hide-col-header .sutra-col-header { display: none; }
 
 /* Only-one-language: full width, hide headers/keys */
 #sutraGrid.hide-eng.hide-vie .sutra-row,
@@ -605,7 +677,7 @@ body::before {
   border-bottom: none;
 }
 .card.stack .sutra-col-header { margin-bottom: 6px; }
-.card.stack .pali { font-size: calc(20px * var(--sutra-font-scale)); }
+.card.stack .pali { font-size: calc(16px * var(--sutra-font-scale)); }  /* stack mode: đồng 16px tối thiểu */
 
 /* Segment visibility toggles (from Settings) */
 html.hide-seg-key .sutra-seg-key { display: none !important; }
@@ -637,38 +709,62 @@ html.hide-seg-hdr .vie { margin-top: 0; }
   margin-top: 8px;
 }
 
-/* Welcome dedication — 3 câu Pāli + dịch nghĩa, căn giữa, phân cách nhẹ */
-.welcome-dedication {
+/* Welcome quotes — 3 câu Pāli kinh điển, phân cách ornament, trang nghiêm */
+.welcome-quotes {
   width: 100%;
-  max-width: 560px;
+  max-width: 620px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 20px 24px;
-  border-top: 1px solid var(--rule-2);
-  border-bottom: 1px solid var(--rule-2);
+  align-items: center;
+  padding: 24px 20px;
   text-align: center;
 }
-.welcome-dedication .ded-item {
+.welcome-quote {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 8px;
+  padding: 18px 8px;
 }
-.welcome-dedication .ded-pali {
+.welcome-quote .wq-pali {
   font-family: var(--serif-pali);
   font-style: italic;
   font-weight: 400;
-  font-size: 16px;
+  font-size: 17px;
   color: var(--accent);
-  line-height: 1.4;
-  letter-spacing: 0.005em;
+  line-height: 1.5;
+  letter-spacing: 0.008em;
 }
-.welcome-dedication .ded-tr {
+.welcome-quote .wq-tr {
   font-family: var(--serif);
-  font-size: 14px;
-  color: var(--ink-3);
-  font-style: italic;
-  line-height: 1.4;
+  font-size: 16px;
+  color: var(--ink-2);
+  line-height: 1.55;
+  font-style: normal;
+}
+.welcome-quote .wq-note {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--ink-4);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.welcome-quotes .wq-sep {
+  font-family: var(--serif);
+  font-size: 18px;
+  color: var(--accent);
+  opacity: 0.4;
+  line-height: 1;
+  padding: 2px 0;
+  user-select: none;
+}
+@media (max-width: 500px) {
+  .welcome-quotes { padding: 14px 8px; }
+  .welcome-quote { padding: 14px 4px; }
+  .welcome-quote .wq-pali { font-size: 16px; }
+  .welcome-quote .wq-tr { font-size: 14.5px; }
+  .welcome-quote .wq-note { font-size: 10px; }
 }
 .welcome-ornament .wheel-rim,
 .welcome-ornament .wheel-hub,
@@ -1047,6 +1143,7 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
   right: 12px;
   bottom: 60px;
   width: 260px;
+  max-width: calc(100vw - 24px);
   max-height: 60vh;
   background: rgba(18, 18, 20, 0.95);
   color: #d0e6d0;
@@ -1091,7 +1188,64 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
   font-family: var(--mono);
   font-size: 11px;
 }
+.debug-actions {
+  padding: 8px 10px;
+  border-top: 1px solid color-mix(in oklab, var(--accent) 30%, transparent);
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.debug-action-btn {
+  flex: 1;
+  background: rgba(244, 67, 54, 0.15);
+  color: #ff7970;
+  border: 1px solid rgba(244, 67, 54, 0.4);
+  padding: 6px 10px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.debug-action-btn:hover {
+  background: rgba(244, 67, 54, 0.3);
+  color: #ffb4ae;
+}
 .bar-pill.debug-only { color: var(--accent); }
+
+/* Library button ở giữa footer — thanh tao, borderless, cùng grammar với các pill khác */
+.status-library-btn {
+  background: transparent !important;
+  border: 0 !important;
+  color: var(--ink-2) !important;
+  padding: 0 14px !important;
+  font-family: var(--mono) !important;
+  font-style: normal !important;
+  font-weight: 500 !important;
+  font-size: 11px !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+  gap: 9px !important;
+  transition: color .15s !important;
+}
+.status-library-btn:hover {
+  color: var(--accent) !important;
+  background: transparent !important;
+}
+.status-library-btn svg {
+  color: var(--ink-4) !important;
+  width: 12px !important;
+  height: 12px !important;
+  transition: color .15s !important;
+}
+.status-library-btn:hover svg { color: var(--accent) !important; }
+.status-library-btn .sidebar-label {
+  display: inline !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  letter-spacing: inherit !important;
+}
 
 /* ============================================================
    Panels (library + settings)
@@ -1134,36 +1288,45 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
   pointer-events: auto;
   transform: translate(-50%, -50%) scale(1) !important;
 }
-#sutraMenuPanel .search-box {
-  padding: 18px 52px 10px 22px;
+/* Top bar của Library: search input + close button cùng hàng, cân đối */
+#sutraMenuPanel .lib-topbar {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  padding: 16px 18px 12px;
   border-bottom: 1px solid var(--rule);
   flex: 0 0 auto;
   background: var(--panel);
 }
-
-/* Close X button for library modal */
-.menu-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 32px;
-  height: 32px;
+#sutraMenuPanel .search-box {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
   border: 0;
   background: transparent;
+}
+
+/* Close X — cân với chiều cao search input (~44px), to bự hơn trước */
+.menu-close {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--rule);
+  background: var(--bg-2);
   color: var(--ink-3);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  z-index: 10;
-  transition: background .15s, color .15s;
+  border-radius: 4px;
+  transition: background .15s, color .15s, border-color .15s;
   padding: 0;
 }
-.menu-close svg { width: 14px; height: 14px; }
+.menu-close svg { width: 20px; height: 20px; }
 .menu-close:hover {
-  background: var(--bg-2);
-  color: var(--ink);
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
 }
 .menu-close:focus-visible {
   outline: 2px solid var(--accent);
@@ -1195,6 +1358,69 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
   flex: 0 0 auto;
 }
 #sutraSearchResults:empty { display: none; }
+
+/* 4 Nikaya tiles: chọn bộ kinh chính → list bên dưới filter theo */
+.nikaya-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 14px 18px 14px;
+  border-bottom: 1px solid var(--rule);
+  flex: 0 0 auto;
+}
+.nikaya-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 14px 6px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--bg-2);
+  color: var(--ink-2);
+  cursor: pointer;
+  font-family: var(--serif);
+  transition: background .15s, color .15s, border-color .15s, transform .08s;
+  user-select: none;
+  min-height: 64px;
+}
+.nikaya-tile:hover {
+  background: color-mix(in oklab, var(--accent) 8%, var(--bg-2));
+  border-color: color-mix(in oklab, var(--accent) 35%, var(--rule));
+  color: var(--ink);
+}
+.nikaya-tile:active { transform: scale(0.97); }
+.nikaya-tile.active {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+.nikaya-tile .tile-code {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+}
+.nikaya-tile.active .tile-code { color: var(--bg); }
+.nikaya-tile .tile-label {
+  font-size: 11px;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.nikaya-tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+@media (max-width: 500px) {
+  .nikaya-tiles { gap: 6px; padding: 10px 12px; }
+  .nikaya-tile { padding: 10px 4px; min-height: 54px; }
+  .nikaya-tile .tile-code { font-size: 12px; }
+  .nikaya-tile .tile-label { font-size: 10px; }
+}
 .search-result-item {
   width: 100%;
   text-align: left;
@@ -1213,13 +1439,13 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
 .search-result-item:hover { background: var(--highlight); }
 .search-result-item .search-main,
 .search-result-item .sr-main {
-  font-size: 15px;
+  font-size: 16px;   /* min 16 tránh iPad zoom */
   font-weight: 500;
   color: var(--ink);
 }
 .search-result-item .search-sub,
 .search-result-item .sr-sub {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--ink-3);
   font-style: italic;
 }
@@ -1441,17 +1667,17 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
 .sutra-label-main {
   font-family: var(--serif);
   font-style: normal;
-  font-size: 15px;
+  font-size: 16px;       /* min 16 để tránh iPad auto-zoom + dễ đọc */
   font-weight: 400;
   color: var(--ink);
-  line-height: 1.2;
+  line-height: 1.25;
 }
 .sutra-label-sub {
   font-family: var(--serif);
-  font-size: 12.5px;
-  font-style: normal;
+  font-size: 14px;       /* sub info, vẫn rõ */
+  font-style: italic;
   color: var(--ink-3);
-  line-height: 1.2;
+  line-height: 1.25;
 }
 .menu-sutta-link.active .sutra-label-main,
 .menu-sutta-link.active .sutra-label-sub { color: var(--ink); }
@@ -1599,10 +1825,19 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
 #settingsPanel .pill-wide { text-transform: uppercase; letter-spacing: 0.08em; }
 #settingsPanel .pill-icon { font-size: 12px; margin-right: 4px; opacity: 0.9; }
 
-/* Icon pills trong section Giao diện — chứa SVG/lang-code */
+/* Icon pills trong section Giao diện — chứa SVG/lang-letters */
 #settingsPanel .set-icon-pill { min-height: 34px; padding: 4px; }
-#settingsPanel .set-icon-pill svg { width: 15px; height: 15px; display: block; }
+#settingsPanel .set-icon-pill svg { width: 18px; height: 18px; display: block; }
 #settingsPanel .set-icon-pill .lang-code { font-size: 11.5px; letter-spacing: 0.08em; }
+/* Lang letters (VN/EN) — đơn giản, mono, không cờ màu */
+#settingsPanel .set-icon-pill .lang-letters {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  color: currentColor;
+}
 /* Dark mode icon swap */
 #settingsPanel #btnDarkMode .icon-sun { display: none; }
 #settingsPanel #btnDarkMode .icon-moon { display: block; }
@@ -1810,7 +2045,19 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
   line-height: 1.7;
   margin: 0 0 8px;
 }
-.guide-dialog li { margin-bottom: 8px; }
+.guide-dialog li { margin-bottom: 6px; }
+.guide-dialog p {
+  margin: 8px 0 12px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  font-size: 13.5px;
+}
+.guide-dialog a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--accent) 40%, transparent);
+}
+.guide-dialog a:hover { text-decoration-color: var(--accent); }
 .guide-dialog li::marker { color: var(--accent); }
 .guide-dialog button {
   margin-top: 12px;
@@ -1867,9 +2114,9 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
     grid-area: auto !important;
     grid-column: 1 / -1 !important;
   }
-  /* Pāli full-size như trong 1-col mode + justify đẹp như mobile */
+  /* Pāli iPad: giữ tối thiểu 16px tránh auto-zoom + đồng nhất với eng/vie */
   .card:not(.stack) #sutraGrid:not(.hide-pali):not(.hide-eng):not(.hide-vie) .pali-col .pali {
-    font-size: calc(19px * var(--sutra-font-scale));
+    font-size: calc(16px * var(--sutra-font-scale));
     line-height: var(--sutra-line-height);
   }
   .card:not(.stack) #sutraGrid .pali,
@@ -1916,12 +2163,11 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
   }
   /* Mobile: ẩn epigraph (dải lời kinh chạy chữ) cho gọn — user có thể đọc full ở Welcome */
   .epigraph { display: none; }
-  .header { padding: 24px 22px 20px; }
-  #title { font-size: calc(26px * var(--sutra-font-scale)); }
-  #subtitle { font-size: calc(14px * var(--sutra-font-scale)); }
-  #supertitle { font-size: 9.5px; letter-spacing: 0.22em; margin-bottom: 8px; }
-  #titleMeta { margin-top: 12px; font-size: 11.5px; }
-  #sutraGrid { padding: 26px 18px 26px; gap: 28px; }
+  .header { padding: 14px 18px 12px; }
+  #title { font-size: 20px; }  /* cố định, không scale */
+  #supertitle { font-size: 9.5px; letter-spacing: 0.14em; margin-bottom: 6px; }
+  #titleMeta { margin-top: 6px; font-size: 11px; }
+  #sutraGrid { padding: 22px 18px 26px; gap: 28px; }
   .sutra-row-wrap { padding-left: 14px; }
 
   /* Mobile: luôn stack 1 cột — cho mọi cấu hình ngôn ngữ */
@@ -1938,15 +2184,19 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
     grid-row: auto !important;
     border-bottom: none;
   }
-  /* Stack polish: header gọn hơn, Pāli lớn lên, justify 2 bên */
+  /* Stack polish: header gọn hơn, Pāli giữ nhỏ, justify 2 bên */
   .sutra-col-header { margin-bottom: 6px; }
-  .pali { font-size: calc(19px * var(--sutra-font-scale)); }
+  .pali { font-size: calc(14.5px * var(--sutra-font-scale)); }
   .pali, .eng, .vie { text-align: justify; text-justify: inter-word; }
-  /* Mobile đã tự stack → ẩn luôn nút "Xếp dọc" trong Settings */
-  #layoutRow { display: none !important; }
+  /* Mobile đã tự stack → GIỮ nút "Xếp dọc" nhưng disable (không bấm được) để layout 3-cột cân đối */
+  #layoutRow #btnLayout {
+    opacity: 0.35;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
 
   /* padding 12px 2 bên: Library & Settings thụt vô 12px để cân với nút scroll-to-top (right: 12px) */
-  .status-in { padding: 4px 12px; gap: 6px; grid-template-columns: auto 1fr auto; }
+  .status-in { padding: 4px 12px; gap: 6px; grid-template-columns: 1fr auto 1fr; }
   .status-title { font-size: 13px; padding: 0 10px; max-width: 55vw; }
   /* Mobile: ẩn nikaya prefix, chỉ giữ tên bài kinh cho gọn */
   .status-title .nav-parent { display: none; }
@@ -1969,9 +2219,8 @@ body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; 
 
 @media (max-width: 500px) {
   .bar-in { padding: 6px 10px; }
-  .header { padding: 22px 18px 18px; }
-  #title { font-size: calc(24px * var(--sutra-font-scale)); }
-  #subtitle { font-size: calc(14px * var(--sutra-font-scale)); }
+  .header { padding: 12px 14px 10px; }
+  #title { font-size: 18px; }  /* cố định */
   .eng, .pali, .vie { text-align: left; }
   input[type="search"], input[type="text"], input[type="email"], textarea, select { font-size: 16px !important; }
   .menu-sutta-link, .menu-toggle, a, button, input, select, textarea { touch-action: manipulation; }
@@ -2031,43 +2280,48 @@ button:not(:focus-visible), a:not(:focus-visible),
     <header class="top-bar top-note" role="banner">
       <div class="bar-in">
         <div class="bar-center"><span id="dedicationText" class="ded-phrase-text">Namo tassa bhagavato arahato sammāsambuddhassa</span></div>
+        <!-- Guide button góc phải (di chuyển từ Settings ra) -->
+        <button type="button" id="btnGuide" class="top-bar-icon" aria-label="Hướng dẫn" title="Hướng dẫn">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.4-.9 2-1.6 2.4-.7.4-1.1.7-1.1 1.6v.4"></path>
+            <path d="M12 16.2h.01"></path>
+          </svg>
+        </button>
       </div>
     </header>
 
-    <!-- HEADER (compat appold.js — KHÔNG wrap trong #readerArea) -->
+    <!-- HEADER cố định trên đầu (không cuộn) — nhìn trang nghiêm, luôn thấy bài kinh -->
     <section class="header" role="region" aria-label="Sutta title">
       <div id="supertitle"></div>
       <h1 id="title">Chưa chọn bài</h1>
       <div id="subtitle" class="vi" aria-live="polite">—</div>
       <div id="titleMeta"></div>
     </section>
-    <!-- SCROLL CONTAINER trực tiếp = #sutraGrid (appold.js dùng grid.scrollTop) -->
+    <!-- Content scroll container -->
     <main id="sutraGrid" role="main" aria-live="polite" aria-busy="false"></main>
 
     <!-- BOTTOM STATUS BAR -->
     <footer class="status">
       <div class="status-in">
         <div class="status-left">
-          <button type="button" id="sidebar-btn" class="bar-pill" title="Thư viện" aria-label="Mở danh mục bài kinh" aria-expanded="false">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true">
-              <path d="M2 3v10M5 3v10M8 3v10M12 4l3 9M11 13h5"/>
-            </svg>
-            <span class="sidebar-label label-full" id="sidebarBtnLabel">Thư viện</span>
-            <span class="sidebar-arrow" aria-hidden="true"></span>
+          <button id="btnPrev" class="nav-pill" disabled aria-label="Bài trước" title="Bài trước">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3L5 8l5 5"/></svg>
           </button>
         </div>
         <div class="status-center">
-          <button id="btnPrev" class="nav-pill" disabled aria-label="Bài trước">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3L5 8l5 5"/></svg>
-            <span class="nav-label" id="btnPrevLabel">Trước</span>
-          </button>
-          <span id="navTitle" class="status-title">—</span>
-          <button id="btnNext" class="nav-pill" disabled aria-label="Bài tiếp theo">
-            <span class="nav-label" id="btnNextLabel">Sau</span>
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>
+          <!-- Nút Thư viện chính (thay cho navTitle cũ — trùng thông tin header) -->
+          <button type="button" id="sidebar-btn" class="bar-pill status-library-btn" title="Thư viện — mục lục bài kinh" aria-label="Mở danh mục bài kinh" aria-expanded="false">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true">
+              <path d="M2 3v10M5 3v10M8 3v10M12 4l3 9M11 13h5"/>
+            </svg>
+            <span class="sidebar-label" id="sidebarBtnLabel">Thư viện</span>
           </button>
         </div>
         <div class="status-right">
+          <button id="btnNext" class="nav-pill" disabled aria-label="Bài tiếp theo" title="Bài tiếp">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>
+          </button>
           <button type="button" id="btnSettings" class="bar-pill" aria-label="Cài đặt hiển thị" aria-haspopup="true" aria-expanded="false" title="Settings">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true">
               <circle cx="8" cy="8" r="2"/>
@@ -2076,6 +2330,8 @@ button:not(:focus-visible), a:not(:focus-visible),
             <span class="label-full" id="btnSettingsLabel">Cài đặt</span>
           </button>
         </div>
+        <!-- Hidden navTitle — appold.js vẫn set textContent cho backward-compat -->
+        <span id="navTitle" hidden></span>
       </div>
     </footer>
 
@@ -2086,6 +2342,11 @@ button:not(:focus-visible), a:not(:focus-visible),
         <button type="button" id="btnDebugClose" class="debug-close" aria-label="Đóng debug">×</button>
       </div>
       <pre id="debugBody"></pre>
+      <div class="debug-actions">
+        <button type="button" id="btnClearStorage" class="debug-action-btn" title="Xóa toàn bộ localStorage + reload">
+          🗑 Clear localStorage
+        </button>
+      </div>
     </div>
 
     <!-- BACK TO TOP -->
@@ -2101,17 +2362,38 @@ button:not(:focus-visible), a:not(:focus-visible),
   <!-- LIBRARY PANEL (Sutta menu) -->
   <div id="sutraMenuPanel" class="panel" role="dialog"
        aria-label="Danh mục bài kinh" aria-hidden="true" inert>
-    <button id="menuCloseBtn" class="menu-close" type="button" aria-label="Đóng" title="Đóng">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true">
-        <path d="M4 4l8 8M12 4l-8 8"/>
-      </svg>
-    </button>
-    <div class="search-box">
-      <input id="sutraSearch" type="search"
-             placeholder="Nhập tên bài kinh cần tìm..."
-             aria-label="Tìm kiếm bài kinh" autocomplete="off">
+    <div class="lib-topbar">
+      <div class="search-box">
+        <input id="sutraSearch" type="search"
+               placeholder="Nhập tên bài kinh cần tìm..."
+               aria-label="Tìm kiếm bài kinh" autocomplete="off">
+      </div>
+      <button id="menuCloseBtn" class="menu-close" type="button" aria-label="Đóng" title="Đóng">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+          <path d="M5 5l10 10M15 5l-10 10"/>
+        </svg>
+      </button>
     </div>
     <div id="sutraSearchResults" class="search-results" role="listbox" aria-label="Kết quả tìm kiếm"></div>
+    <!-- 4 tiles: chọn bộ kinh chính → list bên dưới filter theo -->
+    <div class="nikaya-tiles" role="tablist" aria-label="Chọn bộ kinh">
+      <button type="button" class="nikaya-tile" data-nikaya="DN" role="tab" aria-selected="false">
+        <span class="tile-code">DN</span>
+        <span class="tile-label" data-vi="Trường Bộ" data-en="Long Discourses">Trường Bộ</span>
+      </button>
+      <button type="button" class="nikaya-tile" data-nikaya="MN" role="tab" aria-selected="false">
+        <span class="tile-code">MN</span>
+        <span class="tile-label" data-vi="Trung Bộ" data-en="Middle Discourses">Trung Bộ</span>
+      </button>
+      <button type="button" class="nikaya-tile" data-nikaya="SN" role="tab" aria-selected="false">
+        <span class="tile-code">SN</span>
+        <span class="tile-label" data-vi="Tương Ưng" data-en="Connected">Tương Ưng</span>
+      </button>
+      <button type="button" class="nikaya-tile" data-nikaya="AN" role="tab" aria-selected="false">
+        <span class="tile-code">AN</span>
+        <span class="tile-label" data-vi="Tăng Chi" data-en="Numerical">Tăng Chi</span>
+      </button>
+    </div>
     <ul id="sutraMenuList" class="sutra-list" role="tree" aria-label="Mục lục bài kinh"></ul>
   </div>
 
@@ -2130,22 +2412,27 @@ button:not(:focus-visible), a:not(:focus-visible),
         <div class="set-sec-body">
           <div class="set-pills cols-3">
             <button class="pill set-icon-pill" id="btnDarkMode" aria-label="Chuyển sáng/tối" title="Chế độ tối">
-              <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              <!-- Moon filled (dark mode active) -->
+              <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <circle cx="12" cy="12" r="7"/>
+                <circle cx="15" cy="10" r="5" fill="var(--panel)"/>
               </svg>
-              <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="4"></circle>
-                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+              <!-- Sun: outlined circle + rays nhẹ (light mode active) -->
+              <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="4" fill="currentColor" fill-opacity="0.15"/>
               </svg>
             </button>
             <button class="pill set-icon-pill" id="btnUiLang" aria-label="Đổi ngôn ngữ giao diện">
               <span class="lang-code">VI</span>
             </button>
-            <button class="pill set-icon-pill" id="btnGuide" aria-label="Hướng dẫn sử dụng" title="Guide">
+            <button class="pill set-icon-pill" id="btnRandom" aria-label="Mở bài kinh ngẫu nhiên" title="Ngẫu nhiên">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="9"></circle>
-                <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.4-.9 2-1.6 2.4-.7.4-1.1.7-1.1 1.6v.4"></path>
-                <path d="M12 16.2h.01"></path>
+                <rect x="3" y="3" width="18" height="18" rx="3"/>
+                <circle cx="8" cy="8" r="1.2" fill="currentColor"/>
+                <circle cx="16" cy="8" r="1.2" fill="currentColor"/>
+                <circle cx="12" cy="12" r="1.2" fill="currentColor"/>
+                <circle cx="8" cy="16" r="1.2" fill="currentColor"/>
+                <circle cx="16" cy="16" r="1.2" fill="currentColor"/>
               </svg>
             </button>
           </div>
@@ -2167,22 +2454,23 @@ button:not(:focus-visible), a:not(:focus-visible),
         </div>
       </div>
 
-      <!-- ② LAYOUT — Xếp dọc + Debug (debug panel trigger) -->
+      <!-- ② LAYOUT — Xếp dọc + toggle Segment ID + toggle Label cột -->
       <div class="set-sec" id="layoutRow">
         <div class="set-sec-body">
-          <div class="set-pills">
-            <button class="pill pill-wide" id="btnLayout" aria-pressed="false" title="Xếp dọc các cột">
+          <div class="set-pills cols-3">
+            <button class="pill" id="btnLayout" aria-pressed="false" title="Xếp dọc các cột">
               <span class="pill-icon">☰</span> Xếp dọc
             </button>
-            <button class="pill pill-wide debug-only" id="btnDebug" aria-pressed="false" title="Debug info" hidden>
-              <span class="pill-icon">🐞</span> Debug
+            <button class="pill active" id="btnSegKey" aria-pressed="true" title="Hiện mã đoạn (vd AN1.11.1.1)">
+              <span class="pill-icon">#</span> Segment
+            </button>
+            <button class="pill active" id="btnSegHdr" aria-pressed="true" title="Hiện nhãn cột Pali/English/Việt">
+              <span class="pill-icon">▦</span> Label
             </button>
           </div>
         </div>
       </div>
-      <!-- Hidden shims cho các btn code mới có: giữ để không lỗi nếu load nhầm app.js new -->
-      <button id="btnSegHdr" hidden aria-hidden="true"></button>
-      <button id="btnSegKey" hidden aria-hidden="true"></button>
+      <!-- Hidden shims -->
       <button id="btnFullWidth" hidden aria-hidden="true"></button>
 
       <!-- ③ DISPLAY (font size + line height) — sliders full-width, resets ở cuối -->
@@ -2206,6 +2494,7 @@ button:not(:focus-visible), a:not(:focus-visible),
             <span class="slider-value-badge" id="lineHeightValueBadge">1.85</span>
           </div>
           <div class="slider-resets">
+            <button class="slider-reset-btn debug-only" id="btnDebug" title="Debug info" aria-label="Debug info">🐞</button>
             <button class="slider-reset-btn" id="btnZoomReset" title="Reset cỡ chữ" aria-label="Reset cỡ chữ">↺ A</button>
             <button class="slider-reset-btn" id="btnLineHeightReset" title="Reset giãn dòng" aria-label="Reset giãn dòng">↺ ☰</button>
           </div>
@@ -2239,7 +2528,7 @@ button:not(:focus-visible), a:not(:focus-visible),
   <div class="guide-dialog"></div>
 </div>
 
-<script src="toc.js" defer></script>
-<script src="app.js" defer></script>
+<script src="toc.js?v=1" defer></script>
+<script src="app.js?v=1" defer></script>
 </body>
 </html>
