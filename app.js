@@ -232,7 +232,6 @@
   var isRendering = false;
   var renderToken = 0;
   var lastSingleLangMode = null;
-  var lastVisibleLangsSig = '';
   var cachedRows = [];
 
   var LANG_STORAGE_KEY = 'sutra_ui_lang';
@@ -272,63 +271,46 @@
     return m ? (m[1] + ':' + m[2]) : null;
   }
 
-  // Gộp segments thành paragraph theo major scope (:N.M) — hoạt động cho 1/2/3 lang.
-  // Pali/En/Vie trong cùng 1 scope là bản dịch song song → gộp vẫn giữ alignment giữa các cột.
-  // visibleLangs: mảng con của ['pali','eng','vie']; chỉ gộp + giữ text của lang trong danh sách này.
-  function mergeRowsParagraphs(rows, visibleLangs) {
+  function mergeRowsToParagraphRows(rows, lang) {
     var out = [];
-    if (!Array.isArray(rows) || !rows.length) return out;
-    if (!Array.isArray(visibleLangs) || !visibleLangs.length) return rows.slice();
-
-    var wantPali = visibleLangs.indexOf('pali') !== -1;
-    var wantEng  = visibleLangs.indexOf('eng')  !== -1;
-    var wantVie  = visibleLangs.indexOf('vie')  !== -1;
-
-    var buf = { pali: '', eng: '', vie: '' };
-    var bufKey = null;
-    var currentScope = null;
-
+    if (!Array.isArray(rows)||!rows.length) return out;
+    var buf = '', bufKey = null, currentScope = null;
     var flush = function () {
-      if (!buf.pali && !buf.eng && !buf.vie) { bufKey = null; return; }
-      out.push({
-        key: bufKey || '',
-        pali: wantPali ? buf.pali.trim() : '',
-        eng:  wantEng  ? buf.eng.trim()  : '',
-        vie:  wantVie  ? buf.vie.trim()  : ''
-      });
-      buf = { pali: '', eng: '', vie: '' };
-      bufKey = null;
+      var text = (buf||'').trim();
+      if (!text) { buf=''; bufKey=null; return; }
+      var r = { key: bufKey||'', pali:'', eng:'', vie:'' };
+      if (lang==='pali') r.pali=text;
+      if (lang==='eng') r.eng=text;
+      if (lang==='vie') r.vie=text;
+      out.push(r); buf=''; bufKey=null;
     };
-    var pushStandalone = function (r) {
-      out.push({
-        key: r.key,
-        pali: wantPali ? (r.pali || '') : '',
-        eng:  wantEng  ? (r.eng  || '') : '',
-        vie:  wantVie  ? (r.vie  || '') : ''
-      });
+    var pushStandalone = function (key, t) {
+      var rr = { key: key, pali:'', eng:'', vie:'' };
+      if (lang==='pali') rr.pali=t;
+      if (lang==='eng') rr.eng=t;
+      if (lang==='vie') rr.vie=t;
+      out.push(rr);
     };
-
     for (var i = 0; i < rows.length; i++) {
       var r = rows[i];
-      var key = String(r.key || '');
-
-      // Bỏ qua row rỗng ở tất cả lang đang hiển thị
-      var hasAny = (wantPali && (r.pali || '').trim()) ||
-                   (wantEng  && (r.eng  || '').trim()) ||
-                   (wantVie  && (r.vie  || '').trim());
-      if (!hasAny) continue;
+      var key = String(r.key||'');
+      var raw = lang==='pali'?(r.pali||''):lang==='eng'?(r.eng||''):(r.vie||'');
+      var t = (raw||'').trim();
+      if (!t) continue;
 
       // Metadata/title rows (vd :0.3 sub-sutta title) → standalone, không merge
       if (/:0\.\d/.test(key)) {
-        flush(); pushStandalone(r); currentScope = null; continue;
+        flush();
+        pushStandalone(key, t);
+        currentScope = null;
+        continue;
       }
-
-      // Heading "1. Paribbājakakathā" → standalone (dò theo lang hiển thị có text trước)
-      var headText = (wantVie  && (r.vie  || '').trim()) ||
-                     (wantEng  && (r.eng  || '').trim()) ||
-                     (wantPali && (r.pali || '').trim()) || '';
-      if (isNumberedHeadingLine(headText)) {
-        flush(); pushStandalone(r); currentScope = null; continue;
+      // Heading "1. Paribbājakakathā" → standalone
+      if (isNumberedHeadingLine(t)) {
+        flush();
+        pushStandalone(key, t);
+        currentScope = null;
+        continue;
       }
 
       // Ngắt paragraph khi scope đổi (major section hoặc sub-sutta mới)
@@ -336,22 +318,14 @@
       if (currentScope !== null && scope !== currentScope) flush();
       currentScope = scope;
 
-      if (!bufKey) bufKey = key;
-      if (wantPali && r.pali) buf.pali += (buf.pali ? ' ' : '') + String(r.pali).trim();
-      if (wantEng  && r.eng)  buf.eng  += (buf.eng  ? ' ' : '') + String(r.eng).trim();
-      if (wantVie  && r.vie)  buf.vie  += (buf.vie  ? ' ' : '') + String(r.vie).trim();
+      if (!buf) { buf=t; bufKey=key; } else buf+=' '+t;
     }
-    flush();
-    return out;
+    flush(); return out;
   }
 
-  function getVisibleLangsSig() {
-    return (showPali ? 'P' : '') + (showEng ? 'E' : '') + (showVie ? 'V' : '');
-  }
   function maybeRerenderIfModeChanged() {
-    // Giờ mọi cấu hình lang đều dùng paragraph merge → chỉ cần re-render khi tập lang hiển thị đổi
-    var sig = getVisibleLangsSig();
-    if (sig === lastVisibleLangsSig) return;
+    var mode = getSingleVisibleLang();
+    if (mode === lastSingleLangMode) return;
     if (currentSutraId) renderSutra(currentSutraId);
   }
 
@@ -877,7 +851,8 @@ mql.addEventListener('change', updateVisibleCols);
           topmost.target.getBoundingClientRect().top - scrollRoot.getBoundingClientRect().top;
       }
     }, { root: scrollRoot, rootMargin: '0px 0px -80% 0px', threshold: 0 });
-    scrollRoot.querySelectorAll('.sutra-row').forEach(function (r) { anchorObserver.observe(r); });
+    // Virtual scroll: observe wrap (luôn có trong DOM) thay vì .sutra-row (có thể chưa hydrate)
+    scrollRoot.querySelectorAll('.sutra-row-wrap').forEach(function (r) { anchorObserver.observe(r); });
   }
 
   function saveScrollAnchorNow() {
@@ -910,16 +885,15 @@ mql.addEventListener('change', updateVisibleCols);
       }
       
       var safeKey = safeCssEscape(key);
-      var row = scrollRoot.querySelector('.sutra-row[data-key="' + safeKey + '"]');
-      
+      // Virtual scroll: tìm wrap (luôn trong DOM) thay vì .sutra-row (có thể chưa hydrate)
+      var scrollTarget = scrollRoot.querySelector('.sutra-row-wrap[data-key="' + safeKey + '"]');
+
       // SỬA LỖI: Nếu tìm không ra dòng đã lưu (do file bị đổi), ép cuộn lên đầu
-      if (!row) {
+      if (!scrollTarget) {
         scrollRoot.scrollTop = 0;
         toggleBackTop(false);
         return false;
       }
-      
-      var scrollTarget = row.closest('.sutra-row-wrap') || row;
       // Dùng getBoundingClientRect để lấy offset chính xác so với scroll container
       // (sutraGrid giờ không còn là scroll root → offsetTop không còn tương thích).
       var rootRect = scrollRoot.getBoundingClientRect();
@@ -930,8 +904,25 @@ mql.addEventListener('change', updateVisibleCols);
       y = Math.max(0, Math.min(y, max));
       scrollRoot.scrollTop = y;
       toggleBackTop(scrollRoot.scrollTop > 0);
+      // Virtual scroll: sau khi scroll, các shell gần viewport sẽ hydrate và thay đổi chiều cao.
+      // Hiệu chỉnh lại 2 lần (sau ~1 và ~3 frames) để đúng vị trí khi layout settle.
+      var correct = function () {
+        var w = scrollRoot.querySelector('.sutra-row-wrap[data-key="' + safeKey + '"]');
+        if (!w) return;
+        var rr = scrollRoot.getBoundingClientRect();
+        var wr = w.getBoundingClientRect();
+        var rt = wr.top - rr.top + scrollRoot.scrollTop;
+        var y2 = rt - (Number.isFinite(off) ? off : 0);
+        var mx = Math.max(0, scrollRoot.scrollHeight - scrollRoot.clientHeight);
+        y2 = Math.max(0, Math.min(y2, mx));
+        if (Math.abs(y2 - scrollRoot.scrollTop) > 2) scrollRoot.scrollTop = y2;
+      };
+      requestAnimationFrame(function () { requestAnimationFrame(function () {
+        correct();
+        setTimeout(correct, 80);
+      }); });
       return true;
-    } catch(e) { 
+    } catch(e) {
       // SỬA LỖI: Bắt lỗi an toàn, ép về đầu
       scrollRoot.scrollTop = 0;
       toggleBackTop(false);
@@ -943,6 +934,7 @@ mql.addEventListener('change', updateVisibleCols);
   window.addEventListener('pagehide', function () {
     saveScrollAnchorNow();
     if (anchorObserver) { anchorObserver.disconnect(); anchorObserver = null; }
+    teardownVirtObservers();
   });
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'hidden') saveScrollAnchorNow();
@@ -1292,17 +1284,30 @@ mql.addEventListener('change', updateVisibleCols);
       : { pali: 'Pali', eng: 'English', vie: 'Tiếng Việt' };
   }
 
-  function createRow(r) {
-    var wrap = document.createElement('div'); wrap.className = 'sutra-row-wrap';
-    var keyRaw = String(r.key || '');
-    // Row kết thúc ":0.3" = tiêu đề sub-sutta trong vagga bundle → style riêng
-    if (/:0\.3$/.test(keyRaw)) wrap.classList.add('is-subtitle');
-    var keyShort = '';
+  function computeKeyShort(keyRaw) {
+    if (!keyRaw) return '';
     if (keyRaw.includes(':')) {
       var parts = keyRaw.split(':');
       var prefix = parts[0].replace(/([a-zA-Z]+)(\d*)/, function (_, letters, nums) { return letters.toUpperCase() + nums; });
-      keyShort = parts[1] ? prefix + '.' + parts[1] : prefix;
-    } else { keyShort = keyRaw.toUpperCase(); }
+      return parts[1] ? prefix + '.' + parts[1] : prefix;
+    }
+    return keyRaw.toUpperCase();
+  }
+
+  function makeRowContentCol(className, headerText, contentText, contentClass) {
+    var col  = document.createElement('div'); col.className = 'sutra-col ' + className;
+    var hdr  = document.createElement('div'); hdr.className = 'sutra-col-header';
+    hdr.textContent = headerText; hdr.setAttribute('aria-hidden', 'true');
+    var body = document.createElement('div'); body.className = 'sutra-col-body';
+    var inner = document.createElement('div'); inner.className = contentClass;
+    inner.textContent = contentText || '';
+    body.appendChild(inner); col.appendChild(hdr); col.appendChild(body); return col;
+  }
+
+  // Tạo nội dung bên trong wrap (seg-key + sutra-row + 3 cols). Gọi khi hydrate.
+  function fillRowContent(wrap, r) {
+    var keyRaw = String(r.key || '');
+    var keyShort = computeKeyShort(keyRaw);
     if (keyShort) {
       var seg = document.createElement('div');
       seg.className = 'sutra-seg-key'; seg.textContent = keyShort;
@@ -1311,19 +1316,90 @@ mql.addEventListener('change', updateVisibleCols);
     var row = document.createElement('div');
     row.className = 'sutra-row'; row.setAttribute('data-key', keyRaw);
     var headers = getColHeaders();
-    function makeCol(className, headerText, contentText, contentClass) {
-      var col  = document.createElement('div'); col.className = 'sutra-col ' + className;
-      var hdr  = document.createElement('div'); hdr.className = 'sutra-col-header';
-      hdr.textContent = headerText; hdr.setAttribute('aria-hidden', 'true');
-      var body = document.createElement('div'); body.className = 'sutra-col-body';
-      var inner = document.createElement('div'); inner.className = contentClass;
-      inner.textContent = contentText || '';
-      body.appendChild(inner); col.appendChild(hdr); col.appendChild(body); return col;
+    row.appendChild(makeRowContentCol('pali-col', headers.pali, r.pali, 'pali'));
+    row.appendChild(makeRowContentCol('eng-col',  headers.eng,  r.eng,  'eng'));
+    row.appendChild(makeRowContentCol('vie-col',  headers.vie,  r.vie,  'vie'));
+    wrap.appendChild(row);
+  }
+
+  function createRow(r) {
+    var wrap = document.createElement('div'); wrap.className = 'sutra-row-wrap';
+    var keyRaw = String(r.key || '');
+    if (/:0\.3$/.test(keyRaw)) wrap.classList.add('is-subtitle');
+    wrap.setAttribute('data-key', keyRaw);
+    fillRowContent(wrap, r);
+    return wrap;
+  }
+
+  // ============================================================
+  // VIRTUAL SCROLL: lazy hydration — wrap shell luôn trong DOM (giữ CSS :nth-of-type + layout ổn định),
+  // nội dung bên trong chỉ tạo khi row vào gần viewport, remove khi ra xa.
+  // iPad chỉ phải paint/layer nội dung đang hiển thị + buffer → giảm compositor work 8-10x.
+  // ============================================================
+  var virtRowsData = [];   // snapshot mảng row data khớp với wrap trong grid
+  var virtHydrateObs = null;
+  var virtDehydrateObs = null;
+  var VIRT_ESTIMATED_ROW_H = 100;  // px ước lượng cho shell chưa hydrate
+
+  function createRowShell(r, idx) {
+    var wrap = document.createElement('div'); wrap.className = 'sutra-row-wrap';
+    var keyRaw = String(r.key || '');
+    if (/:0\.3$/.test(keyRaw)) wrap.classList.add('is-subtitle');
+    wrap.setAttribute('data-key', keyRaw);
+    wrap.setAttribute('data-row-idx', String(idx));
+    wrap.style.minHeight = VIRT_ESTIMATED_ROW_H + 'px';
+    return wrap;
+  }
+
+  function hydrateWrap(wrap) {
+    if (!wrap || wrap._hydrated) return;
+    var idx = parseInt(wrap.getAttribute('data-row-idx'), 10);
+    if (!Number.isFinite(idx)) return;
+    var r = virtRowsData[idx];
+    if (!r) return;
+    fillRowContent(wrap, r);
+    wrap._hydrated = true;
+    wrap.style.minHeight = '';
+    // TTS: re-apply 'reading' class nếu row này đang được đọc (trước đó bị dehydrate)
+    if (typeof ttsState !== 'undefined' && ttsState && ttsState.isPlaying && ttsState.index === idx) {
+      var row = wrap.querySelector('.sutra-row');
+      if (row) row.classList.add('reading');
     }
-    row.appendChild(makeCol('pali-col', headers.pali, r.pali, 'pali'));
-    row.appendChild(makeCol('eng-col',  headers.eng,  r.eng,  'eng'));
-    row.appendChild(makeCol('vie-col',  headers.vie,  r.vie,  'vie'));
-    wrap.appendChild(row); return wrap;
+  }
+
+  function dehydrateWrap(wrap) {
+    if (!wrap || !wrap._hydrated) return;
+    var h = wrap.offsetHeight;
+    while (wrap.firstChild) wrap.removeChild(wrap.firstChild);
+    wrap.style.minHeight = h + 'px';
+    wrap._hydrated = false;
+  }
+
+  function teardownVirtObservers() {
+    if (virtHydrateObs) { virtHydrateObs.disconnect(); virtHydrateObs = null; }
+    if (virtDehydrateObs) { virtDehydrateObs.disconnect(); virtDehydrateObs = null; }
+  }
+
+  function setupVirtObservers() {
+    teardownVirtObservers();
+    if (!readerArea || !grid) return;
+    // Hydrate: khi row xuất hiện trong vùng ±2 viewport
+    virtHydrateObs = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        if (entries[i].isIntersecting) hydrateWrap(entries[i].target);
+      }
+    }, { root: readerArea, rootMargin: '200% 0px 200% 0px', threshold: 0 });
+    // Dehydrate: khi row ra khỏi vùng ±5 viewport (hysteresis để tránh thrash)
+    virtDehydrateObs = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        if (!entries[i].isIntersecting) dehydrateWrap(entries[i].target);
+      }
+    }, { root: readerArea, rootMargin: '500% 0px 500% 0px', threshold: 0 });
+    var wraps = grid.querySelectorAll('.sutra-row-wrap');
+    for (var j = 0; j < wraps.length; j++) {
+      virtHydrateObs.observe(wraps[j]);
+      virtDehydrateObs.observe(wraps[j]);
+    }
   }
 
   function getByExactOrSuffix(map, exactKey, suffix) {
@@ -1479,6 +1555,7 @@ mql.addEventListener('change', updateVisibleCols);
     saveScrollAnchorNow(); resetTts(true, false);
     if (anchorObserver) { anchorObserver.disconnect(); anchorObserver = null; }
     if (currentSegObserver) { currentSegObserver.disconnect(); currentSegObserver = null; }
+    teardownVirtObservers();
     currentWrap = null;
     // Reset vị trí cuộn ngay lập tức khi chuyển bài — tránh "carry over" vị trí cũ
     if (switchingSutra && readerArea) readerArea.scrollTop = 0;
@@ -1592,19 +1669,15 @@ mql.addEventListener('change', updateVisibleCols);
       return !(k.startsWith(prefixA) || k.startsWith(prefixB));
     });
     var singleLang = getSingleVisibleLang(); lastSingleLangMode = singleLang;
-    lastVisibleLangsSig = getVisibleLangsSig();
-    var visibleLangs = [];
-    if (showPali) visibleLangs.push('pali');
-    if (showEng)  visibleLangs.push('eng');
-    if (showVie)  visibleLangs.push('vie');
-    // Merge paragraph cho MỌI cấu hình lang (1/2/3) — giảm DOM 8-10x, iPad cuộn mượt hẳn
-    var rowsForView = visibleLangs.length ? mergeRowsParagraphs(rowsForViewRaw, visibleLangs) : rowsForViewRaw;
+    var rowsForView = singleLang ? mergeRowsToParagraphRows(rowsForViewRaw, singleLang) : rowsForViewRaw;
 
-    // ATOMIC SWAP: KHÔNG clear grid trước — giữ nội dung cũ hiển thị cho đến khi batch đầu của
-    // bài mới sẵn sàng, rồi replaceChildren một lần duy nhất. User không thấy frame trắng giữa
-    // clear và paint batch đầu → xoá cảm giác "chớp trắng" khi swipe nhanh.
-    cachedRows = [];
-    var i = 0, BATCH = 220;
+    // VIRTUAL SCROLL: chỉ tạo wrap shell (rỗng + minHeight), observer sẽ hydrate row khi vào
+    // gần viewport. 1.665 shell rẻ hơn 1.665 row đầy đủ (25k elements) tới 15 lần → iPad mượt.
+    // ATOMIC SWAP vẫn giữ: batch đầu replaceChildren để không có frame trắng.
+    teardownVirtObservers();
+    virtRowsData = rowsForView;
+    cachedRows = []; // legacy — không còn dùng cho TTS (TTS đọc từ virtRowsData)
+    var i = 0, BATCH = 400;  // shell nhẹ → batch lớn hơn cũng rẻ
     var firstBatch = true;
     function renderBatch() {
       // FIX: Also reset isRendering when token is stale
@@ -1614,19 +1687,29 @@ mql.addEventListener('change', updateVisibleCols);
       }
       var frag = document.createDocumentFragment();
       var end  = Math.min(i + BATCH, rowsForView.length);
+      var batchShells = [];
       for (; i < end; i++) {
-        var wrap = createRow(rowsForView[i]); frag.appendChild(wrap);
-        var innerRow = wrap.querySelector ? wrap.querySelector('.sutra-row') : wrap;
-        cachedRows.push(innerRow || wrap);
+        var shell = createRowShell(rowsForView[i], i);
+        frag.appendChild(shell);
+        batchShells.push(shell);
       }
       if (firstBatch) {
-        // Swap atomically: old content bị thay + first batch được chèn trong 1 layout cycle
         grid.replaceChildren(frag);
         applyVisibility();
         if (readerArea) readerArea.scrollTop = 0;
         firstBatch = false;
+        // Khởi tạo observer NGAY SAU batch đầu → các shell trong viewport hydrate
+        // ngay lập tức, user không thấy các ô trống 100px.
+        setupVirtObservers();
       } else {
         grid.appendChild(frag);
+        // Các batch sau: observe shells mới để hydration tiếp tục khi user cuộn
+        if (virtHydrateObs && virtDehydrateObs) {
+          for (var n = 0; n < batchShells.length; n++) {
+            virtHydrateObs.observe(batchShells[n]);
+            virtDehydrateObs.observe(batchShells[n]);
+          }
+        }
       }
       if (i < rowsForView.length) {
         requestAnimationFrame(renderBatch);
@@ -1863,18 +1946,26 @@ mql.addEventListener('change', updateVisibleCols);
     if (state === 'paused')  { btnReadTts.disabled=false; btnPauseTts.disabled=true;  btnStopTts.disabled=false; }
   }
 
-  function clearRowHighlight() { cachedRows.forEach(function (r) { r.classList.remove('reading'); }); }
+  function clearRowHighlight() {
+    if (!grid) return;
+    var reading = grid.querySelectorAll('.sutra-row.reading');
+    for (var k = 0; k < reading.length; k++) reading[k].classList.remove('reading');
+  }
   function highlightRowAt(index) {
     clearRowHighlight();
-    if (index < 0 || index >= cachedRows.length) return;
-    var row = cachedRows[index]; row.classList.add('reading');
+    if (!grid || index < 0 || index >= virtRowsData.length) return;
+    var wrap = grid.querySelector('.sutra-row-wrap[data-row-idx="' + index + '"]');
+    if (!wrap) return;
+    // Virtual scroll: đảm bảo row đã hydrate trước khi highlight
+    hydrateWrap(wrap);
+    var row = wrap.querySelector('.sutra-row');
+    if (row) row.classList.add('reading');
     if (!readerArea) return;
-    // readerArea là scroll container; dùng getBoundingClientRect cho offset chính xác
     var rootRect = readerArea.getBoundingClientRect();
-    var rowRect  = row.getBoundingClientRect();
-    var relativeTop = rowRect.top - rootRect.top + readerArea.scrollTop;
+    var wrapRect = wrap.getBoundingClientRect();
+    var relativeTop = wrapRect.top - rootRect.top + readerArea.scrollTop;
     var viewTop = readerArea.scrollTop, viewBottom = viewTop + readerArea.clientHeight;
-    if (relativeTop < viewTop || relativeTop + rowRect.height > viewBottom) {
+    if (relativeTop < viewTop || relativeTop + wrapRect.height > viewBottom) {
       readerArea.scrollTo({ top: Math.max(0, relativeTop - 20), behavior: 'auto' });
     }
   }
@@ -1904,12 +1995,11 @@ mql.addEventListener('change', updateVisibleCols);
 
   function speakNextRow() {
     if (!synthSupported || !synth || !ttsState.activeLang) return;
-    if (ttsState.index >= cachedRows.length) return resetTts(true, true);
-    var row = cachedRows[ttsState.index];
-    var el  = ttsState.activeLang === 'vi'
-      ? row.querySelector('.vie-col .vie')
-      : row.querySelector('.eng-col .eng');
-    var text = el ? (el.textContent || '').trim() : '';
+    if (ttsState.index >= virtRowsData.length) return resetTts(true, true);
+    // Virtual scroll: đọc text trực tiếp từ data (không query DOM vì row có thể chưa hydrate)
+    var rowData = virtRowsData[ttsState.index];
+    var raw = ttsState.activeLang === 'vi' ? (rowData && rowData.vie) : (rowData && rowData.eng);
+    var text = (raw || '').trim();
     if (!text) { ttsState.index++; return speakNextRow(); }
     highlightRowAt(ttsState.index); saveTtsState();
     var utter = new SpeechSynthesisUtterance(text);

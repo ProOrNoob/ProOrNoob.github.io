@@ -339,9 +339,8 @@ body::before {
   width: 100%;
   margin: 0 auto;
   padding-left: 20px;
-  /* iPad/mobile scroll perf: skip render rows ngoài viewport */
-  content-visibility: auto;
-  contain-intrinsic-size: auto 120px;
+  /* Virtual scroll (JS lazy hydration) đảm nhiệm việc này — content-visibility CSS
+     có thể chồng chéo và làm iPad Safari cũ tệ hơn nên bỏ. */
 }
 .sutra-row-wrap::before {
   content: "";
