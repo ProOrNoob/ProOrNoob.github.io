@@ -388,6 +388,19 @@ body::before {
 }
 #sutraGrid::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
+/* Row chunks — nhóm 50 rows thành 1 block, áp content-visibility ở CHUNK level
+   (ít boundary hơn → browser xử lý nhẹ hơn; giảm DOM paint/layout cost rõ rệt). */
+.row-chunk {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  /* content-visibility: auto — browser skip paint/layout chunk ngoài viewport.
+     contain-intrinsic-size: ước tính chiều cao chunk ~50 rows × 80-100px = 4000-5000px.
+     Browser tự remember actual size sau lần render đầu (keyword `auto`). */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 4500px;
+}
+
 /* Section number row (ví dụ "7", "VII") — căn giữa, to hơn, như tiêu đề đoạn */
 .sutra-row-wrap.is-section-num .sutra-row {
   grid-template-columns: 1fr !important;
@@ -438,13 +451,7 @@ body::before {
   width: 100%;
   margin: 0 auto;
   padding-left: 20px;
-  /* Virtual scroll NATIVE (browser-level): skip render rows ngoài viewport.
-     - Chrome/Edge (Blink) hỗ trợ từ 2020.
-     - Safari 18+ (iOS 18+) hỗ trợ.
-     - Safari cũ hơn: rule bị ignore → fallback về full render tự nhiên.
-     Kết quả: 96k DOM vẫn mượt vì browser chỉ paint rows đang thấy + buffer. */
-  content-visibility: auto;
-  contain-intrinsic-size: auto 120px;
+  /* content-visibility bỏ khỏi row-wrap — áp lên chunk (group 50 rows) ở dưới */
   /* KHÔNG dùng contain — test cho thấy OLD với 20k DOM không contain chạy 60 FPS
      còn NEW 3k DOM có contain chỉ 2 FPS → contain trên 1.227 element phản tác dụng iPad. */
 }
@@ -2465,7 +2472,7 @@ button:not(:focus-visible), a:not(:focus-visible),
   <div class="guide-dialog"></div>
 </div>
 
-<script src="toc.js?v=17" defer></script>
-<script src="appold.js?v=17" defer></script>
+<script src="toc.js?v=18" defer></script>
+<script src="appold.js?v=18" defer></script>
 </body>
 </html>

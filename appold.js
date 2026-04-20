@@ -183,6 +183,11 @@
   var renderToken = 0;
   var lastSingleLangMode = null;
   var cachedRows = [];
+  // Virtual scroll state
+  var virtChunks = [];    // [{div, rowStart, rowEnd, materialized, measuredH}]
+  var virtAllRows = [];   // row data array (cho TTS + anchor khi chunk chưa materialize)
+  var virtMatObs = null;
+  var virtDemObs = null;
 
   var LANG_STORAGE_KEY = 'sutra_ui_lang';
   var uiLang = storage.get(LANG_STORAGE_KEY) === 'en' ? 'en' : 'vi';
@@ -851,12 +856,18 @@ mql.addEventListener('change', updateVisibleCols);
       var offRaw = storage.get(KEY_ANCHOR_O(id));
       var off    = offRaw ? parseInt(offRaw, 10) : 0;
       if (!key) return false;
-      // FIX: Use safeCssEscape instead of broken manual fallback
+
+      // Virtual scroll: tìm index row theo key trong virtAllRows rồi materialize chunk chứa nó
+      var foundIdx = -1;
+      for (var j = 0; j < virtAllRows.length; j++) {
+        if (String(virtAllRows[j].key || '') === key) { foundIdx = j; break; }
+      }
+      if (foundIdx >= 0) ensureRowRendered(foundIdx);
+
       var safeKey = safeCssEscape(key);
       var row = scrollRoot.querySelector('.sutra-row[data-key="' + safeKey + '"]');
       if (!row) return false;
       var scrollTarget = row.closest('.sutra-row-wrap') || row;
-      // Dùng getBoundingClientRect vì sutraGrid không còn là scroll root (offsetTop không tương thích với #readerArea)
       var rootRect = scrollRoot.getBoundingClientRect();
       var tgtRect  = scrollTarget.getBoundingClientRect();
       var relativeTop = tgtRect.top - rootRect.top + scrollRoot.scrollTop;
@@ -873,6 +884,7 @@ mql.addEventListener('change', updateVisibleCols);
   window.addEventListener('pagehide', function () {
     saveScrollAnchorNow();
     if (anchorObserver) { anchorObserver.disconnect(); anchorObserver = null; }
+    teardownChunkObservers();
   });
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'hidden') saveScrollAnchorNow();
@@ -1456,6 +1468,84 @@ if (scrollEl) {
   }
 
   /* ============================================================
+     Virtual scroll helpers: chunk materialize / dematerialize + observers
+     ============================================================ */
+  function materializeChunk(chunkInfo) {
+    if (!chunkInfo || chunkInfo.materialized) return;
+    var frag = document.createDocumentFragment();
+    for (var i = chunkInfo.rowStart; i < chunkInfo.rowEnd; i++) {
+      var rowData = virtAllRows[i];
+      if (!rowData) continue;
+      var wrap = createRow(rowData);
+      frag.appendChild(wrap);
+      var innerRow = wrap.querySelector ? wrap.querySelector('.sutra-row') : wrap;
+      cachedRows[i] = innerRow || wrap;
+    }
+    chunkInfo.div.appendChild(frag);
+    chunkInfo.div.style.minHeight = '';
+    chunkInfo.materialized = true;
+  }
+
+  function dematerializeChunk(chunkInfo) {
+    if (!chunkInfo || !chunkInfo.materialized) return;
+    // Đo height thật trước khi remove để giữ vị trí cuộn
+    if (!chunkInfo.measuredH) chunkInfo.measuredH = chunkInfo.div.offsetHeight || ((chunkInfo.rowEnd - chunkInfo.rowStart) * 120);
+    while (chunkInfo.div.firstChild) chunkInfo.div.removeChild(chunkInfo.div.firstChild);
+    chunkInfo.div.style.minHeight = chunkInfo.measuredH + 'px';
+    chunkInfo.materialized = false;
+    // Clear cachedRows range
+    for (var i = chunkInfo.rowStart; i < chunkInfo.rowEnd; i++) {
+      cachedRows[i] = null;
+    }
+  }
+
+  function teardownChunkObservers() {
+    if (virtMatObs) { virtMatObs.disconnect(); virtMatObs = null; }
+    if (virtDemObs) { virtDemObs.disconnect(); virtDemObs = null; }
+  }
+
+  function setupChunkObservers() {
+    teardownChunkObservers();
+    if (!scrollEl || !virtChunks.length) return;
+    // Materialize: khi chunk xuất hiện trong vùng ±1 viewport
+    virtMatObs = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        if (entries[i].isIntersecting) {
+          var idx = parseInt(entries[i].target.getAttribute('data-chunk-idx'), 10);
+          if (Number.isFinite(idx) && virtChunks[idx]) materializeChunk(virtChunks[idx]);
+        }
+      }
+    }, { root: scrollEl, rootMargin: '100% 0px 100% 0px', threshold: 0 });
+
+    // Dematerialize: khi chunk ra khỏi ±3 viewport (hysteresis tránh thrash)
+    virtDemObs = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        if (!entries[i].isIntersecting) {
+          var idx = parseInt(entries[i].target.getAttribute('data-chunk-idx'), 10);
+          if (Number.isFinite(idx) && virtChunks[idx]) dematerializeChunk(virtChunks[idx]);
+        }
+      }
+    }, { root: scrollEl, rootMargin: '300% 0px 300% 0px', threshold: 0 });
+
+    // Attach observers tới tất cả chunks
+    for (var k = 0; k < virtChunks.length; k++) {
+      virtMatObs.observe(virtChunks[k].div);
+      virtDemObs.observe(virtChunks[k].div);
+    }
+  }
+
+  // Đảm bảo 1 row cụ thể (theo index) được materialize — dùng cho TTS / anchor restore
+  function ensureRowRendered(rowIdx) {
+    for (var k = 0; k < virtChunks.length; k++) {
+      var c = virtChunks[k];
+      if (rowIdx >= c.rowStart && rowIdx < c.rowEnd) {
+        if (!c.materialized) materializeChunk(c);
+        return;
+      }
+    }
+  }
+
+  /* ============================================================
      renderSutra
      FIX: Clear cachedRows immediately to prevent TTS reading stale data
      FIX: Reset isRendering when render token is invalidated
@@ -1464,6 +1554,9 @@ if (scrollEl) {
     if (!id || !grid) return;
     saveScrollAnchorNow(); resetTts(true, false);
     if (anchorObserver) { anchorObserver.disconnect(); anchorObserver = null; }
+    teardownChunkObservers();  // tắt observer chunks của bài cũ
+    virtChunks = [];
+    virtAllRows = [];
 
     // FIX: Clear cached rows immediately
     cachedRows = [];
@@ -1573,33 +1666,43 @@ if (scrollEl) {
     cachedRows = [];
     applyVisibility();
 
-    var i = 0, BATCH = 220;
-    function renderBatch() {
-      // FIX: Also reset isRendering when token is stale
-      if (token !== renderToken) {
-        isRendering = false;
-        return;
-      }
-      var frag = document.createDocumentFragment();
-      var end  = Math.min(i + BATCH, rowsForView.length);
-      for (; i < end; i++) {
-        var wrap = createRow(rowsForView[i]); frag.appendChild(wrap);
-        var innerRow = wrap.querySelector ? wrap.querySelector('.sutra-row') : wrap;
-        cachedRows.push(innerRow || wrap);
-      }
-      grid.appendChild(frag);
-      if (i < rowsForView.length) {
-        requestAnimationFrame(renderBatch);
-      } else {
-        isRendering = false; grid.setAttribute('aria-busy', 'false');
-        requestAnimationFrame(function () { requestAnimationFrame(function () {
-          updateVisibleCols(); restoreScrollByAnchor(id);
-          setupAnchorObserver(); setTtsUiState('idle'); updateNavButtons();
-        }); });
-        scheduleNextPreload(id);
-      }
+    // ============================================================
+    // VIRTUAL SCROLL (lazy chunks): Thay vì tạo 96k DOM elements ngay,
+    //   1. Tạo N placeholder .row-chunk divs với min-height ước tính
+    //   2. IntersectionObserver materialize chunk khi vào gần viewport
+    //   3. Far-observer dematerialize chunk khi ra xa (giữ height measured)
+    // Kết quả: ban đầu chỉ có ~120 div placeholder → render gần tức thì,
+    // mobile với AN 4 (6000+ rows) không còn blocking main thread.
+    // ============================================================
+    var CHUNK_SIZE = 50;
+    var EST_ROW_H = 120;  // px ước lượng cho 1 row chưa materialize
+    virtChunks = [];       // {div, rowStart, rowEnd, materialized, measuredH}
+    virtAllRows = rowsForView;
+
+    // Bước 1: tạo TẤT CẢ placeholder chunks cùng lúc (rẻ — chỉ div + min-height)
+    var placeFrag = document.createDocumentFragment();
+    for (var ci = 0; ci < rowsForView.length; ci += CHUNK_SIZE) {
+      var ce = Math.min(ci + CHUNK_SIZE, rowsForView.length);
+      var cdiv = document.createElement('div');
+      cdiv.className = 'row-chunk';
+      cdiv.setAttribute('data-chunk-idx', String(virtChunks.length));
+      cdiv.style.minHeight = ((ce - ci) * EST_ROW_H) + 'px';
+      virtChunks.push({ div: cdiv, rowStart: ci, rowEnd: ce, materialized: false, measuredH: 0 });
+      placeFrag.appendChild(cdiv);
     }
-    renderBatch();
+    grid.appendChild(placeFrag);
+
+    // Bước 2+3: Setup observers + initial render ở frame kế tiếp
+    requestAnimationFrame(function () {
+      if (token !== renderToken) { isRendering = false; return; }
+      setupChunkObservers();
+      isRendering = false; grid.setAttribute('aria-busy', 'false');
+      requestAnimationFrame(function () {
+        updateVisibleCols(); restoreScrollByAnchor(id);
+        setupAnchorObserver(); setTtsUiState('idle'); updateNavButtons();
+      });
+      scheduleNextPreload(id);
+    });
   }
 
   function scheduleNextPreload(currentId) {
@@ -1795,13 +1898,20 @@ if (scrollEl) {
     if (state === 'paused')  { btnReadTts.disabled=false; btnPauseTts.disabled=true;  btnStopTts.disabled=false; }
   }
 
-  function clearRowHighlight() { cachedRows.forEach(function (r) { r.classList.remove('reading'); }); }
+  function clearRowHighlight() {
+    if (!grid) return;
+    var reading = grid.querySelectorAll('.sutra-row.reading');
+    for (var k = 0; k < reading.length; k++) reading[k].classList.remove('reading');
+  }
   function highlightRowAt(index) {
     clearRowHighlight();
-    if (index < 0 || index >= cachedRows.length) return;
-    var row = cachedRows[index]; row.classList.add('reading');
+    if (index < 0 || index >= virtAllRows.length) return;
+    // Lazy materialize chunk chứa row này (nếu chưa rendered)
+    ensureRowRendered(index);
+    var row = cachedRows[index];
+    if (!row) return;
+    row.classList.add('reading');
     if (!scrollEl) return;
-    // Dùng getBoundingClientRect vì sutraGrid không còn là scroll root (offsetTop không tương thích)
     var rootRect = scrollEl.getBoundingClientRect();
     var rowRect  = row.getBoundingClientRect();
     var relativeTop = rowRect.top - rootRect.top + scrollEl.scrollTop;
@@ -1836,12 +1946,11 @@ if (scrollEl) {
 
   function speakNextRow() {
     if (!synthSupported || !synth || !ttsState.activeLang) return;
-    if (ttsState.index >= cachedRows.length) return resetTts(true, true);
-    var row = cachedRows[ttsState.index];
-    var el  = ttsState.activeLang === 'vi'
-      ? row.querySelector('.vie-col .vie')
-      : row.querySelector('.eng-col .eng');
-    var text = el ? (el.textContent || '').trim() : '';
+    if (ttsState.index >= virtAllRows.length) return resetTts(true, true);
+    // Đọc text từ data (virtAllRows) — không query DOM vì chunk có thể chưa materialize
+    var rowData = virtAllRows[ttsState.index];
+    var raw = ttsState.activeLang === 'vi' ? (rowData && rowData.vie) : (rowData && rowData.eng);
+    var text = (raw || '').trim();
     if (!text) { ttsState.index++; return speakNextRow(); }
     highlightRowAt(ttsState.index); saveTtsState();
     var utter = new SpeechSynthesisUtterance(text);
