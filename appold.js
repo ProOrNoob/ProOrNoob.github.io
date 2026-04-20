@@ -1616,6 +1616,10 @@ if (scrollEl) {
     virtChunks = [];
     virtAllRows = [];
 
+    // Reset firstVisibleKey + offset — tránh leftover key của bài cũ làm save sai cho bài mới
+    firstVisibleKey = null;
+    firstVisibleOffsetFromGrid = 0;
+
     // FIX: Clear cached rows immediately
     cachedRows = [];
 
@@ -2143,15 +2147,29 @@ if (scrollEl) {
       var scrollPct = sh > ch ? Math.round(st / (sh - ch) * 100) : 0;
       var mem = (performance && performance.memory) ? performance.memory : null;
 
-      // Anchor info
+      // Anchor info — đọc TRỰC TIẾP từ localStorage để verify save/restore đúng
+      var lsKey = currentSutraId ? ('scroll_anchor_key_' + currentSutraId) : '';
+      var lsRaw = null;
+      try { lsRaw = lsKey ? localStorage.getItem(lsKey) : null; } catch(e) {}
       var anchorKey = currentSutraId ? storage.get(KEY_ANCHOR_K(currentSutraId)) : null;
+
+      // List TẤT CẢ anchor entries trong localStorage (để phát hiện leakage giữa các bài)
+      var allAnchors = [];
+      try {
+        for (var lsi = 0; lsi < localStorage.length; lsi++) {
+          var k = localStorage.key(lsi);
+          if (k && k.indexOf('scroll_anchor_key_') === 0) {
+            allAnchors.push(k.replace('scroll_anchor_key_', '') + ' → ' + localStorage.getItem(k));
+          }
+        }
+      } catch(e) {}
+
       var matChunks = 0, totalChunks = virtChunks ? virtChunks.length : 0;
       if (virtChunks) {
         for (var vc = 0; vc < virtChunks.length; vc++) {
           if (virtChunks[vc].materialized) matChunks++;
         }
       }
-      // Tìm index của anchor key (nếu còn)
       var anchorIdx = -1;
       if (anchorKey && virtAllRows) {
         for (var ai = 0; ai < virtAllRows.length; ai++) {
@@ -2173,11 +2191,17 @@ if (scrollEl) {
         'Materialized:     ' + matChunks + ' / ' + totalChunks,
         'virtAllRows len:  ' + (virtAllRows ? virtAllRows.length : 0),
         '',
-        '── Anchor (lưu trong localStorage) ──',
+        '── Anchor ──',
+        'localStorage key: ' + (lsKey || '-'),
+        'RAW value:        ' + (lsRaw === null ? '(null)' : '"' + lsRaw + '"'),
+        'via storage.get:  ' + (anchorKey === null ? '(null)' : '"' + anchorKey + '"'),
+        'Match raw?        ' + (lsRaw === anchorKey ? '✓ yes' : '✗ DIFFERENT!'),
         'Current top key:  ' + (firstVisibleKey || '-'),
-        'Saved key:        ' + (anchorKey || '(none)'),
-        'Saved idx:        ' + (anchorIdx >= 0 ? anchorIdx : 'not-found'),
+        'Saved idx:        ' + (anchorIdx >= 0 ? anchorIdx : 'not-found in virtAllRows'),
         'Match chunk:      ' + (anchorIdx >= 0 ? Math.floor(anchorIdx / 50) : '-'),
+        '',
+        '── ALL anchors in storage ──',
+      ].concat(allAnchors.length ? allAnchors : ['(none)']).concat([
         '',
         '── Scroll ──',
         'scrollTop:        ' + st + ' px',
@@ -2193,7 +2217,7 @@ if (scrollEl) {
         '── TTS ──',
         'Lang/index:       ' + (ttsState.activeLang || '-') + ' / ' + ttsState.index,
         'Playing/Paused:   ' + ttsState.isPlaying + ' / ' + ttsState.isPaused,
-      ];
+      ]);
       if (mem) {
         lines.push('');
         lines.push('── Memory (JS heap) ──');
