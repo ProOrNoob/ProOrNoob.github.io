@@ -444,4 +444,10 @@
 
   window.Tests = { runAll: runAll, run: run, list: list, report: report };
   console.log('%c✓ Test suite loaded. Run: await Tests.runAll()', 'color:#4caf50');
+
+  // Auto-run nếu URL có ?test=1 — đợi app khởi động xong + welcome/sutta render
+  if (new URLSearchParams(location.search).has('test')) {
+    console.log('%c⟳ Auto-running tests in 2s (?test=1 detected)', 'color:#d4a84a');
+    setTimeout(function () { runAll(); }, 2000);
+  }
 })();

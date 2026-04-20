@@ -2465,13 +2465,7 @@ button:not(:focus-visible), a:not(:focus-visible),
 
 <script src="toc.js?v=19" defer></script>
 <script src="appold.js?v=19" defer></script>
-<!-- Test suite: chỉ load khi URL có ?test=1 → tránh overhead production -->
-<script>
-  if (new URLSearchParams(location.search).has('test')) {
-    var s = document.createElement('script');
-    s.src = 'test.js?v=1'; s.defer = true;
-    document.head.appendChild(s);
-  }
-</script>
+<!-- Test suite: register window.Tests. Tự chạy khi URL có ?test=1 -->
+<script src="test.js?v=3" defer></script>
 </body>
 </html>
