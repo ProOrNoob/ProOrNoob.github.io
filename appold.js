@@ -1523,16 +1523,24 @@ if (scrollEl) {
     chunkInfo.div.appendChild(frag);
     chunkInfo.div.style.minHeight = '';
     chunkInfo.materialized = true;
+    // QUAN TRỌNG: observe rows mới với anchor observer (để firstVisibleKey cập nhật khi cuộn)
+    if (anchorObserver) {
+      var newRows = chunkInfo.div.querySelectorAll('.sutra-row');
+      for (var k = 0; k < newRows.length; k++) anchorObserver.observe(newRows[k]);
+    }
   }
 
   function dematerializeChunk(chunkInfo) {
     if (!chunkInfo || !chunkInfo.materialized) return;
-    // Đo height thật trước khi remove để giữ vị trí cuộn
+    // Unobserve anchor cho rows sắp bị remove
+    if (anchorObserver) {
+      var oldRows = chunkInfo.div.querySelectorAll('.sutra-row');
+      for (var k = 0; k < oldRows.length; k++) anchorObserver.unobserve(oldRows[k]);
+    }
     if (!chunkInfo.measuredH) chunkInfo.measuredH = chunkInfo.div.offsetHeight || ((chunkInfo.rowEnd - chunkInfo.rowStart) * 120);
     while (chunkInfo.div.firstChild) chunkInfo.div.removeChild(chunkInfo.div.firstChild);
     chunkInfo.div.style.minHeight = chunkInfo.measuredH + 'px';
     chunkInfo.materialized = false;
-    // Clear cachedRows range
     for (var i = chunkInfo.rowStart; i < chunkInfo.rowEnd; i++) {
       cachedRows[i] = null;
     }
