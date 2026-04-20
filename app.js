@@ -232,6 +232,7 @@
   var isRendering = false;
   var renderToken = 0;
   var lastSingleLangMode = null;
+  var lastVisibleLangsSig = '';
   var cachedRows = [];
 
   var LANG_STORAGE_KEY = 'sutra_ui_lang';
@@ -271,46 +272,63 @@
     return m ? (m[1] + ':' + m[2]) : null;
   }
 
-  function mergeRowsToParagraphRows(rows, lang) {
+  // Gộp segments thành paragraph theo major scope (:N.M) — hoạt động cho 1/2/3 lang.
+  // Pali/En/Vie trong cùng 1 scope là bản dịch song song → gộp vẫn giữ alignment giữa các cột.
+  // visibleLangs: mảng con của ['pali','eng','vie']; chỉ gộp + giữ text của lang trong danh sách này.
+  function mergeRowsParagraphs(rows, visibleLangs) {
     var out = [];
-    if (!Array.isArray(rows)||!rows.length) return out;
-    var buf = '', bufKey = null, currentScope = null;
+    if (!Array.isArray(rows) || !rows.length) return out;
+    if (!Array.isArray(visibleLangs) || !visibleLangs.length) return rows.slice();
+
+    var wantPali = visibleLangs.indexOf('pali') !== -1;
+    var wantEng  = visibleLangs.indexOf('eng')  !== -1;
+    var wantVie  = visibleLangs.indexOf('vie')  !== -1;
+
+    var buf = { pali: '', eng: '', vie: '' };
+    var bufKey = null;
+    var currentScope = null;
+
     var flush = function () {
-      var text = (buf||'').trim();
-      if (!text) { buf=''; bufKey=null; return; }
-      var r = { key: bufKey||'', pali:'', eng:'', vie:'' };
-      if (lang==='pali') r.pali=text;
-      if (lang==='eng') r.eng=text;
-      if (lang==='vie') r.vie=text;
-      out.push(r); buf=''; bufKey=null;
+      if (!buf.pali && !buf.eng && !buf.vie) { bufKey = null; return; }
+      out.push({
+        key: bufKey || '',
+        pali: wantPali ? buf.pali.trim() : '',
+        eng:  wantEng  ? buf.eng.trim()  : '',
+        vie:  wantVie  ? buf.vie.trim()  : ''
+      });
+      buf = { pali: '', eng: '', vie: '' };
+      bufKey = null;
     };
-    var pushStandalone = function (key, t) {
-      var rr = { key: key, pali:'', eng:'', vie:'' };
-      if (lang==='pali') rr.pali=t;
-      if (lang==='eng') rr.eng=t;
-      if (lang==='vie') rr.vie=t;
-      out.push(rr);
+    var pushStandalone = function (r) {
+      out.push({
+        key: r.key,
+        pali: wantPali ? (r.pali || '') : '',
+        eng:  wantEng  ? (r.eng  || '') : '',
+        vie:  wantVie  ? (r.vie  || '') : ''
+      });
     };
+
     for (var i = 0; i < rows.length; i++) {
       var r = rows[i];
-      var key = String(r.key||'');
-      var raw = lang==='pali'?(r.pali||''):lang==='eng'?(r.eng||''):(r.vie||'');
-      var t = (raw||'').trim();
-      if (!t) continue;
+      var key = String(r.key || '');
+
+      // Bỏ qua row rỗng ở tất cả lang đang hiển thị
+      var hasAny = (wantPali && (r.pali || '').trim()) ||
+                   (wantEng  && (r.eng  || '').trim()) ||
+                   (wantVie  && (r.vie  || '').trim());
+      if (!hasAny) continue;
 
       // Metadata/title rows (vd :0.3 sub-sutta title) → standalone, không merge
       if (/:0\.\d/.test(key)) {
-        flush();
-        pushStandalone(key, t);
-        currentScope = null;
-        continue;
+        flush(); pushStandalone(r); currentScope = null; continue;
       }
-      // Heading "1. Paribbājakakathā" → standalone
-      if (isNumberedHeadingLine(t)) {
-        flush();
-        pushStandalone(key, t);
-        currentScope = null;
-        continue;
+
+      // Heading "1. Paribbājakakathā" → standalone (dò theo lang hiển thị có text trước)
+      var headText = (wantVie  && (r.vie  || '').trim()) ||
+                     (wantEng  && (r.eng  || '').trim()) ||
+                     (wantPali && (r.pali || '').trim()) || '';
+      if (isNumberedHeadingLine(headText)) {
+        flush(); pushStandalone(r); currentScope = null; continue;
       }
 
       // Ngắt paragraph khi scope đổi (major section hoặc sub-sutta mới)
@@ -318,14 +336,22 @@
       if (currentScope !== null && scope !== currentScope) flush();
       currentScope = scope;
 
-      if (!buf) { buf=t; bufKey=key; } else buf+=' '+t;
+      if (!bufKey) bufKey = key;
+      if (wantPali && r.pali) buf.pali += (buf.pali ? ' ' : '') + String(r.pali).trim();
+      if (wantEng  && r.eng)  buf.eng  += (buf.eng  ? ' ' : '') + String(r.eng).trim();
+      if (wantVie  && r.vie)  buf.vie  += (buf.vie  ? ' ' : '') + String(r.vie).trim();
     }
-    flush(); return out;
+    flush();
+    return out;
   }
 
+  function getVisibleLangsSig() {
+    return (showPali ? 'P' : '') + (showEng ? 'E' : '') + (showVie ? 'V' : '');
+  }
   function maybeRerenderIfModeChanged() {
-    var mode = getSingleVisibleLang();
-    if (mode === lastSingleLangMode) return;
+    // Giờ mọi cấu hình lang đều dùng paragraph merge → chỉ cần re-render khi tập lang hiển thị đổi
+    var sig = getVisibleLangsSig();
+    if (sig === lastVisibleLangsSig) return;
     if (currentSutraId) renderSutra(currentSutraId);
   }
 
@@ -1566,7 +1592,13 @@ mql.addEventListener('change', updateVisibleCols);
       return !(k.startsWith(prefixA) || k.startsWith(prefixB));
     });
     var singleLang = getSingleVisibleLang(); lastSingleLangMode = singleLang;
-    var rowsForView = singleLang ? mergeRowsToParagraphRows(rowsForViewRaw, singleLang) : rowsForViewRaw;
+    lastVisibleLangsSig = getVisibleLangsSig();
+    var visibleLangs = [];
+    if (showPali) visibleLangs.push('pali');
+    if (showEng)  visibleLangs.push('eng');
+    if (showVie)  visibleLangs.push('vie');
+    // Merge paragraph cho MỌI cấu hình lang (1/2/3) — giảm DOM 8-10x, iPad cuộn mượt hẳn
+    var rowsForView = visibleLangs.length ? mergeRowsParagraphs(rowsForViewRaw, visibleLangs) : rowsForViewRaw;
 
     // ATOMIC SWAP: KHÔNG clear grid trước — giữ nội dung cũ hiển thị cho đến khi batch đầu của
     // bài mới sẵn sàng, rồi replaceChildren một lần duy nhất. User không thấy frame trắng giữa
