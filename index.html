@@ -5,197 +5,2232 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <meta name="description" content="Collection of Nikaya Suttas in Pali, English, and Vietnamese, sourced from SuttaCentral and Bilara json project">
   <title>Sutta Archive</title>
-  
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Non-blocking font load: preload + swap to stylesheet onload (saves ~750ms render block) -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;1,400;1,500&family=Noto+Serif:ital,wght@0,400;0,500;1,400&family=Geist+Mono:wght@300;400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;1,400;1,500&family=Noto+Serif:ital,wght@0,400;0,500;1,400&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet"></noscript>
+
 <style>
-  .card::after,.card::before{content:'';position:absolute;z-index:2;left:0;right:0}.card,.top-note{display:flex;position:relative}.header,.top-note{border-bottom:1px solid var(--paper-edge)}#title,body,html{margin:0;color:var(--ink);overflow:hidden}#title,.card,body,html{overflow:hidden}#title,.sutra-col-header{text-transform:uppercase}.footer-divider,.top-note-text{pointer-events:none;user-select:none}.guide-dialog button:hover,.search-result-item mark,[data-theme=dark] .guide-dialog button:hover{background:var(--gold-pale)}*,a,body,button,html,input,label{-webkit-tap-highlight-color:transparent}:root,[data-theme=dark]{--pali-bg:transparent;--eng-bg:transparent;--vie-bg:transparent}#btnSettings,#sidebar-btn{z-index:150;width:19px;padding:8px 4px;box-shadow:2px 0 8px rgba(44,31,14,.05);opacity:.9;transition:all var(--transition)}#title,.menu-block>.menu-toggle:not(.nested),.nav-title{white-space:nowrap;text-overflow:ellipsis}:root{--font-display:"Sitka Banner","Cambria","Times New Roman","Charter",serif;--font-body:"Sitka Banner","Cambria","Times New Roman","Charter",serif;--font-pali:"Sitka Banner","Cambria","Times New Roman","Charter",serif;--paper:#fdf8f0;--paper-dark:#f5ead5;--paper-darker:#ede0c4;--paper-edge:#e0ccaa;--ink:#2d1f0a;--ink-mid:#4a3520;--ink-light:#7a6040;--ink-faint:#b8a88a;--gold:#c9973a;--gold-light:#e8c575;--gold-pale:#f5e4b8;--gold-soft:rgba(201,151,58,0.10);--gold-border:rgba(201,151,58,0.35);--shadow-card:0 24px 60px rgba(30,15,0,0.22),0 4px 16px rgba(30,15,0,0.10);--shadow-panel:0 16px 40px rgba(30,15,0,0.30),0 2px 8px rgba(30,15,0,0.15);--pali-fg:#1a0f00;--eng-fg:#2d1f0a;--vie-fg:#2a1800;--sutra-font-scale:1;--sutra-line-height:1.85;--visible-cols:3;--panel-border:rgba(201,151,58,0.22);--panel-toggle-bg:rgba(253,248,240,0.85);--panel-toggle-hover-bg:rgba(253,248,240,0.95);--fab-color:var(--ink-light);--transition:0.2s ease}*{box-sizing:border-box}body,html{height:100%;padding:0;background-color:#2a1f10;background-image:repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(255,255,255,.012) 28px,rgba(255,255,255,.012) 29px)}.app{height:100%;display:flex;justify-content:center;align-items:stretch;padding:10px}.card,.sutra-row-wrap{flex-direction:column}.card{background:var(--paper);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E"),linear-gradient(160deg,#fdfaf3 0,#fdf8f0 40%,#f9f2e4 100%);border-radius:8px;border:1px solid var(--paper-edge);box-shadow:var(--shadow-card);width:100%;max-width:980px;padding:0}#btnBackTop,.btn-nav{width:34px;height:34px}.card::before{top:0;height:3px;background:linear-gradient(90deg,transparent 0,var(--gold) 15%,var(--gold-light) 50%,var(--gold) 85%,transparent 100%)}.card::after{bottom:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold) 20%,var(--gold-light) 50%,var(--gold) 80%,transparent)}.top-note{flex:0 0 auto;align-items:center;justify-content:center;padding:6px 48px 6px 16px;background:linear-gradient(180deg,var(--paper-dark) 0,var(--paper) 100%)}.top-note-actions,.top-note-left{position:absolute;gap:2px;display:flex;top:50%;transform:translateY(-50%)}.top-note-text{font-size:11px;font-style:normal;font-weight:400;color:#a07830;letter-spacing:.18em;text-shadow:0 1px 3px rgba(180,120,20,.15);text-align:center}#title,.sutra-seg-key{font-weight:600;letter-spacing:.08em}.top-note-left{left:8px;align-items:center}.top-note-actions{right:8px;align-items:center}.header{flex:0 0 auto;padding:14px 24px 10px;text-align:center;position:relative}.header::before{content:'❦';display:block;font-size:14px;color:var(--gold);line-height:1;margin-bottom:4px}#title{font-family:var(--font-display);font-size:calc(.95rem * var(--sutra-font-scale))}#subtitle,.sutra-seg-key{color:var(--ink-light);font-family:var(--font-body)}#subtitle{margin-top:2px;font-size:calc(13px * var(--sutra-font-scale));font-style:italic;letter-spacing:.01em}#sutraGrid{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:14px 18px;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch;background:var(--paper-dark)}#sutraGrid::-webkit-scrollbar{width:7px}#sutraGrid::-webkit-scrollbar-track{background:var(--paper-dark);border-left:1px solid var(--paper-edge)}#sutraGrid::-webkit-scrollbar-thumb{background:var(--gold-border);border-radius:999px}#sutraGrid::-webkit-scrollbar-thumb:hover{background:var(--gold)}.sutra-row-wrap{display:flex;gap:0}.sutra-seg-key{font-size:11px;padding:0 2px 4px;user-select:none}.sutra-row{display:grid;grid-template-columns:repeat(var(--visible-cols),1fr);gap:0;min-width:0;background:var(--paper);border:1px solid var(--paper-edge);border-radius:6px;overflow:hidden;box-shadow:0 1px 4px rgba(30,15,0,.06);transition:box-shadow .15s}.sutra-row:hover{box-shadow:0 2px 8px rgba(30,15,0,.08)}.sutra-row.reading{border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,151,58,.25)}.card.stack .sutra-col,.sutra-col-header{border-bottom:1px solid var(--paper-edge)}.sutra-col{min-width:0;word-break:break-word;overflow-wrap:break-word;border-right:1px solid var(--paper-edge);display:flex;flex-direction:column}.sutra-col:last-child{border-right:none}.sutra-col-header{font-family:var(--font-body);font-size:9.5px;font-weight:700;letter-spacing:.14em;color:var(--ink-faint);padding:7px 16px 5px;background:var(--paper-dark);user-select:none;flex-shrink:0}.sutra-col-body{padding:12px 16px 14px;flex:1}.pali-col{background-color:var(--pali-bg);color:var(--pali-fg)}.eng-col{background-color:var(--eng-bg);color:var(--eng-fg)}.vie-col{background-color:var(--vie-bg);color:var(--vie-fg)}.pali{font-family:var(--font-pali);font-size:calc(14px * var(--sutra-font-scale));font-weight:400;color:#1a0f00;line-height:var(--sutra-line-height)}.eng,.vie{font-family:var(--font-body);font-size:calc(14px * var(--sutra-font-scale));font-weight:400;line-height:var(--sutra-line-height)}.eng{color:#2d1f0a}.vie{color:#2a1800}#btnBackTop,.btn-circle,.btn-nav{color:var(--ink-light);cursor:pointer}#sutraGrid.hide-eng.hide-vie .sutra-col-header,#sutraGrid.hide-eng.hide-vie .sutra-seg-key,#sutraGrid.hide-pali.hide-eng .sutra-col-header,#sutraGrid.hide-pali.hide-eng .sutra-seg-key,#sutraGrid.hide-pali.hide-vie .sutra-col-header,#sutraGrid.hide-pali.hide-vie .sutra-seg-key,.hide-eng .eng-col,.hide-pali .pali-col,.hide-vie .vie-col,.menu-list.collapsed,.search-results:empty{display:none}#sutraGrid.hide-eng.hide-vie .sutra-row,#sutraGrid.hide-pali.hide-eng .sutra-row,#sutraGrid.hide-pali.hide-vie .sutra-row,.card.stack .sutra-row{grid-template-columns:1fr!important}.card.stack .sutra-col{border-right:none}.card.stack .sutra-col:last-child,.menu-block:last-child,.menu-sutta-link:last-child,.menu-toggle.nested:last-child{border-bottom:none}#sutraGrid.hide-eng.hide-vie .pali-col,#sutraGrid.hide-pali.hide-eng .vie-col,#sutraGrid.hide-pali.hide-vie .eng-col{width:100%;border-right:none}#sutraGrid.hide-eng.hide-vie .pali,#sutraGrid.hide-pali.hide-eng .vie,#sutraGrid.hide-pali.hide-vie .eng{line-height:1.95}.bottom-controls{background:rgba(253,248,240,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid rgba(201,151,58,.22)}.btn-circle,.btn-nav{background:0 0;padding:0}.footer-nav{display:flex;align-items:center;justify-content:center;padding:8px 16px;gap:10px;background:0 0}.btn-circle,.footer-divider{align-items:center;display:flex}.footer-nav .btn-circle,.footer-nav .btn-nav{width:40px;height:40px}.footer-divider{justify-content:center;padding:0 20px 8px;line-height:1}.footer-divider::after,.footer-divider::before{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(180,140,60,.2) 40%,rgba(180,140,60,.2) 60%,transparent)}.footer-divider span{color:var(--gold);font-size:10px;padding:0 8px;opacity:.45}.btn-nav{flex-shrink:0;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;transition:color .15s,background .15s,transform .08s,opacity .15s}.btn-nav:disabled{opacity:.18;cursor:default}.btn-nav:not(:disabled):hover{color:var(--paper);background:var(--gold);box-shadow:0 2px 10px rgba(201,151,58,.35)}.btn-nav:not(:disabled):active{transform:scale(.88)}.btn-nav:focus-visible{outline:2px solid var(--gold);outline-offset:2px}.btn-circle{width:32px;height:32px;justify-content:center;font-size:14px;border:1px solid transparent;border-radius:6px;transition:background .1s,border-color .1s,transform .08s}#btnBackTop,.panel{background:var(--paper);position:absolute;opacity:0;pointer-events:none}.btn-circle:hover{background:rgba(201,151,58,.06);border-color:rgba(201,151,58,.22)}#btnBackTop:hover,.btn-circle.active{background:var(--gold);color:var(--paper);border-color:var(--gold)}.btn-circle:active{transform:scale(.95)}.btn-circle:focus-visible{outline:2px solid var(--gold);outline-offset:2px}.btn-circle.active{box-shadow:0 2px 8px rgba(201,151,58,.4)}.btn-flag svg{width:18px;height:18px;display:block}#btnBackTop{bottom:70px;right:12px;border-radius:50%;border:1px solid var(--gold-border);font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(30,15,0,.15);z-index:15;transform:translateY(6px);transition:opacity .2s,transform .2s,background .1s,color .1s}#btnBackTop.visible,.panel.open{opacity:1;transform:translateY(0);pointer-events:auto}#settingsPanel .panel-title,.panel-title{color:var(--ink);text-transform:uppercase}#btnBackTop:focus-visible{outline:2px solid var(--gold);outline-offset:2px}.panel{left:12px;bottom:50px;min-width:235px;max-width:285px;max-height:62vh;overflow:auto;background-image:linear-gradient(160deg,#fdfaf3 0,var(--paper) 100%);border-radius:6px;border:1px solid var(--paper-edge);box-shadow:var(--shadow-panel),inset 0 0 0 1px rgba(201,151,58,.08);padding:10px 12px;font-size:12px;font-family:var(--font-body);transform:translateY(8px);z-index:20;transition:opacity .2s,transform .2s;-webkit-overflow-scrolling:touch}.panel-label,.panel-title{font-size:13px;font-family:var(--font-body)}#settingsPanel{left:24px;bottom:80px;z-index:200;position:absolute}#sutraMenuPanel{display:flex;flex-direction:column;left:0;top:0;bottom:0;right:auto;height:auto;width:min(380px,86vw);max-width:none;max-height:none;margin:0;border-radius:0 12px 12px 0;overflow:hidden;opacity:0;transform:translateX(calc(-100% - 14px));pointer-events:none;z-index:60;transition:transform .22s,opacity .18s}#sutraMenuPanel.open{opacity:1;transform:translateX(0);pointer-events:auto}@media (max-width:500px){.sutra-col,.sutra-col:last-child .sutra-col-header{border-bottom:1px solid var(--paper-edge)}.sutra-row{grid-template-columns:1fr!important}.sutra-col{border-right:none}.sutra-col:last-child{border-bottom:none}.card::after,.card::before{display:none}#sutraMenuPanel{left:0;right:0;max-width:none;border-radius:0}#btnLayout,#layoutRow,#settingsLayoutLabel{display:none!important}.app{padding:0}.card{flex-direction:column;overflow:hidden;border-radius:0;height:100%}.top-note{position:relative;flex-shrink:0;z-index:11}.header{display:block!important;flex-shrink:0;transition:margin-top .3s cubic-bezier(.4, 0, .2, 1),opacity .3s;z-index:10;will-change:margin-top,opacity}#sutraGrid{overflow-y:auto;flex:1 1 auto;height:100%}.nav-bar{flex-shrink:0;position:relative;z-index:10}#sidebar-btn{bottom:55px}#btnBackTop{bottom:56px}.eng,.pali,.vie{text-align:justify;text-justify:inter-word}}.panel-title{font-weight:700;letter-spacing:.06em;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid var(--gold-border)}.panel-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap}.panel-label{font-weight:500;color:var(--ink-mid);min-width:62px}#settingsPanel.panel{width:min(300px,calc(100vw - 24px));max-width:300px;border-radius:10px;border:1px solid rgba(201,151,58,.25);box-shadow:0 16px 44px rgba(30,15,0,.26),0 2px 8px rgba(30,15,0,.12);background:radial-gradient(ellipse 110% 80% at 20% 0,rgba(201,151,58,.07),transparent 55%),linear-gradient(168deg,#fefbf4,var(--paper));padding:0;overflow:hidden}#settingsPanel .set-panel-header{padding:12px 14px 10px;text-align:center;border-bottom:1px solid rgba(201,151,58,.18);background:linear-gradient(180deg,var(--paper-dark) 0,transparent 100%);position:relative}#settingsPanel .panel-title{margin:0;padding:0;border:none;font-size:11px;font-weight:800;letter-spacing:.14em}#settingsPanel .set-panel-header::after{content:"❦";display:block;margin-top:6px;font-size:11px;color:var(--gold);opacity:.6;line-height:1}#settingsPanel .set-panel-body{padding:10px 12px 12px;max-height:calc(60vh - 50px);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}#settingsPanel .set-panel-body::-webkit-scrollbar{width:4px}#settingsPanel .set-panel-body::-webkit-scrollbar-track{background:0 0}#settingsPanel .set-panel-body::-webkit-scrollbar-thumb{background:var(--gold-border);border-radius:999px}#settingsPanel .set-sec{margin-bottom:10px;padding:0;border-radius:8px;border:1px solid rgba(201,151,58,.14);background:rgba(253,250,243,.6);overflow:hidden}#settingsPanel .set-sec:last-child{margin-bottom:0}#settingsPanel .set-sec-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 10px;background:linear-gradient(180deg,rgba(245,234,213,.5) 0,transparent 100%);border-bottom:1px solid rgba(201,151,58,.1)}#settingsPanel .icon-btn,#settingsPanel .pill,#settingsPanel .tts-btn{background:rgba(253,250,243,.95);cursor:pointer;transition:.12s}#settingsPanel .set-sec-title{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(45,31,10,.72);line-height:1}#settingsPanel .pill,.guide-dialog h2{letter-spacing:.06em;text-align:center}#settingsPanel .set-sec-sub{font-size:10px;color:rgba(122,96,64,.65);font-style:italic;line-height:1}#settingsPanel .set-sec-body{padding:8px 10px}#settingsPanel .set-pills{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}#settingsPanel .set-pills.cols-3{grid-template-columns:repeat(3,1fr)}#settingsPanel .pill{display:flex;align-items:center;justify-content:center;min-height:32px;padding:5px 6px;border-radius:6px;border:1px solid rgba(201,151,58,.22);color:rgba(45,31,10,.78);font-size:10.5px;font-weight:700;text-transform:uppercase;box-shadow:inset 0 1px 0 rgba(255,255,255,.55);user-select:none;line-height:1.2}#settingsPanel .icon-btn:hover,#settingsPanel .pill:hover{background:rgba(201,151,58,.08);border-color:rgba(201,151,58,.35)}#settingsPanel .pill.active,#settingsPanel .pill[aria-pressed=true]{background:linear-gradient(180deg,rgba(201,151,58,.9),rgba(176,128,40,.9));border-color:rgba(201,151,58,.85);color:var(--paper);box-shadow:0 4px 14px rgba(201,151,58,.22)}#settingsPanel .pill-wide{text-transform:none;letter-spacing:.02em;font-weight:700}#settingsPanel .set-mini{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px}#settingsPanel .set-mini+.set-mini{border-top:1px dashed rgba(201,151,58,.12)}#settingsPanel .set-mini-label{font-size:11px;font-weight:700;color:rgba(45,31,10,.72);line-height:1.2}#settingsPanel .icon-btn{width:32px;height:28px;border-radius:6px;border:1px solid rgba(201,151,58,.22);color:rgba(45,31,10,.72);display:flex;align-items:center;justify-content:center;font-size:13px}#settingsPanel .icon-btn.active,#settingsPanel .icon-btn[aria-pressed=true]{background:linear-gradient(180deg,rgba(201,151,58,.9),rgba(176,128,40,.9));border-color:rgba(201,151,58,.85);color:var(--paper)}#settingsPanel .tts-bar{display:flex;gap:5px;padding:6px 10px}#settingsPanel .tts-btn{flex:1;height:30px;padding:0;border-radius:6px;border:1px solid rgba(201,151,58,.22);color:rgba(45,31,10,.72);font-size:13px;display:flex;align-items:center;justify-content:center}#settingsPanel .tts-btn:disabled{opacity:.3;cursor:default}#settingsPanel .tts-btn:not(:disabled):hover{background:rgba(201,151,58,.1);border-color:rgba(201,151,58,.35)}#settingsPanel .set-note{margin-top:4px;padding:0 2px;color:rgba(122,96,64,.65);font-size:10px;line-height:1.45;font-style:italic}#sutraSearch,[data-theme=dark] #settingsPanel .panel-title,[data-theme=dark] #title,[data-theme=dark] .guide-dialog h2,[data-theme=dark] .search-result-item,[data-theme=dark] .sutra-label-main{color:var(--ink)}#settingsPanel .slider-row{margin:0;padding:0;border:none;border-radius:0;background:0 0}#settingsPanel .slider-row+.slider-row{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(201,151,58,.12)}#settingsPanel .slider-label-row{margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}#settingsPanel .slider-value-badge{font-size:10px;padding:1px 5px;min-width:32px}#settingsPanel .slider-reset-btn{border-radius:6px!important;width:22px!important;height:22px!important;border:1px solid rgba(201,151,58,.18)!important;background:rgba(253,250,243,.95)!important}[data-theme=dark] #settingsPanel.panel{background:radial-gradient(ellipse 110% 80% at 20% 0,rgba(184,135,46,.05),transparent 55%),linear-gradient(168deg,#1e1b12,#1a1710);border-color:rgba(184,135,46,.18);box-shadow:0 16px 44px rgba(0,0,0,.45),0 2px 8px rgba(0,0,0,.25)}[data-theme=dark] #settingsPanel .set-panel-header{border-bottom-color:rgba(184,135,46,.14);background:linear-gradient(180deg,rgba(21,18,8,.8) 0,transparent 100%)}[data-theme=dark] #settingsPanel .set-panel-header::after{opacity:.4}[data-theme=dark] #settingsPanel .set-sec{border-color:rgba(184,135,46,.1);background:rgba(26,23,16,.55)}[data-theme=dark] #settingsPanel .set-sec-hd{background:linear-gradient(180deg,rgba(21,18,8,.4) 0,transparent 100%);border-bottom-color:rgba(184,135,46,.08)}[data-theme=dark] #settingsPanel .set-sec-title{color:rgba(212,201,176,.72)}[data-theme=dark] #settingsPanel .set-sec-sub{color:rgba(138,122,96,.55)}[data-theme=dark] #settingsPanel .pill{border-color:rgba(184,135,46,.18);background:rgba(26,23,16,.85);color:rgba(212,201,176,.72);box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}[data-theme=dark] #settingsPanel .pill:hover{background:rgba(184,135,46,.08);border-color:rgba(184,135,46,.28)}[data-theme=dark] #settingsPanel .pill.active,[data-theme=dark] #settingsPanel .pill[aria-pressed=true]{background:linear-gradient(180deg,rgba(184,135,46,.82),rgba(155,115,35,.82));color:#110f08;box-shadow:0 4px 14px rgba(184,135,46,.18)}[data-theme=dark] #settingsPanel .set-mini-label{color:rgba(212,201,176,.65)}[data-theme=dark] #settingsPanel .set-mini+.set-mini,[data-theme=dark] #settingsPanel .slider-row+.slider-row{border-top-color:rgba(184,135,46,.08)}[data-theme=dark] #settingsPanel .icon-btn,[data-theme=dark] #settingsPanel .tts-btn{border-color:rgba(184,135,46,.18);background:rgba(26,23,16,.85);color:rgba(212,201,176,.65)}[data-theme=dark] #settingsPanel .icon-btn:hover,[data-theme=dark] #settingsPanel .tts-btn:not(:disabled):hover{background:rgba(184,135,46,.08)}[data-theme=dark] #settingsPanel .icon-btn.active,[data-theme=dark] #settingsPanel .icon-btn[aria-pressed=true]{background:linear-gradient(180deg,rgba(184,135,46,.82),rgba(155,115,35,.82));color:#110f08}[data-theme=dark] #settingsPanel .set-note{color:rgba(138,122,96,.5)}[data-theme=dark] #settingsPanel .slider-reset-btn{border-color:rgba(184,135,46,.15)!important;background:rgba(26,23,16,.85)!important}.menu-block>.menu-toggle:not(.nested),.menu-toggle.nested{background:0 0;cursor:pointer;position:relative;width:100%;text-align:left}.menu-block>.menu-toggle,.menu-subblock .chapter-toggle,.menu-sutta-link,.menu-toggle.nested,.sutra-label-main,.sutra-label-sub{font-family:var(--font-body)}#sutraMenuPanel .search-box,#sutraMenuPanel .search-results{flex:0 0 auto}.search-box{margin-top:4px;margin-bottom:4px}#sutraSearch{width:100%;padding:5px 10px;font-family:var(--font-body);font-size:13px;border-radius:4px;border:1px solid var(--paper-edge);background:var(--paper-dark);outline:0;transition:border-color .15s,box-shadow .15s}#sutraSearch:focus{border-color:var(--gold);background:var(--paper);box-shadow:0 0 0 2px var(--gold-soft)}#sutraSearch::placeholder{color:var(--ink-faint);font-style:italic}#sutraMenuPanel .sutra-list{list-style:none;margin:4px 0 0;padding:0;flex:1 1 auto;min-height:0;overflow-y:auto;position:relative;border-top:1px solid var(--paper-edge)}#sutraMenuPanel .sutra-list::-webkit-scrollbar{width:5px}#sutraMenuPanel .sutra-list::-webkit-scrollbar-track{background:0 0}#sutraMenuPanel .sutra-list::-webkit-scrollbar-thumb{background:var(--gold-border);border-radius:999px}.menu-block{padding:3px 0;border-bottom:1px solid var(--paper-edge)}.menu-block>.menu-toggle:not(.nested){border:none;border-radius:0;overflow:hidden;padding:7px 52px 7px 10px;font-family:var(--font-body);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mid);line-height:1.4}.menu-block>.menu-toggle:not(.nested):hover,[data-theme=dark] .menu-block>.menu-toggle:not(.nested):hover{background:var(--gold-soft);color:var(--ink)}.menu-block>.menu-toggle:focus-visible,.menu-sutta-link:focus-visible{outline:2px solid var(--gold);outline-offset:2px}.chevron{font-size:10px;line-height:1;opacity:.6;display:inline-block}.menu-nikaya-sticky,.menu-toggle.nested{color:var(--ink-mid);display:flex;font-family:var(--font-body)}.menu-block>.menu-toggle:not(.nested) .chevron,.menu-toggle.nested .chevron{position:absolute;right:12px;top:50%;transform:translateY(-50%)}.menu-toggle.nested{border:none;border-radius:0;align-items:center;justify-content:space-between;padding:6px 40px 6px 18px;font-size:13px;font-weight:500;border-bottom:1px dashed rgba(180,140,60,.2)}.menu-sutta-link:hover,.menu-toggle.nested:hover,.search-result-item:hover,[data-theme=dark] .menu-sutta-link:hover,[data-theme=dark] .menu-toggle.nested:hover,[data-theme=dark] .search-result-item:hover{background:var(--gold-soft)}.menu-toggle.nested::before{content:'▸';position:absolute;left:5px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--gold);opacity:.8}.menu-toggle.nested[aria-expanded=true]::before{content:'▾'}.menu-subblock{margin:2px 0;padding-left:20px}.menu-subblock .chapter-toggle{font-family:var(--font-body);font-size:12.5px;color:var(--ink-light);padding:3px 0 3px 14px;position:relative}.menu-subblock .chapter-toggle::before{content:'—';position:absolute;left:0;top:50%;transform:translateY(-50%);font-size:11px;color:var(--gold);opacity:.7}.menu-list{margin-left:0;padding-left:0;margin-bottom:2px}.menu-nikaya-sticky{position:sticky;top:0;z-index:10;background:var(--paper-dark);background-image:linear-gradient(180deg,var(--paper-darker) 0,var(--paper-dark) 100%);border-bottom:1px solid var(--gold-border);border-top:1px solid var(--gold-border);padding:6px 10px 6px 12px;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;align-items:center;gap:7px;pointer-events:none;user-select:none}.menu-sutta-link,.search-result-item{background:0 0;gap:1px;cursor:pointer}.menu-nikaya-sticky::before{content:'❧';font-size:11px;color:var(--gold);opacity:.8;flex-shrink:0}.menu-sutta-link,.sutra-label{flex-direction:column;display:flex}.menu-sutta-link{position:relative;padding:5px 6px 5px 30px;margin-bottom:1px;border-radius:3px;text-decoration:none;color:var(--ink);border-bottom:1px dashed rgba(180,140,60,.15);transition:background .1s}.menu-sutta-link::before{content:'•';position:absolute;left:14px;top:8px;font-size:9px;color:var(--gold);opacity:.7}#btnSettings,#sidebar-btn,.guide-dialog::before{position:absolute;left:0}.menu-sutta-link.active,[data-theme=dark] .menu-sutta-link.active{background:var(--gold);border-color:transparent}.menu-sutta-link.active::before{color:var(--paper);opacity:1}.sutra-label{line-height:1.35}.sutra-label-main{font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--ink)}.sutra-label-sub{font-family:var(--font-body);font-size:12px;font-style:italic;color:var(--ink-light)}.menu-sutta-link.active .sutra-label-main{color:var(--paper)}.menu-sutta-link.active .sutra-label-sub{color:rgba(253,248,240,.85)}.search-results{margin-top:5px;margin-bottom:6px;padding:0;max-height:220px;overflow:auto;-webkit-overflow-scrolling:touch}.search-result-item{width:100%;text-align:left;border:none;border-radius:0;padding:6px 4px;margin:0;display:flex;flex-direction:column;color:var(--ink);font-family:var(--font-body);font-size:13px;line-height:1.4;border-bottom:1px dashed rgba(180,140,60,.15)}.search-result-item mark{padding:0 2px;border-radius:2px;font-weight:600;color:var(--ink)}.guide-dialog button,[data-theme=dark] #sutraGrid{background:var(--paper-dark)}.search-result-empty{padding:5px 2px;font-family:var(--font-body);font-size:13px;font-style:italic;color:var(--ink-faint)}.guide-dialog,.guide-dialog h2{font-size:15px;color:var(--ink);font-family:var(--font-body)}.search-result-item .sr-main{font-weight:600;font-size:13px}.search-result-item .sr-sub{font-size:12px;opacity:.7;font-style:italic}#guideOverlay{position:fixed;inset:0;background:rgba(20,10,0,.65);display:none;align-items:center;justify-content:center;z-index:1100}#guideOverlay.show{display:flex}.guide-dialog{background:var(--paper);background-image:linear-gradient(160deg,#fdfaf3,var(--paper));border-radius:8px;border:1px solid var(--paper-edge);box-shadow:var(--shadow-panel),inset 0 0 0 3px rgba(201,151,58,.08);padding:16px 18px;max-width:370px;width:92%;max-height:78vh;overflow-y:auto;font-weight:400;position:relative}.guide-dialog::before{content:'';top:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);border-radius:8px 8px 0 0}.guide-dialog h2{font-weight:700;text-transform:uppercase;margin-bottom:10px}.guide-dialog button{margin-top:12px;float:right;border-radius:4px;border:1px solid var(--gold-border);padding:4px 16px;font-family:var(--font-body);font-size:14px;color:var(--ink-mid);cursor:pointer}.guide-dialog em{display:block;font-size:13.5px;color:var(--ink-light);font-style:italic;margin-top:2px}.guide-dialog ul{padding-left:20px;line-height:1.65}.guide-dialog li{margin-bottom:8px;font-size:14.5px}.guide-dialog li::marker{color:var(--gold);font-size:14px}.welcome-screen{width:100%;display:flex;justify-content:center;padding-top:28px}#sidebar-btn,.slider-row{flex-direction:column;display:flex}.welcome-box{max-width:540px;width:100%;padding:18px 20px;font-family:var(--font-body);font-size:14px;line-height:1.75;color:var(--ink-light);border:1px solid var(--gold-border);border-radius:6px;background:linear-gradient(160deg,#fdfaf3,var(--paper));text-align:left;position:relative}.slider-row{margin-bottom:8px;gap:4px}.slider-label-row{display:flex;align-items:center;justify-content:space-between;gap:6px}.slider-value-badge{font-family:var(--font-body);font-size:11.5px;font-weight:600;color:var(--gold);background:var(--gold-soft);border:1px solid var(--gold-border);border-radius:4px;padding:1px 6px;min-width:38px;text-align:center;letter-spacing:.02em;flex-shrink:0}#settingsTtsNote,.slider-icon{color:var(--ink-faint);font-family:var(--font-body)}.slider-track-wrap{display:flex;align-items:center;gap:5px}.slider-icon{user-select:none;flex-shrink:0;line-height:1}.slider-icon:first-child{font-size:10px}.slider-icon-lg{font-size:16px}.sutra-slider{-webkit-appearance:none;appearance:none;flex:1;height:4px;border-radius:999px;background:linear-gradient(to right,var(--gold) 0,var(--gold) var(--slider-pct,25%),var(--paper-darker) var(--slider-pct,25%),var(--paper-darker) 100%);outline:0;cursor:pointer;border:none}.sutra-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--gold);border:2px solid var(--paper);box-shadow:0 1px 4px rgba(30,15,0,.25);cursor:pointer}.sutra-slider::-webkit-slider-thumb:hover{background:#b8872e;transform:scale(1.15)}.sutra-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--gold);border:2px solid var(--paper);box-shadow:0 1px 4px rgba(30,15,0,.25);cursor:pointer}.sutra-slider::-moz-range-track{height:4px;border-radius:999px;background:var(--paper-darker)}.sutra-slider:focus-visible{outline:2px solid var(--gold);outline-offset:3px}.slider-reset-btn{background:0 0!important;border:1px solid var(--paper-edge)!important;color:var(--ink-faint)!important;font-size:13px!important;width:22px!important;height:22px!important;padding:0!important;border-radius:4px!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer;flex-shrink:0;box-shadow:none!important;min-width:unset!important;transition:color .1s,border-color .1s,transform .15s!important}.nav-btn,.toolbar-btn{width:34px;height:34px;cursor:pointer}#btnDarkMode,#btnGuide,#btnUiLang,.btn-dark-toggle{transition:transform .3s}.slider-reset-btn:hover{color:var(--gold)!important;border-color:var(--gold-border)!important;transform:rotate(-40deg)!important}.layout-wide .app{padding:0}.layout-wide .card{max-width:none;width:100%;height:100%;border-radius:0}#settingsTtsNote{font-size:11px;font-style:italic;margin-top:2px;line-height:1.5}.btn-circle:not(:focus-visible),.menu-sutta-link:not(:focus-visible),.menu-toggle:not(:focus-visible),button:not(:focus-visible){outline:0}.menu-btn .menuIcon{width:18px;height:18px;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .18s}#sidebar-btn{bottom:69px;height:100px;border-radius:0 8px 8px 0;border:1px solid var(--panel-border);border-left:none;background:var(--panel-toggle-bg);color:var(--fab-color);cursor:pointer;align-items:center;justify-content:center;gap:6px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}[data-theme=dark] .card.stack .sutra-col,[data-theme=dark] .header,[data-theme=dark] .menu-block,[data-theme=dark] .top-note{border-bottom-color:var(--paper-edge)}#sidebar-btn:hover{background:var(--panel-toggle-hover-bg);box-shadow:3px 0 12px rgba(44,31,14,.08)}#sidebar-btn .sidebar-arrow{position:absolute;top:15px;left:50%;transform:translateX(-50%);font-size:14px;line-height:1;opacity:.7;transition:transform .25s}#sidebar-btn.is-open .sidebar-arrow{transform:translateX(-50%) rotate(90deg)}#sidebar-btn .sidebar-label{position:absolute;bottom:39px;font-family:var(--font-display);font-size:.62em;letter-spacing:.18em;text-transform:uppercase;transform-origin:center center;left:50%;transform:translateX(-50%) rotate(-90deg);line-height:1;white-space:nowrap;color:#4e342e;font-weight:700}.btn-dark-toggle{font-size:15px;line-height:1;cursor:pointer}#btnDarkMode:hover,#btnGuide:hover,#btnUiLang:hover,.btn-dark-toggle:hover{transform:scale(1.15) rotate(-12deg)}[data-theme=dark]{--paper:#1a1710;--paper-dark:#151208;--paper-darker:#110f08;--paper-edge:#2e2820;--ink:#d4c9b0;--ink-mid:#b8a88a;--ink-light:#8a7a60;--ink-faint:#5a4d3a;--gold:#b8872e;--gold-light:#d4a84a;--gold-pale:#3a3020;--gold-soft:rgba(184,135,46,0.10);--gold-border:rgba(184,135,46,0.28);--shadow-card:0 24px 60px rgba(0,0,0,0.50),0 4px 16px rgba(0,0,0,0.30);--shadow-panel:0 16px 40px rgba(0,0,0,0.55),0 2px 8px rgba(0,0,0,0.30);--pali-fg:#d4c5a0;--eng-fg:#c8b898;--vie-fg:#ccbd9e}[data-theme=dark] body,[data-theme=dark] html{background-color:#0e0c06;background-image:repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(255,255,255,.008) 28px,rgba(255,255,255,.008) 29px)}[data-theme=dark] .card{background:var(--paper);background-image:linear-gradient(160deg,#1e1b12 0,#1a1710 40%,#16130c 100%);border-color:var(--paper-edge)}[data-theme=dark] .card::before{background:linear-gradient(90deg,transparent 0,rgba(184,135,46,.5) 15%,rgba(212,168,74,.35) 50%,rgba(184,135,46,.5) 85%,transparent 100%)}[data-theme=dark] .card::after{background:linear-gradient(90deg,transparent,rgba(184,135,46,.4) 20%,rgba(212,168,74,.25) 50%,rgba(184,135,46,.4) 80%,transparent)}[data-theme=dark] .top-note{background:linear-gradient(180deg,#151208 0,var(--paper) 100%)}[data-theme=dark] .top-note-text{color:#8a7a55;text-shadow:0 1px 3px rgba(0,0,0,.4)}[data-theme=dark] .header::before{color:var(--gold);opacity:.6}[data-theme=dark] #subtitle,[data-theme=dark] .btn-circle,[data-theme=dark] .btn-nav,[data-theme=dark] .guide-dialog em,[data-theme=dark] .sutra-label-sub,[data-theme=dark] .toolbar-btn{color:var(--ink-light)}[data-theme=dark] #sutraGrid::-webkit-scrollbar-track{background:var(--paper-dark);border-left-color:var(--paper-edge)}[data-theme=dark] #sutraGrid::-webkit-scrollbar-thumb{background:rgba(184,135,46,.25)}[data-theme=dark] #sutraGrid::-webkit-scrollbar-thumb:hover{background:var(--gold)}[data-theme=dark] .sutra-row{background:var(--paper);border-color:var(--paper-edge);box-shadow:0 1px 4px rgba(0,0,0,.15)}[data-theme=dark] .sutra-row:hover{box-shadow:0 2px 8px rgba(0,0,0,.22)}[data-theme=dark] .sutra-row.reading{border-color:var(--gold);box-shadow:0 0 0 2px rgba(184,135,46,.2)}[data-theme=dark] .sutra-col{border-right-color:var(--paper-edge)}[data-theme=dark] .sutra-col-header{color:var(--ink-faint);border-bottom-color:var(--paper-edge);background:var(--paper-dark)}[data-theme=dark] .pali{color:var(--pali-fg)}[data-theme=dark] .eng{color:var(--eng-fg)}[data-theme=dark] .vie{color:var(--vie-fg)}[data-theme=dark] .bottom-controls{background:rgba(26,23,16,.65);border-top-color:rgba(184,135,46,.15)}[data-theme=dark] .btn-nav:not(:disabled):hover{color:var(--paper-dark);background:var(--gold);box-shadow:0 2px 10px rgba(184,135,46,.3)}[data-theme=dark] .btn-circle:hover{background:rgba(184,135,46,.08);border-color:rgba(184,135,46,.18)}[data-theme=dark] #btnBackTop:hover,[data-theme=dark] .btn-circle.active{background:var(--gold);color:var(--paper-dark);border-color:var(--gold)}[data-theme=dark] .btn-circle.active{box-shadow:0 2px 8px rgba(184,135,46,.35)}[data-theme=dark] .footer-divider::after,[data-theme=dark] .footer-divider::before{background:linear-gradient(90deg,transparent,rgba(184,135,46,.12) 40%,rgba(184,135,46,.12) 60%,transparent)}[data-theme=dark] .footer-divider span{color:var(--gold);opacity:.3}[data-theme=dark] #btnBackTop{border-color:var(--gold-border);background:var(--paper);color:var(--ink-light);box-shadow:0 2px 10px rgba(0,0,0,.35)}[data-theme=dark] .panel{background:#1a1710;background-image:linear-gradient(160deg,#1e1b12 0,#1a1710 100%);border-color:var(--paper-edge);box-shadow:var(--shadow-panel),inset 0 0 0 1px rgba(184,135,46,.06)}[data-theme=dark] .panel-title{color:var(--ink);border-bottom-color:var(--gold-border)}[data-theme=dark] .menu-block>.menu-toggle:not(.nested),[data-theme=dark] .panel-label{color:var(--ink-mid)}[data-theme=dark] #sutraSearch{border-color:var(--paper-edge);background:var(--paper-dark);color:var(--ink)}[data-theme=dark] #sutraSearch:focus{border-color:var(--gold);background:var(--paper);box-shadow:0 0 0 2px rgba(184,135,46,.08)}[data-theme=dark] #sutraSearch::placeholder{color:var(--ink-faint)}[data-theme=dark] #sutraMenuPanel .sutra-list{border-top-color:var(--paper-edge)}[data-theme=dark] #sutraMenuPanel .sutra-list::-webkit-scrollbar-thumb{background:rgba(184,135,46,.2)}[data-theme=dark] .menu-toggle.nested{color:var(--ink-mid);border-bottom-color:rgba(184,135,46,.12)}[data-theme=dark] .menu-toggle.nested::before{color:var(--gold)}[data-theme=dark] .menu-nikaya-sticky{background:var(--paper-dark);background-image:linear-gradient(180deg,#151208 0,var(--paper-dark) 100%);border-bottom-color:var(--gold-border);border-top-color:var(--gold-border);color:var(--ink-mid)}[data-theme=dark] .menu-sutta-link{color:var(--ink);border-bottom-color:rgba(184,135,46,.1)}[data-theme=dark] .menu-sutta-link.active .sutra-label-main{color:#110f08}[data-theme=dark] .menu-sutta-link.active .sutra-label-sub{color:rgba(17,15,8,.75)}[data-theme=dark] .search-result-item mark{background:rgba(184,135,46,.18);color:var(--ink)}[data-theme=dark] .search-result-empty{color:var(--ink-faint)}[data-theme=dark] #guideOverlay{background:rgba(0,0,0,.75)}[data-theme=dark] .guide-dialog{background:#1a1710;background-image:linear-gradient(160deg,#1e1b12,#1a1710);border-color:var(--paper-edge);color:var(--ink)}[data-theme=dark] .guide-dialog::before{background:linear-gradient(90deg,transparent,rgba(184,135,46,.5),transparent)}[data-theme=dark] .guide-dialog button{border-color:var(--gold-border);background:var(--paper-dark);color:var(--ink-mid)}[data-theme=dark] .guide-dialog li::marker{color:var(--gold)}[data-theme=dark] .welcome-box{border-color:var(--gold-border);background:linear-gradient(160deg,#1e1b12,var(--paper));color:var(--ink-light)}[data-theme=dark] .welcome-box::before{background:var(--paper);color:var(--gold)}[data-theme=dark] #sidebar-btn{background:rgba(26,23,16,.85);border-color:var(--paper-edge);color:var(--ink-light);box-shadow:2px 0 8px rgba(0,0,0,.2)}[data-theme=dark] #sidebar-btn:hover{background:rgba(30,27,18,.95)}@media (prefers-reduced-motion:no-preference){html #sutraGrid,html .bottom-controls,html .card,html .guide-dialog,html .header,html .panel,html .sutra-col-header,html .sutra-row,html .top-note,html .welcome-box{transition:background-color .4s,background .4s,color .35s,border-color .35s,box-shadow .35s}}[data-theme=dark] ::selection{background:rgba(184,135,46,.3);color:#d4c9b0}[data-theme=dark] ::-moz-selection{background:rgba(184,135,46,.3);color:#d4c9b0}#btnSettings{bottom:169px;height:35px;border-radius:0 8px 8px 0;border:1px solid var(--panel-border);border-left:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}.toolbar-btn,.toolbar-group{align-items:center;display:flex}.toolbar-group{gap:4px;padding:4px 6px;border-radius:8px;border:1px solid rgba(201,151,58,.18);background:rgba(253,250,243,.7)}.toolbar-btn{justify-content:center;font-size:15px;padding:0;background:0 0;border:none;border-radius:6px;color:var(--ink-light);transition:background .12s,color .12s,transform .08s}.toolbar-btn:hover{background:rgba(201,151,58,.1);color:var(--ink-mid)}.toolbar-btn:active{transform:scale(.92)}.toolbar-btn.active{background:var(--gold);color:var(--paper)}.toolbar-btn.btn-flag svg{width:20px;height:14px;display:block}[data-theme=dark] .panel-toolbar{border-top-color:var(--paper-edge);background:linear-gradient(180deg,transparent 0,rgba(21,18,8,.5) 100%)}[data-theme=dark] .toolbar-group{border-color:rgba(184,135,46,.15);background:rgba(26,23,16,.6)}[data-theme=dark] .toolbar-btn:hover{background:rgba(184,135,46,.1);color:var(--ink)}.nav-bar{display:flex;align-items:center;gap:6px;padding:6px 10px;border-top:1px solid var(--paper-edge);background:var(--paper-dark)}.nav-btn{flex-shrink:0;border-radius:50%;border:1px solid var(--paper-edge);background:var(--paper);color:var(--ink-light);display:flex;align-items:center;justify-content:center;padding:0;transition:.15s}.nav-btn:disabled{opacity:.25;cursor:default}.nav-btn:not(:disabled):hover{color:var(--paper);background:var(--gold);border-color:var(--gold);box-shadow:0 2px 8px rgba(201,151,58,.3)}.nav-btn:not(:disabled):active{transform:scale(.9)}.nav-title{flex:1;text-align:center;font-family:var(--font-body);font-size:11.5px;font-weight:500;color:var(--ink-light);overflow:hidden;padding:0 4px;line-height:1.3}[data-theme=dark] .nav-bar{background:var(--paper-dark);border-top-color:var(--paper-edge)}[data-theme=dark] .nav-btn{border-color:var(--paper-edge);background:var(--paper);color:var(--ink-light)}[data-theme=dark] .nav-btn:not(:disabled):hover{background:var(--gold);color:var(--paper-dark)}.pill-icon{font-size:13px;margin-right:3px;opacity:.7}.pill.active .pill-icon{opacity:1}@media screen and (max-width:768px){input[type=email],input[type=number],input[type=password],input[type=search],input[type=tel],input[type=text],input[type=url],select,textarea{font-size:16px!important}.menu-sutta-link,.menu-toggle,a,button,input,select,textarea{touch-action:manipulation}}#sutraGrid.hide-eng.hide-vie .pali,#sutraGrid.hide-pali.hide-eng .vie,#sutraGrid.hide-pali.hide-vie .eng,.card.stack .eng,.card.stack .pali,.card.stack .vie{text-align:justify;text-justify:inter-word}
+/* ============================================================
+   Monastic Minimal — Sutta Archive
+   ============================================================ */
+:root {
+  --bg: #f5f3ee;
+  --bg-2: #efece4;
+  --panel: #ffffff;
+  --ink: #14120e;
+  --ink-2: #423f37;
+  /* Bump contrast: ink-3 ~6.0:1, ink-4 ~3.5:1 (pass WCAG AA cho normal + UI text) */
+  --ink-3: #6a6452;
+  --ink-4: #8a8273;
+  --rule: #dcd7c9;
+  --rule-2: #e8e3d5;
+  --accent: #8f5e15;
+  --accent-2: #b37d24;
+  --highlight: rgba(143,94,21,0.08);
+  --serif: "Spectral", "Noto Serif", Georgia, "Times New Roman", serif;
+  --serif-vi: "Spectral", ui-serif, "Iowan Old Style", "Charter", "Palatino Linotype", "Palatino", Georgia, serif;
+  /* Font riêng cho Pāli — Noto Serif có full glyph Latin Extended Additional
+     (ṁ ṇ ṭ ḍ ṅ ñ ḷ…) nên tránh được hiện tượng mixed-font khi Spectral italic
+     không có sẵn các dấu phụ. */
+  --serif-pali: "Noto Serif", "Spectral", "Gentium Plus", Georgia, "Times New Roman", serif;
+  --mono: "Geist Mono", ui-monospace, Menlo, monospace;
+  --sutra-font-scale: 1;
+  --sutra-line-height: 1.75;
+  --visible-cols: 3;
+  --transition: 0.2s ease;
+}
+
+[data-theme="dark"] {
+  --bg: #0b0c0e;
+  --bg-2: #0f1113;
+  --panel: #14161a;
+  --ink: #e8e6e0;
+  --ink-2: #b5b0a4;
+  /* Bump contrast: ink-3 ~6.5:1, ink-4 ~3.3:1 (pass WCAG AA trên dark bg) */
+  --ink-3: #969080;
+  --ink-4: #6a6458;
+  --rule: #1f2126;
+  --rule-2: #2a2c32;
+  --accent: #d4a354;
+  --accent-2: #eec07b;
+  --highlight: rgba(212,163,84,0.10);
+}
+
+* { box-sizing: border-box; }
+*, a, body, button, html, input, label { -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "liga", "kern";
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse 1200px 600px at 50% 0%,
+    color-mix(in oklab, var(--accent) 5%, transparent),
+    transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+:lang(vi), [lang="vi"], .vie, #subtitle.vi, .vi-text {
+  font-family: var(--serif-vi);
+}
+
+/* ============================================================
+   Layout frame
+   ============================================================ */
+.app {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  padding: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.card {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ============================================================
+   Top dedication bar
+   ============================================================ */
+.top-bar {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 10;
+  background: var(--bg);
+  /* bỏ border mỏng giữa Namo tassa và epigraph cho mượt */
+  border-bottom: none;
+}
+/* Vạch gold gradient trên cùng top-bar — đồng bộ với Library + Settings */
+.top-bar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 2;
+}
+.bar-in {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5px 24px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.bar-center {
+  text-align: center;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 11.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bar-center::before, .bar-center::after {
+  content: "";
+  display: block;
+  width: 26px;
+  height: 1px;
+  background: color-mix(in oklab, var(--accent) 40%, transparent);
+  flex-shrink: 0;
+}
+.ded-phrase-text {
+  display: inline-block;
+}
+.bar-right {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+}
+.bar-icon-btn {
+  background: none;
+  border: 0;
+  padding: 4px 7px;
+  color: var(--ink-3);
+  font: inherit;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  border-radius: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color .15s, background .15s;
+  min-width: 28px;
+  height: 28px;
+}
+.bar-icon-btn:hover { color: var(--ink); background: color-mix(in oklab, var(--ink) 6%, transparent); }
+.bar-icon-btn svg { width: 15px; height: 15px; display: block; }
+
+/* Dark-mode toggle — icon moon/sun swap theo data-theme */
+#btnDarkMode .icon-sun { display: none; }
+#btnDarkMode .icon-moon { display: block; }
+[data-theme="dark"] #btnDarkMode .icon-moon { display: none; }
+[data-theme="dark"] #btnDarkMode .icon-sun { display: block; }
+
+/* Language code badge — thay cờ màu bằng text mono uppercase "VI"/"EN" */
+.lang-code {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: currentColor;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+/* ============================================================
+   Title block (#supertitle, #title, #subtitle, #titleMeta)
+   ============================================================ */
+.header {
+  flex: 0 0 auto;
+  padding: 32px 32px 28px;
+  text-align: center;
+  border-bottom: 1px solid var(--rule);
+}
+#supertitle {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+  min-height: 12px;
+  line-height: 1.2;
+}
+#supertitle:empty { display: none; }
+#title {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 300;
+  font-style: normal;
+  font-size: calc(38px * var(--sutra-font-scale));
+  letter-spacing: -0.012em;
+  line-height: 1.1;
+  color: var(--ink);
+  text-transform: none;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+}
+#subtitle {
+  margin-top: 10px;
+  font-family: var(--serif-pali);
+  font-style: italic;
+  font-weight: 400;
+  font-size: calc(18px * var(--sutra-font-scale));
+  color: var(--ink-3);
+  letter-spacing: 0;
+  line-height: 1.3;
+}
+#subtitle:empty { display: none; }
+#titleMeta {
+  margin-top: 22px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13.5px;
+  color: var(--ink-3);
+  letter-spacing: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+#titleMeta:empty { display: none; }
+#titleMeta .sep {
+  color: var(--ink-4);
+  font-style: normal;
+  font-size: 11px;
+}
+#titleMeta b {
+  color: var(--ink-2);
+  font-style: normal;
+  font-weight: 400;
+}
+
+/* ============================================================
+   Reader scroll area — title + content cuộn chung
+   ============================================================ */
+#readerArea {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  background: transparent;
+  /* KHÔNG dùng scroll-behavior: smooth ở đây — sẽ làm scrollTop=0 programmatic
+     bị animate, và khi đổi bài kinh, trình duyệt có thể giữ vị trí cuộn cũ
+     (overflow-anchor) rồi "trượt mượt" về đầu → gây cảm giác vị trí bài cũ bị carry over. */
+  scroll-behavior: auto;
+  overflow-anchor: none;
+  display: flex;
+  flex-direction: column;
+}
+#readerArea::-webkit-scrollbar { width: 8px; }
+#readerArea::-webkit-scrollbar-track { background: transparent; }
+#readerArea::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--ink-4) 50%, transparent);
+  border-radius: 999px;
+}
+#readerArea::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* COMPAT appold.js: #sutraGrid là scroll container trực tiếp (không có #readerArea) */
+#sutraGrid {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: auto;
+  overflow-anchor: none;
+  padding: 24px 32px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  background: transparent;
+}
+#sutraGrid::-webkit-scrollbar { width: 8px; }
+#sutraGrid::-webkit-scrollbar-track { background: transparent; }
+#sutraGrid::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--ink-4) 50%, transparent);
+  border-radius: 999px;
+}
+#sutraGrid::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+.sutra-row-wrap {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  max-width: 1040px;
+  width: 100%;
+  margin: 0 auto;
+  padding-left: 20px;
+  /* KHÔNG dùng contain — test cho thấy OLD với 20k DOM không contain chạy 60 FPS
+     còn NEW 3k DOM có contain chỉ 2 FPS → contain trên 1.227 element phản tác dụng iPad. */
+}
+.sutra-row-wrap::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 4px; bottom: 0;
+  width: 1px;
+  background: var(--rule-2);
+  opacity: 0.7;
+  transition: background .2s, opacity .2s;
+}
+.sutra-row-wrap:hover::before { background: color-mix(in oklab, var(--accent) 50%, var(--rule-2)); }
+
+/* Ornament divider every 8 segments for reading rhythm
+   (loại trừ sub-sutta heading — nó tự có dấu phân cách riêng) */
+.sutra-row-wrap:nth-of-type(8n+1):not(:first-of-type):not(.is-subtitle) { margin-top: 22px; }
+.sutra-row-wrap:nth-of-type(8n+1):not(:first-of-type):not(.is-subtitle)::after {
+  content: '❦';
+  position: absolute;
+  top: -26px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--serif);
+  font-size: 14px;
+  color: var(--accent);
+  opacity: 0.32;
+  letter-spacing: 0;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Sub-sutta heading: khi row có data-key kết thúc ":0.3" (vd "sn1.11:0.3")
+   → xử lý như tiêu đề phụ của sub-sutta trong vagga bundle */
+.sutra-row-wrap.is-subtitle {
+  margin-top: 36px;
+  padding-top: 14px;
+  padding-left: 0;
+}
+/* Sub-sutta đầu tiên của bài (ngay dưới header) không cần đẩy xuống nhiều */
+.sutra-row-wrap.is-subtitle:first-of-type {
+  margin-top: 0;
+  padding-top: 4px;
+}
+.sutra-row-wrap.is-subtitle::before { display: none; }
+.sutra-row-wrap.is-subtitle .sutra-seg-key { display: none; }
+.sutra-row-wrap.is-subtitle::after {
+  content: '·';
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  color: var(--accent);
+  opacity: 0.45;
+  letter-spacing: 0.4em;
+  line-height: 1;
+  pointer-events: none;
+}
+.sutra-row-wrap.is-subtitle:first-of-type::after { display: none; }
+.sutra-row-wrap.is-subtitle .sutra-row {
+  grid-template-columns: 1fr !important;
+  grid-template-areas: none !important;
+  row-gap: 2px;
+  text-align: center;
+}
+.sutra-row-wrap.is-subtitle .sutra-col { grid-area: auto !important; align-items: center; }
+.sutra-row-wrap.is-subtitle .sutra-col-header { display: none; }
+.sutra-row-wrap.is-subtitle .pali {
+  font-family: var(--serif-pali);
+  font-style: italic;
+  font-weight: 400;
+  font-size: calc(18px * var(--sutra-font-scale));
+  color: var(--ink);
+  line-height: 1.25;
+  text-align: center;
+}
+.sutra-row-wrap.is-subtitle .eng,
+.sutra-row-wrap.is-subtitle .vie {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: calc(12.5px * var(--sutra-font-scale));
+  color: var(--ink-3);
+  text-align: center;
+  line-height: 1.3;
+}
+.sutra-row-wrap.is-subtitle .vie { font-family: var(--serif-vi); }
+
+.sutra-seg-key {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  padding: 0 0 10px 0;
+  user-select: none;
+  text-transform: uppercase;
+}
+
+.sutra-row {
+  display: grid;
+  grid-template-columns: repeat(var(--visible-cols), 1fr);
+  gap: 32px;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: none;
+  transition: background .2s, box-shadow .2s;
+  padding: 0;
+  align-items: start;
+}
+.sutra-row:hover { }
+.sutra-row.reading {
+  background: var(--highlight);
+  box-shadow: -20px 0 0 var(--highlight), 20px 0 0 var(--highlight);
+}
+.sutra-row.reading ~ .sutra-row.reading { /* keep effect */ }
+
+.sutra-col {
+  min-width: 0;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  display: flex;
+  flex-direction: column;
+  border: none;
+  background: transparent;
+}
+.sutra-col-header {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  color: var(--ink-4);
+  padding: 0 0 6px 0;
+  background: transparent;
+  user-select: none;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--rule-2);
+  margin-bottom: 10px;
+  align-self: flex-start;
+}
+.sutra-col-body {
+  padding: 0;
+  flex: 1;
+}
+
+.pali {
+  font-family: var(--serif-pali);
+  font-style: italic;
+  font-size: calc(19px * var(--sutra-font-scale));
+  font-weight: 400;
+  color: var(--ink);
+  line-height: var(--sutra-line-height);
+  letter-spacing: 0.003em;
+  font-feature-settings: "liga", "kern";
+}
+.eng, .vie {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: calc(16px * var(--sutra-font-scale));
+  line-height: var(--sutra-line-height);
+  color: var(--ink-2);
+}
+.vie { font-family: var(--serif-vi); }
+
+/* Three-column: span Pali full-width on top, En+Vi below — ONLY when not stacked
+   (scoping with :not(.stack) prevents named grid-area leakage into stack mode) */
+.card:not(.stack) #sutraGrid:not(.hide-pali):not(.hide-eng):not(.hide-vie) .sutra-row {
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "pali pali"
+    "eng  vie";
+  column-gap: 40px;
+  row-gap: 22px;
+}
+.card:not(.stack) #sutraGrid:not(.hide-pali):not(.hide-eng):not(.hide-vie) .pali-col { grid-area: pali; }
+.card:not(.stack) #sutraGrid:not(.hide-pali):not(.hide-eng):not(.hide-vie) .eng-col  { grid-area: eng; }
+.card:not(.stack) #sutraGrid:not(.hide-pali):not(.hide-eng):not(.hide-vie) .vie-col  { grid-area: vie; }
+.card:not(.stack) #sutraGrid:not(.hide-pali):not(.hide-eng):not(.hide-vie) .pali-col .pali {
+  font-size: calc(22px * var(--sutra-font-scale));
+  line-height: calc(var(--sutra-line-height) * 0.92);
+}
+
+/* Hide columns */
+.hide-pali .pali-col,
+.hide-eng .eng-col,
+.hide-vie .vie-col { display: none; }
+
+/* Only-one-language: full width, hide headers/keys */
+#sutraGrid.hide-eng.hide-vie .sutra-row,
+#sutraGrid.hide-pali.hide-eng .sutra-row,
+#sutraGrid.hide-pali.hide-vie .sutra-row {
+  grid-template-columns: 1fr !important;
+  grid-template-areas: none !important;
+}
+#sutraGrid.hide-eng.hide-vie .sutra-col-header,
+#sutraGrid.hide-pali.hide-eng .sutra-col-header,
+#sutraGrid.hide-pali.hide-vie .sutra-col-header,
+#sutraGrid.hide-eng.hide-vie .sutra-seg-key,
+#sutraGrid.hide-pali.hide-eng .sutra-seg-key,
+#sutraGrid.hide-pali.hide-vie .sutra-seg-key { display: none; }
+/* Single-language: book-style reading — indent đầu đoạn + bỏ vạch accent + gap nhỏ */
+#sutraGrid.hide-eng.hide-vie,
+#sutraGrid.hide-pali.hide-eng,
+#sutraGrid.hide-pali.hide-vie { gap: 8px; }
+
+#sutraGrid.hide-eng.hide-vie .sutra-row-wrap,
+#sutraGrid.hide-pali.hide-eng .sutra-row-wrap,
+#sutraGrid.hide-pali.hide-vie .sutra-row-wrap { padding-left: 0; }
+
+#sutraGrid.hide-eng.hide-vie .sutra-row-wrap::before,
+#sutraGrid.hide-pali.hide-eng .sutra-row-wrap::before,
+#sutraGrid.hide-pali.hide-vie .sutra-row-wrap::before { display: none; }
+
+#sutraGrid.hide-eng.hide-vie .pali,
+#sutraGrid.hide-pali.hide-eng .vie,
+#sutraGrid.hide-pali.hide-vie .eng {
+  line-height: calc(var(--sutra-line-height) + 0.08);
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  text-indent: 2em;
+}
+
+/* Stack mode (toàn bộ cột 1fr) cũng nên justify 2 bên cho gọn gàng */
+.card.stack .pali,
+.card.stack .eng,
+.card.stack .vie {
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+/* Stack layout — force single column and reset any lingering grid-area */
+.card.stack .sutra-row {
+  grid-template-columns: 1fr !important;
+  grid-template-areas: none !important;
+  row-gap: 16px;
+  column-gap: 0;
+}
+.card.stack .sutra-col,
+.card.stack .pali-col,
+.card.stack .eng-col,
+.card.stack .vie-col {
+  grid-area: auto !important;
+  grid-column: 1 / -1 !important;
+  grid-row: auto !important;
+  border-bottom: none;
+}
+.card.stack .sutra-col-header { margin-bottom: 6px; }
+.card.stack .pali { font-size: calc(20px * var(--sutra-font-scale)); }
+
+/* Segment visibility toggles (from Settings) */
+html.hide-seg-key .sutra-seg-key { display: none !important; }
+html.hide-seg-hdr .sutra-col-header { display: none !important; }
+html.hide-seg-hdr .pali,
+html.hide-seg-hdr .eng,
+html.hide-seg-hdr .vie { margin-top: 0; }
+
+/* ============================================================
+   Welcome screen — dhamma wheel + recommendations
+   ============================================================ */
+.welcome-screen {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 12px 8px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+.welcome-ornament {
+  width: 88px;
+  height: 88px;
+  color: var(--accent);
+  opacity: 0.75;
+  flex-shrink: 0;
+  display: block;
+  margin-top: 8px;
+}
+
+/* Welcome dedication — 3 câu Pāli + dịch nghĩa, căn giữa, phân cách nhẹ */
+.welcome-dedication {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 24px;
+  border-top: 1px solid var(--rule-2);
+  border-bottom: 1px solid var(--rule-2);
+  text-align: center;
+}
+.welcome-dedication .ded-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.welcome-dedication .ded-pali {
+  font-family: var(--serif-pali);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 16px;
+  color: var(--accent);
+  line-height: 1.4;
+  letter-spacing: 0.005em;
+}
+.welcome-dedication .ded-tr {
+  font-family: var(--serif);
+  font-size: 14px;
+  color: var(--ink-3);
+  font-style: italic;
+  line-height: 1.4;
+}
+.welcome-ornament .wheel-rim,
+.welcome-ornament .wheel-hub,
+.welcome-ornament .wheel-spoke {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+}
+.welcome-ornament .wheel-hub { fill: currentColor; stroke: none; }
+.welcome-box {
+  max-width: 560px;
+  width: 100%;
+  padding: 24px 30px;
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--ink-2);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--panel);
+  text-align: left;
+  position: relative;
+  box-shadow: 0 1px 4px color-mix(in oklab, var(--ink) 4%, transparent);
+}
+.welcome-box strong {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-style: italic;
+  color: var(--ink);
+  font-size: 18px;
+  display: block;
+  margin-bottom: 6px;
+}
+.welcome-box .kbd-hint {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule-2);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  line-height: 1.8;
+}
+.welcome-box .kbd-hint kbd {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  padding: 1px 6px;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--bg-2);
+  color: var(--ink-2);
+  margin: 0 2px;
+}
+
+.rec-title {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  align-self: flex-start;
+  margin-left: 4px;
+}
+.rec-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+  width: 100%;
+  max-width: 600px;
+}
+.rec-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  color: var(--ink);
+  cursor: pointer;
+  font-family: var(--serif);
+  text-align: left;
+  transition: all .15s;
+}
+.rec-card:hover {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 5%, var(--panel));
+  transform: translateY(-1px);
+}
+.rec-card .rec-code {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.rec-card .rec-name {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.rec-card .rec-name-main {
+  font-style: italic;
+  font-size: 14.5px;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rec-card .rec-name-sub {
+  font-size: 12px;
+  color: var(--ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   Epigraph — dải lời kinh mỏng DƯỚI top-bar (Namo tassa), TRÊN title block.
+   Feel attached to top bar; separated from content by border-bottom.
+   ============================================================ */
+.epigraph {
+  flex: 0 0 auto;
+  background: color-mix(in oklab, var(--bg) 96%, transparent);
+  border-bottom: 1px solid var(--rule-2);
+  padding: 4px 16px 5px;
+  text-align: center;
+  position: relative;
+  z-index: 6;
+  line-height: 1.3;
+  color: var(--ink-3);
+}
+.epigraph-inner {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  max-width: 100%;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  justify-content: center;
+  transition: opacity .45s ease;
+  will-change: opacity;
+}
+.ep-pali {
+  font-family: var(--serif-pali);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 11.5px;
+  color: inherit;
+  flex-shrink: 0;
+}
+.ep-sep {
+  color: inherit;
+  font-size: 11px;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+.ep-tr {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 11.5px;
+  color: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.ep-cite {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 0;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+/* Active segment (the one centered in the viewport while scrolling) */
+.sutra-row-wrap.current::before {
+  background: var(--accent) !important;
+  opacity: 1 !important;
+  width: 2px;
+}
+.sutra-row-wrap.current .sutra-seg-key {
+  color: var(--accent);
+  opacity: 1;
+}
+
+/* ============================================================
+   Bottom status bar (Library · Prev/Title/Next · Settings)
+   ============================================================ */
+.status {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 9;
+  background: var(--bg);
+  border-top: 1px solid var(--rule);
+}
+.status-in {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 8px 24px;
+  gap: 16px;
+}
+.status-left, .status-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.status-right { justify-self: end; }
+
+.status-center {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  height: 34px;
+  min-width: 0;
+}
+.status-title {
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--ink-2);
+  font-size: 15px;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-left: 1px solid var(--rule);
+  border-right: 1px solid var(--rule);
+  max-width: 50vw;
+  cursor: pointer;
+  transition: color .15s, background .15s;
+}
+.status-title:hover {
+  color: var(--ink);
+  background: color-mix(in oklab, var(--accent) 6%, transparent);
+}
+
+/* Bar pill buttons (Library / Settings) — borderless để nhẹ như Prev/Next */
+.bar-pill {
+  background: none;
+  border: 0;
+  padding: 0 12px;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  transition: color .15s, background .15s;
+}
+.bar-pill svg {
+  width: 13px; height: 13px;
+  color: var(--ink-3);
+  opacity: 0.9;
+  flex-shrink: 0;
+  transition: color .15s;
+}
+.bar-pill:hover {
+  color: var(--ink);
+}
+.bar-pill:hover svg {
+  color: var(--accent);
+  opacity: 1;
+}
+.bar-pill.is-open,
+.bar-pill.active {
+  color: var(--ink);
+}
+.bar-pill.is-open svg,
+.bar-pill.active svg {
+  color: var(--accent);
+  opacity: 1;
+}
+.bar-pill .sidebar-arrow { display: none; }
+
+/* Prev/Next nav pills */
+.nav-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: none;
+  border: 0;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0 14px;
+  border-radius: 0;
+  height: 34px;
+  transition: color .15s;
+}
+.nav-pill:disabled { opacity: 0.25; cursor: default; }
+.nav-pill:not(:disabled):hover { color: var(--ink); }
+.nav-pill:not(:disabled):hover svg { color: var(--accent); }
+.nav-pill svg {
+  width: 12px; height: 12px;
+  color: var(--ink-3);
+  transition: color .15s, transform .2s;
+}
+#btnPrev:not(:disabled):hover svg { transform: translateX(-2px); }
+#btnNext:not(:disabled):hover svg { transform: translateX(2px); }
+
+/* Back to top button — nhẹ và thanh mảnh */
+#btnBackTop {
+  position: absolute;
+  right: 20px;
+  bottom: 66px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--panel);
+  border: 1px solid color-mix(in oklab, var(--ink-3) 30%, transparent);
+  color: var(--ink-3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(6px) scale(.94);
+  pointer-events: none;
+  transition: opacity .22s, transform .22s, border-color .15s, color .15s, background .15s;
+  z-index: 15;
+  box-shadow: 0 2px 10px color-mix(in oklab, var(--ink) 6%, transparent);
+}
+#btnBackTop svg { width: 12px; height: 12px; }
+#btnBackTop.visible {
+  opacity: 0.92;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+#btnBackTop:hover {
+  opacity: 1;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+#btnBackTop:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ============================================================
+   Modal scrim (for library panel open)
+   ============================================================ */
+.modal-scrim {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in oklab, var(--bg) 70%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 55;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+}
+body:has(#sutraMenuPanel.open) .modal-scrim { opacity: 1; pointer-events: auto; }
+
+/* ============================================================
+   Debug panel (toggle qua DEBUG flag trong app.js)
+   ============================================================ */
+.debug-panel {
+  position: fixed;
+  right: 12px;
+  bottom: 60px;
+  width: 260px;
+  max-height: 60vh;
+  background: rgba(18, 18, 20, 0.95);
+  color: #d0e6d0;
+  border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
+  border-radius: 6px;
+  z-index: 70;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.45;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.debug-panel[hidden] { display: none; }
+.debug-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-bottom: 1px solid color-mix(in oklab, var(--accent) 30%, transparent);
+  color: var(--accent);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+}
+.debug-close {
+  background: none;
+  border: 0;
+  color: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+#debugBody {
+  margin: 0;
+  padding: 8px 10px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.bar-pill.debug-only { color: var(--accent); }
+
+/* ============================================================
+   Panels (library + settings)
+   ============================================================ */
+.panel {
+  position: fixed;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  box-shadow: 0 24px 60px color-mix(in oklab, var(--ink) 30%, transparent);
+  z-index: 60;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s, transform .22s;
+  font-family: var(--serif);
+}
+[data-theme="dark"] .panel {
+  box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+}
+
+/* Library modal (#sutraMenuPanel) */
+#sutraMenuPanel {
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translate(-50%, -48%) scale(0.98) !important;
+  width: min(720px, calc(100vw - 40px));
+  max-width: none;
+  max-height: 80vh;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 6px;
+}
+#sutraMenuPanel.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1) !important;
+}
+#sutraMenuPanel .search-box {
+  padding: 18px 52px 10px 22px;
+  border-bottom: 1px solid var(--rule);
+  flex: 0 0 auto;
+  background: var(--panel);
+}
+
+/* Close X button for library modal */
+.menu-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  z-index: 10;
+  transition: background .15s, color .15s;
+  padding: 0;
+}
+.menu-close svg { width: 14px; height: 14px; }
+.menu-close:hover {
+  background: var(--bg-2);
+  color: var(--ink);
+}
+.menu-close:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+#sutraSearch {
+  width: 100%;
+  padding: 10px 12px;
+  font-family: var(--serif);
+  font-size: 16px;
+  border-radius: 3px;
+  border: 1px solid var(--rule);
+  background: var(--bg-2);
+  color: var(--ink);
+  outline: 0;
+  transition: border-color .15s, box-shadow .15s;
+}
+#sutraSearch:focus {
+  border-color: var(--accent);
+  background: var(--panel);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent) 15%, transparent);
+}
+#sutraSearch::placeholder { color: var(--ink-4); font-style: italic; }
+
+#sutraSearchResults {
+  padding: 0 22px;
+  max-height: 220px;
+  overflow-y: auto;
+  flex: 0 0 auto;
+}
+#sutraSearchResults:empty { display: none; }
+.search-result-item {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 9px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--ink);
+  font-family: var(--serif);
+  border-bottom: 1px solid var(--rule-2);
+  cursor: pointer;
+  transition: background .12s;
+}
+.search-result-item:hover { background: var(--highlight); }
+.search-result-item .search-main,
+.search-result-item .sr-main {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.search-result-item .search-sub,
+.search-result-item .sr-sub {
+  font-size: 13px;
+  color: var(--ink-3);
+  font-style: italic;
+}
+.search-result-item mark {
+  background: color-mix(in oklab, var(--accent) 18%, transparent);
+  color: var(--ink);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+.search-result-empty {
+  padding: 10px 4px;
+  font-family: var(--serif);
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ink-4);
+}
+
+#sutraMenuList {
+  list-style: none;
+  margin: 0;
+  /* padding-top = 0 để sticky nikaya header dính sát cạnh trên, không để content "lọt qua khe" */
+  padding: 0 0 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  border-top: 1px solid var(--rule-2);
+}
+#sutraMenuList::-webkit-scrollbar { width: 6px; }
+#sutraMenuList::-webkit-scrollbar-track { background: transparent; }
+#sutraMenuList::-webkit-scrollbar-thumb { background: color-mix(in oklab, var(--ink-4) 40%, transparent); border-radius: 999px; }
+
+.menu-block {
+  padding: 0;
+  border-bottom: 1px solid var(--rule-2);
+}
+.menu-block:last-child { border-bottom: none; }
+/* Nikaya header — sticky phía trên menu list, click để thu/mở.
+   Background OPAQUE (không dùng var(--highlight) trong trạng thái sticky vì nó có alpha). */
+.menu-block > .menu-toggle:not(.nested) {
+  background-color: var(--panel);
+  border: 0;
+  border-bottom: 1px solid var(--rule-2);
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  padding: 12px 50px 12px 18px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background-color .12s, box-shadow .2s;
+}
+/* Khi nikaya đang mở (aria-expanded=true) → shadow nhẹ để tách khỏi content cuộn */
+.menu-block > .menu-toggle:not(.nested)[aria-expanded="true"] {
+  background-color: color-mix(in oklab, var(--accent) 8%, var(--panel));
+  box-shadow: 0 2px 8px color-mix(in oklab, var(--ink) 10%, transparent);
+}
+.menu-block > .menu-toggle:not(.nested):hover {
+  background-color: color-mix(in oklab, var(--accent) 12%, var(--panel));
+  color: var(--ink);
+}
+/* Nikaya label: full trên desktop, short trên mobile */
+.nikaya-short { display: none; }
+@media (max-width: 720px) {
+  .nikaya-full { display: none; }
+  .nikaya-short { display: inline; }
+}
+.menu-block > .menu-toggle:not(.nested) .chevron,
+.menu-toggle.nested .chevron {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  opacity: 0.65;
+}
+.chevron { display: inline-block; }
+
+.menu-list { margin: 0; padding: 0; }
+.menu-list.collapsed { display: none; }
+
+.menu-nikaya-sticky {
+  display: none;
+}
+
+.menu-subblock {
+  padding: 0;
+}
+/* Group header (Chủ đề 1, Nhóm Một Pháp...) — KHÔNG sticky (tránh chồng lấp với nikaya sticky).
+   Cùng font & padding như nikaya header để nhìn thống nhất, phân biệt bằng màu + indent. */
+.menu-toggle.nested {
+  background: none;
+  border: 0;
+  border-top: 1px dashed var(--rule-2);
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  padding: 12px 40px 12px 38px;
+  position: relative;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  transition: background .12s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.menu-toggle.nested:hover { background: var(--highlight); color: var(--ink); }
+.menu-toggle.nested::before {
+  content: '▸';
+  position: absolute;
+  left: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 9px;
+  color: var(--accent);
+  opacity: 0.8;
+}
+.menu-toggle.nested[aria-expanded="true"]::before { content: '▾'; }
+
+.menu-subblock .chapter-toggle {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13.5px;
+  color: var(--ink-3);
+  padding: 4px 0 4px 16px;
+  position: relative;
+}
+.menu-subblock .chapter-toggle::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  color: var(--accent);
+  opacity: 0.7;
+}
+
+.menu-sutta-link {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 10px;
+  align-items: baseline;
+  /* Mức indent 1: bài kinh trực tiếp dưới Nikaya (DN / MN) — khớp với cột nested toggle 38px */
+  padding: 4px 22px 4px 38px;
+  text-decoration: none;
+  color: var(--ink);
+  border-top: 1px solid var(--rule-2);
+  cursor: pointer;
+  transition: background .12s;
+  position: relative;
+}
+/* Defensive: nếu JS cũ không render .sutra-code, layout vẫn không vỡ */
+.menu-sutta-link:not(:has(.sutra-code)) {
+  grid-template-columns: 1fr;
+  padding-left: 38px;
+}
+/* Mức indent 2: bài kinh lồng trong group (SN / AN) — thụt vào thêm 1 tab */
+.menu-subblock .menu-sutta-link {
+  padding-left: 54px;
+}
+.menu-sutta-link:hover { background: var(--bg-2); }
+.menu-sutta-link.active {
+  background: color-mix(in oklab, var(--accent) 14%, transparent);
+}
+.menu-sutta-link.active::before {
+  content: "";
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px; height: 18px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+.menu-subblock .menu-sutta-link.active::before {
+  left: 36px;
+}
+.sutra-code {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  white-space: nowrap;
+  line-height: 1.4;
+  text-align: left;
+  padding-top: 2px;
+  opacity: 0.9;
+}
+.menu-sutta-link.active .sutra-code { color: var(--accent); opacity: 1; }
+.sutra-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+/* Force single-line + ellipsis để mọi row cùng chiều cao — rhythm đều, không bị wrap */
+.sutra-label-main,
+.sutra-label-sub {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.sutra-label-main {
+  font-family: var(--serif);
+  font-style: normal;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.sutra-label-sub {
+  font-family: var(--serif);
+  font-size: 12.5px;
+  font-style: normal;
+  color: var(--ink-3);
+  line-height: 1.2;
+}
+.menu-sutta-link.active .sutra-label-main,
+.menu-sutta-link.active .sutra-label-sub { color: var(--ink); }
+
+/* Library modal accent strip */
+#sutraMenuPanel::before {
+  content: "";
+  display: block;
+  height: 2px;
+  flex: 0 0 auto;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.85;
+}
+
+/* ============================================================
+   Settings panel (#settingsPanel)
+   ============================================================ */
+#settingsPanel {
+  position: fixed !important;
+  right: 24px !important;
+  bottom: 62px !important;
+  left: auto !important;
+  top: auto !important;
+  width: min(320px, calc(100vw - 32px));
+  max-height: min(72vh, 640px);
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(10px);
+}
+/* Vạch gold gradient trên cùng settings panel — đồng bộ với Library + top-bar */
+#settingsPanel::before {
+  content: "";
+  display: block;
+  height: 2px;
+  flex: 0 0 auto;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.85;
+}
+#settingsPanel.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+#settingsPanel .set-panel-header {
+  padding: 10px 16px 9px;
+  border-bottom: 1px solid var(--rule);
+  flex: 0 0 auto;
+  background: var(--panel);
+  position: relative;
+}
+#settingsPanel .panel-title {
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-align: left;
+}
+#settingsPanel .set-panel-body {
+  padding: 10px 14px 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1 1 auto;
+  -webkit-overflow-scrolling: touch;
+}
+#settingsPanel .set-panel-body::-webkit-scrollbar { width: 4px; }
+#settingsPanel .set-panel-body::-webkit-scrollbar-track { background: transparent; }
+#settingsPanel .set-panel-body::-webkit-scrollbar-thumb { background: color-mix(in oklab, var(--ink-4) 40%, transparent); border-radius: 999px; }
+
+#settingsPanel .set-sec {
+  margin-bottom: 8px;
+  padding: 0;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  overflow: visible;
+}
+#settingsPanel .set-sec:last-child { margin-bottom: 0; }
+/* Ẩn section headers — pills tự mang text đủ nghĩa, tiết kiệm chiều cao cho mobile */
+#settingsPanel .set-sec-hd { display: none; }
+#settingsPanel .set-sec-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  line-height: 1.2;
+}
+#settingsPanel .set-sec-sub {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  line-height: 1.2;
+}
+#settingsPanel .set-sec-body {
+  padding: 0;
+}
+
+/* Seg-ctrl style for pills */
+#settingsPanel .set-pills {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  overflow: hidden;
+}
+#settingsPanel .set-pills.cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+#settingsPanel .pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 5px 6px;
+  border: 0;
+  border-right: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .12s;
+  line-height: 1.2;
+}
+#settingsPanel .pill:last-child { border-right: 0; }
+#settingsPanel .pill:hover { background: var(--highlight); color: var(--ink); }
+#settingsPanel .pill.active,
+#settingsPanel .pill[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--bg);
+}
+#settingsPanel .pill-wide { text-transform: uppercase; letter-spacing: 0.08em; }
+#settingsPanel .pill-icon { font-size: 12px; margin-right: 4px; opacity: 0.9; }
+
+/* Icon pills trong section Giao diện — chứa SVG/lang-code */
+#settingsPanel .set-icon-pill { min-height: 34px; padding: 4px; }
+#settingsPanel .set-icon-pill svg { width: 15px; height: 15px; display: block; }
+#settingsPanel .set-icon-pill .lang-code { font-size: 11.5px; letter-spacing: 0.08em; }
+/* Dark mode icon swap */
+#settingsPanel #btnDarkMode .icon-sun { display: none; }
+#settingsPanel #btnDarkMode .icon-moon { display: block; }
+[data-theme="dark"] #settingsPanel #btnDarkMode .icon-moon { display: none; }
+[data-theme="dark"] #settingsPanel #btnDarkMode .icon-sun { display: block; }
+
+/* Sliders — single-row: Label | Slider (full-width) | Badge. Resets consolidated dưới cùng */
+.slider-row {
+  display: grid;
+  grid-template-columns: 64px 1fr 48px;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.slider-row:last-child { margin-bottom: 0; }
+/* Consolidated reset row — 2 nút nhỏ ở cuối section, aligned right */
+.slider-resets {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--rule-2);
+}
+.set-mini-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  line-height: 1.2;
+}
+.slider-value-badge {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 10%, transparent);
+  border: 1px solid color-mix(in oklab, var(--accent) 30%, transparent);
+  border-radius: 2px;
+  padding: 1px 7px;
+  min-width: 44px;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+.slider-track-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sutra-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(to right,
+    var(--accent) 0,
+    var(--accent) var(--slider-pct, 25%),
+    var(--rule) var(--slider-pct, 25%),
+    var(--rule) 100%);
+  outline: 0;
+  cursor: pointer;
+  border: 0;
+  margin: 0;
+}
+.sutra-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--panel);
+  box-shadow: 0 1px 4px color-mix(in oklab, var(--ink) 20%, transparent);
+  cursor: pointer;
+}
+.sutra-slider::-moz-range-thumb {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--panel);
+  box-shadow: 0 1px 4px color-mix(in oklab, var(--ink) 20%, transparent);
+  cursor: pointer;
+}
+/* Mobile: thumb to hơn để dễ kéo bằng ngón tay */
+@media (hover: none) and (pointer: coarse) {
+  .sutra-slider { height: 22px; padding: 7px 0; box-sizing: content-box; background-clip: content-box; }
+  .sutra-slider::-webkit-slider-thumb { width: 22px; height: 22px; }
+  .sutra-slider::-moz-range-thumb { width: 22px; height: 22px; }
+}
+.sutra-slider:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.slider-reset-btn {
+  background: transparent !important;
+  border: 1px solid var(--rule) !important;
+  color: var(--ink-3) !important;
+  font-family: var(--mono) !important;
+  font-size: 11px !important;
+  letter-spacing: 0.08em;
+  padding: 3px 9px !important;
+  border-radius: 2px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color .15s, border-color .15s, background .15s !important;
+}
+.slider-reset-btn:hover {
+  color: var(--accent) !important;
+  border-color: var(--accent) !important;
+  background: color-mix(in oklab, var(--accent) 8%, transparent) !important;
+}
+
+/* TTS */
+#settingsPanel .tts-bar {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+}
+#settingsPanel .tts-btn {
+  flex: 1;
+  height: 32px;
+  padding: 0;
+  border-radius: 2px;
+  border: 1px solid var(--rule);
+  background: var(--bg-2);
+  color: var(--ink-3);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all .12s;
+}
+#settingsPanel .tts-btn:disabled { opacity: 0.3; cursor: default; }
+#settingsPanel .tts-btn:not(:disabled):hover {
+  color: var(--ink);
+  border-color: var(--accent);
+  background: var(--highlight);
+}
+/* TTS note ẩn — tiết kiệm không gian; giải thích TTS có thể đọc trong Guide */
+#settingsPanel .set-note { display: none; }
+
+/* ============================================================
+   Guide overlay
+   ============================================================ */
+#guideOverlay {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in oklab, var(--ink) 55%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+#guideOverlay.show { display: flex; }
+.guide-dialog {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  box-shadow: 0 40px 100px color-mix(in oklab, var(--ink) 40%, transparent);
+  padding: 24px 26px 20px;
+  max-width: 480px;
+  width: 92%;
+  max-height: 80vh;
+  overflow-y: auto;
+  font-family: var(--serif);
+  font-size: 16px;
+  color: var(--ink);
+  position: relative;
+}
+.guide-dialog h2 {
+  margin: 0 0 8px;
+  font-family: var(--serif);
+  font-weight: 300;
+  font-style: italic;
+  font-size: 22px;
+  color: var(--ink);
+  letter-spacing: 0;
+  text-transform: none;
+  text-align: left;
+}
+.guide-dialog h3 {
+  margin: 16px 0 6px;
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.guide-dialog em {
+  display: block;
+  font-size: 14px;
+  color: var(--ink-3);
+  font-style: italic;
+  margin: 0 0 14px;
+}
+.guide-dialog ul {
+  padding-left: 20px;
+  line-height: 1.7;
+  margin: 0 0 8px;
+}
+.guide-dialog li { margin-bottom: 8px; }
+.guide-dialog li::marker { color: var(--accent); }
+.guide-dialog button {
+  margin-top: 12px;
+  float: right;
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  padding: 6px 18px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all .15s;
+}
+.guide-dialog button:hover { color: var(--ink); border-color: var(--accent); }
+.guide-dialog kbd {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  padding: 1px 6px;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--bg-2);
+  color: var(--ink-2);
+  letter-spacing: 0;
+}
+.guide-dialog code {
+  font-family: var(--mono);
+  font-size: 12px;
+  background: var(--bg-2);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--accent);
+}
+
+/* ============================================================
+   iPad / touch-device: ép stack 1-col như mobile để tránh grid 2x2 areas
+   gây tụt FPS trên Safari iPad khi bật đủ 3 ngôn ngữ.
+   Điều kiện: thiết bị cảm ứng (pointer: coarse) HOẶC viewport ≤1024px.
+   Desktop ≥1025px có chuột vẫn dùng grid 2-col như cũ.
+   ============================================================ */
+@media (pointer: coarse), (max-width: 1024px) {
+  .card:not(.stack) #sutraGrid .sutra-row,
+  .card:not(.stack) #sutraGrid:not(.hide-pali):not(.hide-eng):not(.hide-vie) .sutra-row {
+    grid-template-columns: 1fr !important;
+    grid-template-areas: none !important;
+    row-gap: 14px;
+    column-gap: 0 !important;
+  }
+  .card:not(.stack) #sutraGrid .pali-col,
+  .card:not(.stack) #sutraGrid .eng-col,
+  .card:not(.stack) #sutraGrid .vie-col {
+    grid-area: auto !important;
+    grid-column: 1 / -1 !important;
+  }
+  /* Pāli full-size như trong 1-col mode + justify đẹp như mobile */
+  .card:not(.stack) #sutraGrid:not(.hide-pali):not(.hide-eng):not(.hide-vie) .pali-col .pali {
+    font-size: calc(19px * var(--sutra-font-scale));
+    line-height: var(--sutra-line-height);
+  }
+  .card:not(.stack) #sutraGrid .pali,
+  .card:not(.stack) #sutraGrid .eng,
+  .card:not(.stack) #sutraGrid .vie {
+    text-align: justify;
+    text-justify: inter-word;
+  }
+}
+
+/* ============================================================
+   Mobile adjustments
+   ============================================================ */
+/* Hide Prev/Next text earlier than the full mobile breakpoint */
+@media (max-width: 960px) {
+  .nav-pill .nav-label { display: none; }
+  .nav-pill { padding: 0 10px; }
+  .bar-pill { padding: 0 10px; gap: 0; }
+  .bar-pill span.label-full { display: none; }
+  .bar-pill svg { width: 14px; height: 14px; }
+}
+
+@media (max-width: 720px) {
+  /* Mobile: Namo tassa cân xứng, không tràn + bỏ decorative lines 2 bên để fit */
+  .bar-center {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    gap: 0;
+    min-width: 0;
+  }
+  .bar-center::before, .bar-center::after { display: none; }
+  .ded-phrase-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+  .bar-in {
+    /* Cân đối với footer: đủ padding để header cao tương đương (có cả safe-area cho notched phones) */
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 10px 10px;
+    gap: 8px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+  /* Mobile: ẩn epigraph (dải lời kinh chạy chữ) cho gọn — user có thể đọc full ở Welcome */
+  .epigraph { display: none; }
+  .header { padding: 24px 22px 20px; }
+  #title { font-size: calc(26px * var(--sutra-font-scale)); }
+  #subtitle { font-size: calc(14px * var(--sutra-font-scale)); }
+  #supertitle { font-size: 9.5px; letter-spacing: 0.22em; margin-bottom: 8px; }
+  #titleMeta { margin-top: 12px; font-size: 11.5px; }
+  #sutraGrid { padding: 26px 18px 26px; gap: 28px; }
+  .sutra-row-wrap { padding-left: 14px; }
+
+  /* Mobile: luôn stack 1 cột — cho mọi cấu hình ngôn ngữ */
+  .sutra-row,
+  #sutraGrid:not(.hide-pali):not(.hide-eng):not(.hide-vie) .sutra-row {
+    grid-template-columns: 1fr !important;
+    grid-template-areas: none !important;
+    row-gap: 14px;
+    column-gap: 0;
+  }
+  .pali-col, .eng-col, .vie-col, .sutra-col {
+    grid-area: auto !important;
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+    border-bottom: none;
+  }
+  /* Stack polish: header gọn hơn, Pāli lớn lên, justify 2 bên */
+  .sutra-col-header { margin-bottom: 6px; }
+  .pali { font-size: calc(19px * var(--sutra-font-scale)); }
+  .pali, .eng, .vie { text-align: justify; text-justify: inter-word; }
+  /* Mobile đã tự stack → ẩn luôn nút "Xếp dọc" trong Settings */
+  #layoutRow { display: none !important; }
+
+  /* padding 12px 2 bên: Library & Settings thụt vô 12px để cân với nút scroll-to-top (right: 12px) */
+  .status-in { padding: 4px 12px; gap: 6px; grid-template-columns: auto 1fr auto; }
+  .status-title { font-size: 13px; padding: 0 10px; max-width: 55vw; }
+  /* Mobile: ẩn nikaya prefix, chỉ giữ tên bài kinh cho gọn */
+  .status-title .nav-parent { display: none; }
+  .nav-pill { padding: 0 6px; height: 32px; }
+  .bar-pill { padding: 0 8px; height: 32px; }
+  .status-center { height: 32px; }
+  #sutraMenuPanel { width: calc(100vw - 20px); max-height: 86vh; }
+  #settingsPanel { right: 10px !important; bottom: 56px !important; width: calc(100vw - 20px); }
+  /* Back-to-top: đặt sát footer cho cảm giác "neo" vào thanh điều hướng, không trôi giữa nội dung */
+  #btnBackTop {
+    right: 12px;
+    bottom: 48px;
+    width: 30px;
+    height: 30px;
+  }
+  #btnBackTop svg { width: 10px; height: 10px; }
+  #btnBackTop.visible { opacity: 0.75; }
+  #btnBackTop:hover { opacity: 1; }
+}
+
+@media (max-width: 500px) {
+  .bar-in { padding: 6px 10px; }
+  .header { padding: 22px 18px 18px; }
+  #title { font-size: calc(24px * var(--sutra-font-scale)); }
+  #subtitle { font-size: calc(14px * var(--sutra-font-scale)); }
+  .eng, .pali, .vie { text-align: left; }
+  input[type="search"], input[type="text"], input[type="email"], textarea, select { font-size: 16px !important; }
+  .menu-sutta-link, .menu-toggle, a, button, input, select, textarea { touch-action: manipulation; }
+}
+
+/* ============================================================
+   Accessibility + motion
+   ============================================================ */
+button:not(:focus-visible), a:not(:focus-visible),
+.menu-sutta-link:not(:focus-visible), .menu-toggle:not(:focus-visible) { outline: 0; }
+.bar-icon-btn:focus-visible, .bar-pill:focus-visible, .nav-pill:focus-visible,
+.pill:focus-visible, #sutraSearch:focus-visible, .sutra-slider:focus-visible,
+.tts-btn:focus-visible, .slider-reset-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+
+/* Keep the transition smooth on theme toggle — KHÔNG áp cho .sutra-row (hàng trăm row → gây composite layer trên iPad) */
+@media (prefers-reduced-motion: no-preference) {
+  html, body, .top-bar, .status, .header, .panel, .guide-dialog, #sutraGrid,
+  #btnBackTop, .welcome-box, .menu-sutta-link, .sutra-col-header {
+    transition: background-color .3s, color .3s, border-color .3s, box-shadow .3s;
+  }
+}
+
+/* Compat: various classes still referenced by app.js CSS selectors */
+.top-note-text, .top-note-actions, .footer-divider, .toolbar-btn, .toolbar-group,
+.panel-row, .panel-label, .btn-circle, .btn-nav, .btn-flag, .footer-nav,
+.bottom-controls, .nav-btn, .nav-title, .menu-btn, .menuIcon, .sr-only { }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+
+#sutraGrid[aria-busy="true"]::after {
+  content: "";
+  display: block;
+  align-self: center;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--rule);
+  border-top-color: var(--accent);
+  animation: spin 0.8s linear infinite;
+  margin: 20px auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
 </style>
 </head>
 <body>
 
-<!-- FIX: Added missing .app wrapper that CSS expects -->
 <div class="app">
   <div class="card" id="card">
 
-    <!-- TOP NOTE -->
-    <div class="top-note" role="note">
-      <span class="top-note-text">NAMO TASSA BHAGAVATO ARAHATO SAMMĀSAMBUDDHASSA</span>
-      <div class="top-note-actions"></div>
-    </div>
+    <!-- TOP BAR: dedication Namo tassa (thêm .top-note cho compat appold.js) -->
+    <header class="top-bar top-note" role="banner">
+      <div class="bar-in">
+        <div class="bar-center"><span id="dedicationText" class="ded-phrase-text">Namo tassa bhagavato arahato sammāsambuddhassa</span></div>
+      </div>
+    </header>
 
-    <!-- HEADER -->
-    <div class="header" role="banner">
+    <!-- HEADER (compat appold.js — KHÔNG wrap trong #readerArea) -->
+    <section class="header" role="region" aria-label="Sutta title">
+      <div id="supertitle"></div>
       <h1 id="title">Chưa chọn bài</h1>
-      <div id="subtitle" aria-live="polite">—</div>
-    </div>
+      <div id="subtitle" class="vi" aria-live="polite">—</div>
+      <div id="titleMeta"></div>
+    </section>
+    <!-- SCROLL CONTAINER trực tiếp = #sutraGrid (appold.js dùng grid.scrollTop) -->
+    <main id="sutraGrid" role="main" aria-live="polite" aria-busy="false"></main>
 
-    <!-- NỘI DUNG KINH -->
-    <div id="sutraGrid" role="main" aria-live="polite" aria-busy="false"></div>
+    <!-- BOTTOM STATUS BAR -->
+    <footer class="status">
+      <div class="status-in">
+        <div class="status-left">
+          <button type="button" id="sidebar-btn" class="bar-pill" title="Thư viện" aria-label="Mở danh mục bài kinh" aria-expanded="false">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true">
+              <path d="M2 3v10M5 3v10M8 3v10M12 4l3 9M11 13h5"/>
+            </svg>
+            <span class="sidebar-label label-full" id="sidebarBtnLabel">Thư viện</span>
+            <span class="sidebar-arrow" aria-hidden="true"></span>
+          </button>
+        </div>
+        <div class="status-center">
+          <button id="btnPrev" class="nav-pill" disabled aria-label="Bài trước">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3L5 8l5 5"/></svg>
+            <span class="nav-label" id="btnPrevLabel">Trước</span>
+          </button>
+          <span id="navTitle" class="status-title">—</span>
+          <button id="btnNext" class="nav-pill" disabled aria-label="Bài tiếp theo">
+            <span class="nav-label" id="btnNextLabel">Sau</span>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>
+          </button>
+        </div>
+        <div class="status-right">
+          <button type="button" id="btnSettings" class="bar-pill" aria-label="Cài đặt hiển thị" aria-haspopup="true" aria-expanded="false" title="Settings">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true">
+              <circle cx="8" cy="8" r="2"/>
+              <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M3 13l1.4-1.4M11.6 4.4L13 3"/>
+            </svg>
+            <span class="label-full" id="btnSettingsLabel">Cài đặt</span>
+          </button>
+        </div>
+      </div>
+    </footer>
 
-    <!-- NAV BAR -->
-    <div class="nav-bar">
-      <button id="btnPrev" class="nav-btn" disabled aria-label="Bài trước">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
-             role="presentation" aria-hidden="true">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-      </button>
-      <div id="navTitle" class="nav-title">—</div>
-      <button id="btnNext" class="nav-btn" disabled aria-label="Bài tiếp theo">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
-             role="presentation" aria-hidden="true">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
-      </button>
+    <!-- DEBUG PANEL -->
+    <div id="debugPanel" class="debug-panel" hidden aria-hidden="true">
+      <div class="debug-head">
+        <span>DEBUG</span>
+        <button type="button" id="btnDebugClose" class="debug-close" aria-label="Đóng debug">×</button>
+      </div>
+      <pre id="debugBody"></pre>
     </div>
 
     <!-- BACK TO TOP -->
-    <button id="btnBackTop" aria-label="Lên đầu trang">↑</button>
-	 <button id="btnSettings" class="toolbar-btn"
-                  aria-label="Cài đặt hiển thị" aria-haspopup="true" aria-expanded="false">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
-                 stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-                 role="presentation" aria-hidden="true">
-              <circle cx="12" cy="12" r="4"></circle>
-              <path d="M12 3v2"></path><path d="M18.364 5.636 16.95 7.05"></path>
-              <path d="M21 12h-2"></path><path d="M18.364 18.364 16.95 16.95"></path>
-              <path d="M12 21v-2"></path><path d="M5.636 18.364 7.05 16.95"></path>
-              <path d="M3 12h2"></path><path d="M5.636 5.636 7.05 7.05"></path>
-            </svg>
-          </button>
-    <!-- NÚT MỞ SIDEBAR -->
-    <button type="button" id="sidebar-btn" title="Open sutta list" aria-label="Mở danh mục bài kinh">
-      <span class="sidebar-label" data-i18n="btn-library">Library</span>
-      <span class="sidebar-arrow" aria-hidden="true">▸</span>
+    <button id="btnBackTop" aria-label="Lên đầu trang" title="Back to top">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3M3.5 7.5L8 3l4.5 4.5"/></svg>
     </button>
 
-    <!-- PANEL DANH MỤC KINH -->
-    <!-- FIX: Removed aria-modal="false" (misleading for non-modal panel) -->
-    <div id="sutraMenuPanel" class="panel" role="dialog"
-         aria-label="Danh mục bài kinh" aria-hidden="true" inert>
-
-      <div class="search-box">
-        <input id="sutraSearch" type="search"
-               placeholder="Nhập tên bài kinh cần tìm..."
-               aria-label="Tìm kiếm bài kinh" autocomplete="off">
-      </div>
-      <div id="sutraSearchResults" class="search-results" role="listbox" aria-label="Kết quả tìm kiếm"></div>
-      <ul id="sutraMenuList" class="sutra-list" role="tree" aria-label="Mục lục bài kinh"></ul>
-
-    </div><!-- /#sutraMenuPanel -->
-
-    <!-- SETTINGS PANEL — nằm ngoài sutraMenuPanel để tránh bị inert block -->
-    <div id="settingsPanel" class="panel" aria-hidden="true" inert>
-      <div class="set-panel-header">
-        <div class="panel-title" id="settingsTitle">Tuỳ chỉnh</div>
-      </div>
-      <div class="set-panel-body">
-
-        <!-- ① NGÔN NGỮ -->
-        <div class="set-sec">
-          <div class="set-sec-hd">
-            <span class="set-sec-title" id="settingsLangLabel">Ngôn ngữ</span>
-            <span class="set-sec-sub" id="settingsLangSub">Hiện / ẩn cột</span>
-          </div>
-          <div class="set-sec-body">
-            <div class="set-pills cols-3">
-              <button class="pill active" id="btnPali" aria-pressed="true">Pāli</button>
-              <button class="pill active" id="btnEng"  aria-pressed="true">English</button>
-              <button class="pill active" id="btnVie"  aria-pressed="true">Việt</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ② BỐ CỤC -->
-        <div class="set-sec" id="layoutRow">
-          <div class="set-sec-hd">
-            <span class="set-sec-title" id="settingsLayoutLabel">Bố cục</span>
-          </div>
-          <div class="set-sec-body">
-            <div class="set-pills">
-              <button class="pill pill-wide active" id="btnLayout" aria-pressed="false">
-                <span class="pill-icon">☰</span> Xếp dọc
-              </button>
-              <button class="pill pill-wide" id="btnFullWidth" aria-pressed="false">
-                <span class="pill-icon">⛶</span> Full width
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ③ CỠ CHỮ & GIÃN DÒNG -->
-        <div class="set-sec">
-          <div class="set-sec-hd">
-            <span class="set-sec-title" id="settingsDisplayLabel">Hiển thị</span>
-          </div>
-          <div class="set-sec-body">
-            <div class="slider-row">
-              <div class="slider-label-row">
-                <span class="set-mini-label" id="settingsFontSizeLabel">Cỡ chữ</span>
-                <span class="slider-value-badge" id="zoomValueBadge">100%</span>
-              </div>
-              <div class="slider-track-wrap">
-                <span class="slider-icon">A</span>
-                <input type="range" class="sutra-slider" id="sliderZoom"
-                       min="80" max="160" step="5" value="100"
-                       aria-label="Cỡ chữ">
-                <span class="slider-icon slider-icon-lg">A</span>
-                <button class="slider-reset-btn" id="btnZoomReset" title="Reset" aria-label="Reset cỡ chữ">↺</button>
-              </div>
-            </div>
-            <div class="slider-row">
-              <div class="slider-label-row">
-                <span class="set-mini-label" id="settingsLineHeightLabel">Giãn dòng</span>
-                <span class="slider-value-badge" id="lineHeightValueBadge">1.85</span>
-              </div>
-              <div class="slider-track-wrap">
-                <span class="slider-icon">≡</span>
-                <input type="range" class="sutra-slider" id="sliderLineHeight"
-                       min="130" max="260" step="5" value="185"
-                       aria-label="Giãn dòng">
-                <span class="slider-icon slider-icon-lg">☰</span>
-                <button class="slider-reset-btn" id="btnLineHeightReset" title="Reset" aria-label="Reset giãn dòng">↺</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ④ ĐỌC KINH (TTS) -->
-        <div class="set-sec" id="ttsSection">
-          <div class="set-sec-hd">
-            <span class="set-sec-title" id="settingsTtsTitle">Đọc kinh</span>
-            <span class="set-sec-sub" id="settingsTtsUiLabel">Text-to-Speech</span>
-          </div>
-          <div class="set-sec-body">
-            <div class="tts-bar">
-              <button class="tts-btn" id="btnReadTts"  title="Phát" aria-label="Phát TTS">▶</button>
-              <button class="tts-btn" id="btnPauseTts" title="Tạm dừng" aria-label="Tạm dừng TTS" disabled>⏸</button>
-              <button class="tts-btn" id="btnStopTts"  title="Dừng" aria-label="Dừng TTS" disabled>⏹</button>
-            </div>
-            <div class="set-note" id="settingsTtsNote">Chọn đoạn kinh rồi nhấn ▶ để nghe đọc.</div>
-          </div>
-        </div>
-        <div class="toolbar-group">
-          <button id="btnUiLang" class="toolbar-btn btn-flag" aria-label="Đổi ngôn ngữ giao diện">
-                    <span class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Ngôn ngữ</span>
-                  </button>
-                  <button id="btnGuide" class="toolbar-btn" aria-label="Hướng dẫn sử dụng">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
-                        stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-                        role="presentation" aria-hidden="true">
-                      <circle cx="12" cy="12" r="9"></circle>
-                      <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.4-.9 2-1.6 2.4-.7.4-1.1.7-1.1 1.6v.4"></path>
-                      <path d="M12 16.2h.01"></path>
-                    </svg>
-                  </button>
-                  <button class="toolbar-btn btn-dark-toggle" id="btnDarkMode"
-                          title="Chế độ tối" aria-label="Chuyển sáng/tối">🌙</button>
-        </div>
-      </div><!-- /.set-panel-body -->
-    </div><!-- /#settingsPanel -->
-
   </div><!-- /#card -->
+
+  <!-- SCRIM for library modal -->
+  <div class="modal-scrim" aria-hidden="true"></div>
+
+  <!-- LIBRARY PANEL (Sutta menu) -->
+  <div id="sutraMenuPanel" class="panel" role="dialog"
+       aria-label="Danh mục bài kinh" aria-hidden="true" inert>
+    <button id="menuCloseBtn" class="menu-close" type="button" aria-label="Đóng" title="Đóng">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true">
+        <path d="M4 4l8 8M12 4l-8 8"/>
+      </svg>
+    </button>
+    <div class="search-box">
+      <input id="sutraSearch" type="search"
+             placeholder="Nhập tên bài kinh cần tìm..."
+             aria-label="Tìm kiếm bài kinh" autocomplete="off">
+    </div>
+    <div id="sutraSearchResults" class="search-results" role="listbox" aria-label="Kết quả tìm kiếm"></div>
+    <ul id="sutraMenuList" class="sutra-list" role="tree" aria-label="Mục lục bài kinh"></ul>
+  </div>
+
+  <!-- SETTINGS PANEL -->
+  <div id="settingsPanel" class="panel" aria-hidden="true" inert>
+    <div class="set-panel-header">
+      <div class="panel-title" id="settingsTitle">Tuỳ chỉnh</div>
+    </div>
+    <div class="set-panel-body">
+
+      <!-- ⓪ INTERFACE — dark mode · ui language · guide (đã move từ top bar vào đây) -->
+      <div class="set-sec" id="interfaceSection">
+        <div class="set-sec-hd">
+          <span class="set-sec-title" id="settingsInterfaceLabel">Giao diện</span>
+        </div>
+        <div class="set-sec-body">
+          <div class="set-pills cols-3">
+            <button class="pill set-icon-pill" id="btnDarkMode" aria-label="Chuyển sáng/tối" title="Chế độ tối">
+              <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+              <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="4"></circle>
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+              </svg>
+            </button>
+            <button class="pill set-icon-pill" id="btnUiLang" aria-label="Đổi ngôn ngữ giao diện">
+              <span class="lang-code">VI</span>
+            </button>
+            <button class="pill set-icon-pill" id="btnGuide" aria-label="Hướng dẫn sử dụng" title="Guide">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.4-.9 2-1.6 2.4-.7.4-1.1.7-1.1 1.6v.4"></path>
+                <path d="M12 16.2h.01"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ① LANGUAGES -->
+      <div class="set-sec">
+        <div class="set-sec-hd">
+          <span class="set-sec-title" id="settingsLangLabel">Ngôn ngữ</span>
+          <span class="set-sec-sub" id="settingsLangSub">Hiện / ẩn cột</span>
+        </div>
+        <div class="set-sec-body">
+          <div class="set-pills cols-3">
+            <button class="pill active" id="btnPali" aria-pressed="true">Pāli</button>
+            <button class="pill active" id="btnEng"  aria-pressed="true">English</button>
+            <button class="pill active" id="btnVie"  aria-pressed="true">Việt</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ② LAYOUT — Xếp dọc + Debug (debug panel trigger) -->
+      <div class="set-sec" id="layoutRow">
+        <div class="set-sec-body">
+          <div class="set-pills">
+            <button class="pill pill-wide" id="btnLayout" aria-pressed="false" title="Xếp dọc các cột">
+              <span class="pill-icon">☰</span> Xếp dọc
+            </button>
+            <button class="pill pill-wide debug-only" id="btnDebug" aria-pressed="false" title="Debug info" hidden>
+              <span class="pill-icon">🐞</span> Debug
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Hidden shims cho các btn code mới có: giữ để không lỗi nếu load nhầm app.js new -->
+      <button id="btnSegHdr" hidden aria-hidden="true"></button>
+      <button id="btnSegKey" hidden aria-hidden="true"></button>
+      <button id="btnFullWidth" hidden aria-hidden="true"></button>
+
+      <!-- ③ DISPLAY (font size + line height) — sliders full-width, resets ở cuối -->
+      <div class="set-sec">
+        <div class="set-sec-hd">
+          <span class="set-sec-title" id="settingsDisplayLabel">Hiển thị</span>
+        </div>
+        <div class="set-sec-body">
+          <div class="slider-row">
+            <span class="set-mini-label" id="settingsFontSizeLabel">Cỡ chữ</span>
+            <input type="range" class="sutra-slider" id="sliderZoom"
+                   min="80" max="160" step="5" value="100"
+                   aria-label="Cỡ chữ">
+            <span class="slider-value-badge" id="zoomValueBadge">100%</span>
+          </div>
+          <div class="slider-row">
+            <span class="set-mini-label" id="settingsLineHeightLabel">Giãn dòng</span>
+            <input type="range" class="sutra-slider" id="sliderLineHeight"
+                   min="130" max="260" step="5" value="185"
+                   aria-label="Giãn dòng">
+            <span class="slider-value-badge" id="lineHeightValueBadge">1.85</span>
+          </div>
+          <div class="slider-resets">
+            <button class="slider-reset-btn" id="btnZoomReset" title="Reset cỡ chữ" aria-label="Reset cỡ chữ">↺ A</button>
+            <button class="slider-reset-btn" id="btnLineHeightReset" title="Reset giãn dòng" aria-label="Reset giãn dòng">↺ ☰</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ④ TTS -->
+      <div class="set-sec" id="ttsSection">
+        <div class="set-sec-hd">
+          <span class="set-sec-title" id="settingsTtsTitle">Đọc kinh</span>
+          <span class="set-sec-sub" id="settingsTtsUiLabel">Text-to-Speech</span>
+        </div>
+        <div class="set-sec-body">
+          <div class="tts-bar">
+            <button class="tts-btn" id="btnReadTts"  title="Phát" aria-label="Phát TTS">▶</button>
+            <button class="tts-btn" id="btnPauseTts" title="Tạm dừng" aria-label="Tạm dừng TTS" disabled>⏸</button>
+            <button class="tts-btn" id="btnStopTts"  title="Dừng" aria-label="Dừng TTS" disabled>⏹</button>
+          </div>
+          <div class="set-note" id="settingsTtsNote">Chọn đoạn kinh rồi nhấn ▶ để nghe đọc.</div>
+        </div>
+      </div>
+
+    </div><!-- /.set-panel-body -->
+  </div><!-- /#settingsPanel -->
+
 </div><!-- /.app -->
 
 <!-- GUIDE OVERLAY -->
@@ -205,6 +2240,6 @@
 </div>
 
 <script src="toc.js" defer></script>
-<script src="app.js" defer></script>
+<script src="appold.js" defer></script>
 </body>
 </html>
