@@ -123,9 +123,7 @@ body::before {
   flex: 0 0 auto;
   position: relative;
   z-index: 10;
-  background: color-mix(in oklab, var(--bg) 92%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--bg);
   /* bỏ border mỏng giữa Namo tassa và epigraph cho mượt */
   border-bottom: none;
 }
@@ -181,8 +179,6 @@ body::before {
 }
 .ded-phrase-text {
   display: inline-block;
-  transition: opacity .45s ease;
-  will-change: opacity;
 }
 .bar-right {
   display: flex;
@@ -236,8 +232,6 @@ body::before {
   padding: 32px 32px 28px;
   text-align: center;
   border-bottom: 1px solid var(--rule);
-  transition: margin-top .3s cubic-bezier(.4,0,.2,1), opacity .3s, padding .3s;
-  will-change: margin-top, opacity;
 }
 #supertitle {
   font-family: var(--mono);
@@ -345,6 +339,9 @@ body::before {
   width: 100%;
   margin: 0 auto;
   padding-left: 20px;
+  /* iPad/mobile scroll perf: skip render rows ngoài viewport */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 120px;
 }
 .sutra-row-wrap::before {
   content: "";
@@ -859,9 +856,7 @@ html.hide-seg-hdr .vie { margin-top: 0; }
   flex: 0 0 auto;
   position: relative;
   z-index: 9;
-  background: color-mix(in oklab, var(--bg) 88%, transparent);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: var(--bg);
   border-top: 1px solid var(--rule);
 }
 .status-in {
@@ -989,9 +984,7 @@ html.hide-seg-hdr .vie { margin-top: 0; }
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: color-mix(in oklab, var(--panel) 92%, transparent);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: var(--panel);
   border: 1px solid color-mix(in oklab, var(--ink-3) 30%, transparent);
   color: var(--ink-3);
   cursor: pointer;
@@ -1900,10 +1893,10 @@ button:not(:focus-visible), a:not(:focus-visible),
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
 
-/* Keep the transition smooth on theme toggle */
+/* Keep the transition smooth on theme toggle — KHÔNG áp cho .sutra-row (hàng trăm row → gây composite layer trên iPad) */
 @media (prefers-reduced-motion: no-preference) {
   html, body, .top-bar, .status, .header, .panel, .guide-dialog, #sutraGrid,
-  .sutra-row, #btnBackTop, .welcome-box, .menu-sutta-link, .sutra-col-header {
+  #btnBackTop, .welcome-box, .menu-sutta-link, .sutra-col-header {
     transition: background-color .3s, color .3s, border-color .3s, box-shadow .3s;
   }
 }
