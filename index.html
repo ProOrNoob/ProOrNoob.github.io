@@ -23,6 +23,11 @@
 <section class="header" role="region" aria-label="Sutta title">
 <div id="supertitle"></div>
 <h1 id="title">Chưa chọn bài</h1>
+<button type="button" id="btnBookmarkCurrent" class="title-bookmark-btn" hidden aria-pressed="false" aria-label="Đánh dấu bài kinh này" title="Đánh dấu">
+<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M10 2.3l2.39 4.84 5.34.78-3.86 3.77.91 5.31L10 14.49l-4.78 2.51.91-5.31L2.27 7.92l5.34-.78z"/>
+</svg>
+</button>
 <div id="subtitle" class="vi" aria-live="polite">—</div>
 <div id="titleMeta"></div>
 </section>
@@ -113,6 +118,11 @@ aria-label="Tìm kiếm bài kinh" autocomplete="off">
 <button type="button" class="nikaya-tile" data-nikaya="AN" role="tab" aria-selected="false">
 <span class="tile-code">AN</span>
 <span class="tile-label" data-vi="Tăng Chi" data-en="Numerical">Tăng Chi</span>
+</button>
+<button type="button" class="nikaya-tile nikaya-tile-bookmark" data-nikaya="BM" role="tab" aria-selected="false" aria-label="Bài đã lưu">
+<span class="tile-code" aria-hidden="true">★</span>
+<span class="tile-label" data-vi="Đã lưu" data-en="Saved">Đã lưu</span>
+<span class="tile-count" id="bookmarksCount" aria-hidden="true"></span>
 </button>
 </div>
 <ul id="sutraMenuList" class="sutra-list" role="tree" aria-label="Mục lục bài kinh"></ul>

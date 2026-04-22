@@ -176,6 +176,39 @@ var KEY_ANCHOR_O = function (id) { return 'scroll_anchor_off_' + id; };
 var WIDE_STORAGE_KEY = 'sutra_layout_wide';
 var isWide = storage.get(WIDE_STORAGE_KEY) === '1';
 /* ============================================================
+Bookmarks (favorites)
+============================================================ */
+var KEY_BOOKMARKS = 'sutra_bookmarks';
+var BOOKMARKS = new Set();
+function loadBookmarks() {
+var raw = storage.get(KEY_BOOKMARKS);
+if (!raw) return;
+try {
+var arr = JSON.parse(raw);
+if (Array.isArray(arr)) {
+for (var i = 0; i < arr.length; i++) {
+if (typeof arr[i] === 'string' && arr[i]) BOOKMARKS.add(arr[i]);
+}
+}
+} catch (e) { /* ignore malformed */ }
+}
+function saveBookmarks() {
+storage.set(KEY_BOOKMARKS, JSON.stringify(Array.from(BOOKMARKS)));
+}
+function isBookmarked(id) { return !!id && BOOKMARKS.has(id); }
+function setBookmark(id, on) {
+if (!id) return false;
+if (on) BOOKMARKS.add(id); else BOOKMARKS.delete(id);
+saveBookmarks();
+return BOOKMARKS.has(id);
+}
+function toggleBookmark(id) { return setBookmark(id, !isBookmarked(id)); }
+function bookmarkLabels() {
+return uiLang === 'en'
+? { on: 'Remove bookmark', off: 'Add bookmark', empty: 'No bookmarks yet. Tap ☆ next to any sutta to save it.' }
+: { on: 'Bỏ đánh dấu', off: 'Lưu bài kinh', empty: 'Chưa có bài kinh nào được lưu. Bấm ☆ cạnh tên bài kinh để lưu.' };
+}
+/* ============================================================
 Single-language helpers
 ============================================================ */
 function getSingleVisibleLang() {
@@ -283,47 +316,51 @@ var viHtml =
 '<em>Trang đọc kinh tam ngữ Pāli · English · Tiếng Việt — nguồn SuttaCentral.</em>' +
 '<h3>📖 Thư viện bài kinh</h3>' +
 '<ul>' +
-'<li>Bấm <strong>Thư viện</strong> ở góc dưới bên trái để mở mục lục.</li>' +
-'<li>Chọn 1 trong <strong>4 tile</strong>: <code>DN</code> Trường Bộ · <code>MN</code> Trung Bộ · <code>SN</code> Tương Ưng · <code>AN</code> Tăng Chi.</li>' +
-'<li><strong>DN / MN</strong>: danh sách bài kinh phẳng.</li>' +
-'<li><strong>SN</strong>: 56 Chủ đề (Saṁyutta), bấm mở danh sách Phẩm bên trong.</li>' +
-'<li><strong>AN</strong>: 11 nhóm AN 1 → AN 11, bấm mở các Phẩm.</li>' +
-'<li><strong>Tìm kiếm</strong>: lọc theo tên, mã (vd "mn 23"), hoặc từ khóa — tìm xuyên cả 4 bộ. <em>Không cần gõ dấu</em> (gõ "pham vong" vẫn tìm thấy "Phạm Võng").</li>' +
-'<li>Bấm <strong>×</strong> (góc phải ô tìm kiếm) hoặc click ngoài panel để đóng.</li>' +
+'<li>Bấm <strong>Thư viện</strong> ở giữa footer để mở mục lục.</li>' +
+'<li>Chọn 1 trong <strong>5 tile</strong>: <code>DN</code> Trường Bộ · <code>MN</code> Trung Bộ · <code>SN</code> Tương Ưng · <code>AN</code> Tăng Chi · <strong>★ Đã lưu</strong> (bài đã đánh dấu).</li>' +
+'<li><strong>DN / MN</strong>: danh sách bài kinh phẳng. <strong>SN / AN</strong>: nhóm theo Chủ đề / Phẩm, bấm mở rộng.</li>' +
+'<li><strong>Tìm kiếm</strong>: lọc theo tên, mã (vd <code>mn 23</code>), hoặc từ khóa — tìm xuyên cả 4 bộ. <em>Không cần gõ dấu</em> (gõ "pham vong" vẫn tìm thấy "Phạm Võng").</li>' +
+'<li>Bấm <strong>×</strong> hoặc click ngoài panel để đóng.</li>' +
+'</ul>' +
+'<h3>⭐ Đánh dấu (Bookmark)</h3>' +
+'<ul>' +
+'<li>Bấm <strong>☆</strong> cạnh tiêu đề bài đang đọc (góc trên-phải header) để lưu / bỏ lưu.</li>' +
+'<li>Bấm <strong>☆</strong> cạnh tên mỗi bài trong thư viện để lưu nhanh mà không cần mở bài.</li>' +
+'<li>Tile <strong>★ Đã lưu</strong> hiện số bài đang lưu — bấm để xem danh sách. Sắp theo thứ tự tự nhiên trong bộ kinh.</li>' +
+'<li>Danh sách lưu trong trình duyệt, không đồng bộ giữa thiết bị.</li>' +
 '</ul>' +
 '<h3>📜 Đọc kinh</h3>' +
 '<ul>' +
-'<li><strong>Header tiêu đề</strong>: Nikāya · Mã · Tên Pāli (3 phần cùng dòng) · Tên đối ngữ (EN/VI).</li>' +
+'<li><strong>Header tiêu đề</strong>: Nikāya · Mã · Tên Pāli · Tên đối ngữ (VI/EN).</li>' +
 '<li>Nội dung chia thành <strong>đoạn (segment)</strong> — mã hiển thị góc trái (vd <code>MN23.1.1</code>).</li>' +
-'<li>3 cột: <strong>Pāli full-width trên</strong>, <strong>English + Việt</strong> song song bên dưới (desktop). Mobile/iPad tự xếp dọc.</li>' +
-'<li><strong>Số phẩm</strong> (vd "7", "VII") căn giữa, tô đậm làm dấu phân đoạn.</li>' +
-'<li>Dòng <strong>SOURCE</strong> cuối bài ghi nguồn.</li>' +
-'<li><strong>Nav title</strong> giữa footer (vd "SN 1 · Kinh Cây Lau") — bấm vào mở thư viện ngay bài đang đọc.</li>' +
-'<li><strong>⬆ Back to top</strong> góc phải: bấm về đầu bài, tự xoá anchor lưu vị trí.</li>' +
+'<li>Desktop: <strong>Pāli full-width trên</strong>, <strong>English + Việt</strong> song song bên dưới. Mobile / iPad tự xếp dọc.</li>' +
+'<li><strong>Số phẩm / chương</strong> căn giữa, tô đậm làm dấu phân đoạn. Dòng <strong>SOURCE</strong> cuối bài ghi nguồn.</li>' +
+'<li><strong>Nav title</strong> giữa footer — bấm để mở thư viện ngay bài đang đọc.</li>' +
 '<li><strong>‹ TRƯỚC / SAU ›</strong> ở footer: chuyển bài tuần tự trong bộ kinh.</li>' +
+'<li><strong>⬆ Back to top</strong> (FAB góc phải): về đầu bài, xoá vị trí đã lưu.</li>' +
 '</ul>' +
 '<h3>⚙ Cài đặt</h3>' +
 '<ul>' +
-'<li><strong>Giao diện</strong> (hàng trên cùng): <strong>🌙/☀</strong> tối/sáng · <strong>VN/EN</strong> đổi ngôn ngữ giao diện · <strong>🎲</strong> mở bài kinh ngẫu nhiên.</li>' +
-'<li><strong>Ngôn ngữ</strong>: bật/tắt cột <code>PĀLI</code> · <code>ENGLISH</code> · <code>VIỆT</code>. Luôn giữ tối thiểu 1 cột.</li>' +
-'<li><strong>Bố cục</strong>: <code>☰ Xếp dọc</code> — stack 3 cột thành dọc · <code># Segment</code> — ẩn/hiện mã đoạn · <code>▦ Label</code> — ẩn/hiện nhãn "PALI/ENGLISH/VIỆT" trên đầu mỗi cột.</li>' +
-'<li><strong>Cỡ chữ</strong>: slider 80-160% — <em>chỉ áp cho nội dung</em>, không đổi tiêu đề.</li>' +
-'<li><strong>Giãn dòng</strong>: slider 1.3-2.6 — khoảng cách giữa các dòng.</li>' +
+'<li><strong>Giao diện</strong>: <strong>🌙/☀</strong> tối/sáng · <strong>VN/EN</strong> ngôn ngữ giao diện · <strong>🎲</strong> bài kinh ngẫu nhiên.</li>' +
+'<li><strong>Ngôn ngữ</strong>: bật/tắt cột <code>PĀLI</code> · <code>ENGLISH</code> · <code>VIỆT</code> (luôn giữ tối thiểu 1 cột).</li>' +
+'<li><strong>Bố cục</strong>: <code>☰ Xếp dọc</code> — stack 3 cột · <code># Segment</code> — ẩn/hiện mã đoạn · <code>▦ Label</code> — ẩn/hiện nhãn cột.</li>' +
+'<li><strong>Cỡ chữ</strong>: slider 80–160% (chỉ áp cho nội dung). <strong>Giãn dòng</strong>: 1.3–2.6.</li>' +
 '<li><strong>↺ A</strong> / <strong>↺ ☰</strong>: reset cỡ chữ / giãn dòng về mặc định.</li>' +
-'<li><strong>🐞</strong> (nếu hiện): panel debug — DOM, FPS, chunks, anchor status.</li>' +
+'<li><strong>🐞</strong>: debug.</li>' +
 '</ul>' +
 '<h3>🔊 Đọc to (TTS)</h3>' +
 '<ul>' +
 '<li><strong>▶ Play</strong>: đọc kinh theo ngôn ngữ giao diện (Việt hoặc Anh). Pāli chưa hỗ trợ.</li>' +
 '<li><strong>⏸ Pause</strong>: giới hạn trình duyệt — khi tiếp tục sẽ đọc lại câu hiện tại từ đầu.</li>' +
 '<li><strong>⏹ Stop</strong>: dừng hẳn, lần sau Play đọc từ đầu bài.</li>' +
+'<li>Vị trí đọc lưu theo từng bài — mở lại sẽ tiếp tục từ đoạn trước.</li>' +
 '<li>Android cần cài <strong>Google TTS Engine</strong> để có giọng tiếng Việt.</li>' +
 '</ul>' +
 '<h3>💾 Lưu tự động</h3>' +
 '<ul>' +
-'<li><strong>Vị trí cuộn</strong>: lưu theo từng bài — quay lại bài đang đọc sẽ về đúng đoạn đã dừng.</li>' +
-'<li><strong>Bộ kinh đang chọn</strong> (tile DN/MN/SN/AN): nhớ cho lần mở sau.</li>' +
-'<li><strong>Cài đặt</strong> (ngôn ngữ, cỡ chữ, giãn dòng, dark mode...): lưu toàn bộ.</li>' +
+'<li><strong>Vị trí cuộn</strong> theo từng bài · <strong>Bài mở gần nhất</strong> (mở lại app tự tiếp tục).</li>' +
+'<li><strong>Danh sách đã lưu</strong> · <strong>Tile đang chọn</strong> (DN/MN/SN/AN/★).</li>' +
+'<li><strong>Cài đặt</strong>: ngôn ngữ, cột hiển thị, bố cục, cỡ chữ, giãn dòng, dark mode, vị trí TTS.</li>' +
 '</ul>' +
 '<h3>🎹 Phím tắt</h3>' +
 '<ul>' +
@@ -338,47 +375,51 @@ var enHtml =
 '<em>Trilingual sutta reader: Pāli · English · Vietnamese — source SuttaCentral.</em>' +
 '<h3>📖 Library</h3>' +
 '<ul>' +
-'<li>Tap <strong>Library</strong> (bottom-left) to open the catalogue.</li>' +
-'<li>Choose one of <strong>4 tiles</strong>: <code>DN</code> Long · <code>MN</code> Middle · <code>SN</code> Connected · <code>AN</code> Numerical.</li>' +
-'<li><strong>DN / MN</strong>: flat list of all suttas.</li>' +
-'<li><strong>SN</strong>: 56 Saṁyuttas — tap to expand inner vaggas.</li>' +
-'<li><strong>AN</strong>: 11 groups (AN 1 → AN 11), tap to expand vaggas.</li>' +
-'<li><strong>Search</strong>: filter by name, code ("mn 23") or keyword — across all 4 nikāyas. <em>Diacritics optional</em> ("pham vong" finds "Phạm Võng").</li>' +
-'<li>Tap <strong>×</strong> (right of search box) or outside to close.</li>' +
+'<li>Tap <strong>Library</strong> in the footer center to open the catalogue.</li>' +
+'<li>Choose one of <strong>5 tiles</strong>: <code>DN</code> Long · <code>MN</code> Middle · <code>SN</code> Connected · <code>AN</code> Numerical · <strong>★ Saved</strong> (bookmarked suttas).</li>' +
+'<li><strong>DN / MN</strong>: flat list of all suttas. <strong>SN / AN</strong>: grouped by Saṁyutta / Vagga — tap to expand.</li>' +
+'<li><strong>Search</strong>: filter by name, code (<code>mn 23</code>) or keyword — across all 4 nikāyas. <em>Diacritics optional</em> ("pham vong" finds "Phạm Võng").</li>' +
+'<li>Tap <strong>×</strong> or click outside to close.</li>' +
+'</ul>' +
+'<h3>⭐ Bookmarks</h3>' +
+'<ul>' +
+'<li>Tap <strong>☆</strong> next to the current sutta title (top-right of header) to save / unsave.</li>' +
+'<li>Tap <strong>☆</strong> next to any sutta in the library to save it without opening.</li>' +
+'<li>The <strong>★ Saved</strong> tile shows a count — tap to view the list. Sorted by natural order in each nikāya.</li>' +
+'<li>Bookmarks are stored locally in the browser, not synced across devices.</li>' +
 '</ul>' +
 '<h3>📜 Reading</h3>' +
 '<ul>' +
-'<li><strong>Title header</strong>: Nikāya · Code · Pāli name (all on one line) · Counterpart name (VI/EN).</li>' +
+'<li><strong>Title header</strong>: Nikāya · Code · Pāli name · Counterpart name (VI/EN).</li>' +
 '<li>Content split into <strong>segments</strong> — ID on the left (e.g. <code>MN23.1.1</code>).</li>' +
-'<li>3-column: <strong>Pāli full-width top</strong>, <strong>English + Vietnamese</strong> side-by-side below (desktop). Mobile/iPad auto-stacks vertically.</li>' +
-'<li><strong>Chapter numbers</strong> (e.g. "7", "VII") centered, emphasized as dividers.</li>' +
-'<li><strong>SOURCE</strong> row at end of each sutta.</li>' +
-'<li><strong>Nav title</strong> in footer center — tap to open library at current sutta.</li>' +
-'<li><strong>⬆ Back to top</strong>: bottom-right arrow jumps to top, clears scroll anchor.</li>' +
+'<li>Desktop: <strong>Pāli full-width top</strong>, <strong>English + Vietnamese</strong> side-by-side below. Mobile / iPad auto-stacks vertically.</li>' +
+'<li><strong>Chapter numbers</strong> centered as dividers. <strong>SOURCE</strong> row at the end.</li>' +
+'<li><strong>Nav title</strong> in the footer center — tap to open the library at the current sutta.</li>' +
 '<li><strong>‹ PREV / NEXT ›</strong>: navigate sequentially within the nikāya.</li>' +
+'<li><strong>⬆ Back to top</strong> (bottom-right FAB): jump to top and clear the scroll anchor.</li>' +
 '</ul>' +
 '<h3>⚙ Settings</h3>' +
 '<ul>' +
-'<li><strong>Interface row</strong>: <strong>🌙/☀</strong> dark/light · <strong>VN/EN</strong> interface language · <strong>🎲</strong> random sutta.</li>' +
-'<li><strong>Languages</strong>: toggle <code>PĀLI</code> · <code>ENGLISH</code> · <code>VIỆT</code> columns. At least one must stay on.</li>' +
+'<li><strong>Interface</strong>: <strong>🌙/☀</strong> dark/light · <strong>VN/EN</strong> interface language · <strong>🎲</strong> random sutta.</li>' +
+'<li><strong>Languages</strong>: toggle <code>PĀLI</code> · <code>ENGLISH</code> · <code>VIỆT</code> columns (at least one must stay on).</li>' +
 '<li><strong>Layout</strong>: <code>☰ Stack</code> — vertical stack · <code># Segment</code> — show/hide segment IDs · <code>▦ Label</code> — show/hide column headers.</li>' +
-'<li><strong>Font size</strong>: slider 80-160% — <em>body text only</em>, titles fixed.</li>' +
-'<li><strong>Line height</strong>: slider 1.3-2.6 — spacing between lines.</li>' +
+'<li><strong>Font size</strong>: slider 80–160% (body text only). <strong>Line height</strong>: 1.3–2.6.</li>' +
 '<li><strong>↺ A</strong> / <strong>↺ ☰</strong>: reset font size / line height.</li>' +
-'<li><strong>🐞</strong> (if shown): debug panel — DOM, FPS, chunks, anchor status.</li>' +
+'<li><strong>🐞</strong>: debug.</li>' +
 '</ul>' +
 '<h3>🔊 Text-to-Speech</h3>' +
 '<ul>' +
 '<li><strong>▶ Play</strong>: reads in UI language (VI or EN). Pāli not supported.</li>' +
-'<li><strong>⏸ Pause</strong>: browser limitation — resume restarts current sentence.</li>' +
-'<li><strong>⏹ Stop</strong>: stop entirely; next Play starts from beginning.</li>' +
-'<li>Android may need <strong>Google TTS Engine</strong> for Vietnamese voice.</li>' +
+'<li><strong>⏸ Pause</strong>: browser limitation — resume restarts the current sentence.</li>' +
+'<li><strong>⏹ Stop</strong>: stops entirely; next Play starts from the beginning.</li>' +
+'<li>TTS position is saved per sutta — reopening resumes where you left off.</li>' +
+'<li>Android may need <strong>Google TTS Engine</strong> for the Vietnamese voice.</li>' +
 '</ul>' +
 '<h3>💾 Auto-save</h3>' +
 '<ul>' +
-'<li><strong>Scroll position</strong>: saved per sutta — return to resume where you stopped.</li>' +
-'<li><strong>Active nikāya tile</strong>: remembered across sessions.</li>' +
-'<li><strong>All settings</strong>: language, font size, line height, dark mode — all persisted.</li>' +
+'<li><strong>Scroll position</strong> per sutta · <strong>Last opened sutta</strong> (auto-restored on reload).</li>' +
+'<li><strong>Bookmarks</strong> · <strong>Active tile</strong> (DN/MN/SN/AN/★).</li>' +
+'<li><strong>Settings</strong>: language, visible columns, layout, font size, line height, dark mode, TTS position.</li>' +
 '</ul>' +
 '<h3>🎹 Shortcuts</h3>' +
 '<ul>' +
@@ -705,8 +746,76 @@ if (btnLhReset)   btnLhReset.onclick   = function () { lineHeightLevel = 1.85; a
 var anchorObserver = null;
 var firstVisibleKey = null;
 var firstVisibleOffsetFromGrid = 0;
+var vaggaMarkers = [];
+var suttaMarkers = [];
+var keyToRowIdx = Object.create(null);
+var isAN = false;
+var isSN = false;
+var fallbackTitle = '';
+var fallbackTitleMeta = '';
+var superLastSlotEl = null;
+var lastAppliedVaggaIdx = -2;
+var lastAppliedSuttaIdx = -2;
 function getScrollRoot() {
 return readerArea || grid;
+}
+function findActiveMarkerIdx(markers, curIdx) {
+var idx = -1;
+for (var v = 0; v < markers.length; v++) {
+if (markers[v].rowIdx <= curIdx) idx = v;
+else break;
+}
+return idx;
+}
+function pickPrimaryByLang(marker) {
+return uiLang === 'en'
+? (marker.titleEn || marker.titlePali || marker.titleVi || '').trim()
+: (marker.titleVi || marker.titleEn || marker.titlePali || '').trim();
+}
+function pickAltByLang(marker) {
+return uiLang === 'en'
+? (marker.titleVi || marker.titlePali || '').trim()
+: (marker.titleEn || marker.titlePali || '').trim();
+}
+function updateDynamicTitles() {
+if (!isAN && !isSN) return;
+var curIdx = firstVisibleKey ? (keyToRowIdx[firstVisibleKey]) : undefined;
+if (curIdx === undefined) curIdx = -1;
+if (isAN) {
+var anIdx = findActiveMarkerIdx(vaggaMarkers, curIdx);
+if (anIdx !== lastAppliedSuttaIdx) {
+if (anIdx < 0) {
+if (titleEl) titleEl.textContent = fallbackTitle;
+if (titleMetaEl) titleMetaEl.textContent = fallbackTitleMeta;
+} else {
+var vmA = vaggaMarkers[anIdx];
+if (titleEl) titleEl.textContent = pickPrimaryByLang(vmA) || fallbackTitle;
+if (titleMetaEl) titleMetaEl.textContent = pickAltByLang(vmA) || fallbackTitleMeta;
+}
+lastAppliedSuttaIdx = anIdx;
+}
+return;
+}
+// SN: vagga drives breadcrumb last slot, sub-sutta drives h1 + titleMeta
+var vIdx = findActiveMarkerIdx(vaggaMarkers, curIdx);
+if (vIdx !== lastAppliedVaggaIdx && superLastSlotEl) {
+superLastSlotEl.textContent = vIdx < 0
+? fallbackTitle
+: (pickPrimaryByLang(vaggaMarkers[vIdx]) || fallbackTitle);
+lastAppliedVaggaIdx = vIdx;
+}
+var sIdx = findActiveMarkerIdx(suttaMarkers, curIdx);
+if (sIdx !== lastAppliedSuttaIdx) {
+if (sIdx < 0) {
+if (titleEl) titleEl.textContent = fallbackTitle;
+if (titleMetaEl) titleMetaEl.textContent = fallbackTitleMeta;
+} else {
+var sm = suttaMarkers[sIdx];
+if (titleEl) titleEl.textContent = pickPrimaryByLang(sm) || fallbackTitle;
+if (titleMetaEl) titleMetaEl.textContent = pickAltByLang(sm) || fallbackTitleMeta;
+}
+lastAppliedSuttaIdx = sIdx;
+}
 }
 function setupAnchorObserver() {
 if (anchorObserver) { anchorObserver.disconnect(); anchorObserver = null; }
@@ -721,6 +830,7 @@ if (!topmost || entry.boundingClientRect.top < topmost.boundingClientRect.top) t
 }
 if (topmost) {
 firstVisibleKey = topmost.target.getAttribute('data-key') || '';
+updateDynamicTitles();
 }
 }, { root: scrollRoot, rootMargin: '0px 0px -80% 0px', threshold: 0 });
 scrollRoot.querySelectorAll('.sutra-row').forEach(function (r) { anchorObserver.observe(r); });
@@ -897,11 +1007,21 @@ subText  = paliLabel || viLabel || '';
 mainText = codePrefix + (viLabel || enLabel || paliLabel || s.id);
 subText  = paliLabel || enLabel || '';
 }
+var marked = isBookmarked(s.id);
+var bl = bookmarkLabels();
+var starTitle = marked ? bl.on : bl.off;
+var starHtml =
+'<button type="button" class="menu-bookmark-btn' + (marked ? ' is-on' : '') + '" ' +
+'data-id="' + escapeAttr(s.id) + '" aria-pressed="' + (marked ? 'true' : 'false') + '" ' +
+'aria-label="' + escapeAttr(starTitle) + '" title="' + escapeAttr(starTitle) + '">' +
+'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+'<path d="M10 2.3l2.39 4.84 5.34.78-3.86 3.77.91 5.31L10 14.49l-4.78 2.51.91-5.31L2.27 7.92l5.34-.78z"/>' +
+'</svg></button>';
 return '<a href="#" class="menu-sutta-link" role="treeitem" data-id="' + escapeAttr(s.id) + '" aria-label="' + escapeAttr(mainText) + '">' +
 '<div class="sutra-label">' +
 '<div class="sutra-label-main">' + escapeHtml(mainText) + '</div>' +
 (subText ? '<div class="sutra-label-sub">' + escapeHtml(subText) + '</div>' : '') +
-'</div></a>';
+'</div>' + starHtml + '</a>';
 }
 function extractGroupKey(code) {
 var m = String(code || '').match(/^([A-Za-z]+\s*\d+)\s*[–\-]/);
@@ -999,8 +1119,62 @@ var isActive = tiles[i].getAttribute('data-nikaya') === nikKey;
 tiles[i].classList.toggle('active', isActive);
 tiles[i].setAttribute('aria-selected', String(isActive));
 }
-renderNikayaList(nikKey);
+if (nikKey === 'BM') renderBookmarksList();
+else renderNikayaList(nikKey);
 if (persist) storage.set(KEY_ACTIVE_NIKAYA, nikKey);
+}
+function renderBookmarksList() {
+if (!sutraMenuList) return;
+var order = SUTRA_ORDER && SUTRA_ORDER.length ? SUTRA_ORDER : Array.from(BOOKMARKS);
+var ids = order.filter(function (id) { return BOOKMARKS.has(id); });
+if (!ids.length) {
+var bl = bookmarkLabels();
+sutraMenuList.innerHTML = '<li class="menu-empty" style="padding:18px 22px;color:var(--ink-light);font-style:italic;list-style:none">' + escapeHtml(bl.empty) + '</li>';
+return;
+}
+var html = '';
+for (var i = 0; i < ids.length; i++) {
+var meta = findMetaById(ids[i]);
+if (meta) html += buildSuttaLinkHtml(meta);
+}
+sutraMenuList.innerHTML = html;
+highlightActiveInMenu();
+}
+function updateBookmarksCount() {
+var el = $('bookmarksCount');
+if (!el) return;
+var n = BOOKMARKS.size;
+el.textContent = n ? String(n) : '';
+el.classList.toggle('is-empty', n === 0);
+}
+function reflectBookmarkState(id, on) {
+var bl = bookmarkLabels();
+var label = on ? bl.on : bl.off;
+if (sutraMenuList) {
+var starsInMenu = sutraMenuList.querySelectorAll('.menu-bookmark-btn[data-id="' + safeCssEscape(id) + '"]');
+for (var i = 0; i < starsInMenu.length; i++) {
+var b = starsInMenu[i];
+b.classList.toggle('is-on', !!on);
+b.setAttribute('aria-pressed', on ? 'true' : 'false');
+b.setAttribute('aria-label', label);
+b.setAttribute('title', label);
+}
+}
+if (id === currentSutraId) applyTitleBookmarkState();
+updateBookmarksCount();
+}
+function applyTitleBookmarkState() {
+var btn = $('btnBookmarkCurrent');
+if (!btn) return;
+if (!currentSutraId) { btn.hidden = true; return; }
+btn.hidden = false;
+var on = isBookmarked(currentSutraId);
+var bl = bookmarkLabels();
+var label = on ? bl.on : bl.off;
+btn.classList.toggle('is-on', on);
+btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+btn.setAttribute('aria-label', label);
+btn.setAttribute('title', label);
 }
 function findNikayaOfSutta(suttaId) {
 var index = window.SUTRA_INDEX || [];
@@ -1124,6 +1298,18 @@ if (searchInput) searchInput.addEventListener('input', debounce(function (e) { a
 function initDelegations() {
 if (sutraMenuList && !sutraMenuList._del) {
 sutraMenuList.addEventListener('click', function (ev) {
+var starBtn = ev.target.closest('.menu-bookmark-btn');
+if (starBtn && sutraMenuList.contains(starBtn)) {
+ev.preventDefault();
+ev.stopPropagation();
+var sid = starBtn.getAttribute('data-id');
+if (sid) {
+var now = toggleBookmark(sid);
+reflectBookmarkState(sid, now);
+if (activeNikayaKey === 'BM' && !now) renderBookmarksList();
+}
+return;
+}
 var btn = ev.target.closest('.menu-toggle');
 if (btn && sutraMenuList.contains(btn)) {
 ev.preventDefault();
@@ -1280,6 +1466,7 @@ if (superTitleEl) superTitleEl.textContent = '';
 if (titleMetaEl)  titleMetaEl.textContent  = '';
 if (titleEl)      titleEl.textContent      = isEn ? 'Sutta Archive' : 'Kho lưu trữ Kinh';
 if (subtitleEl)   subtitleEl.textContent   = '';
+applyTitleBookmarkState();
 var quotes = [
 {
 pali: 'Namo tassa bhagavato arahato sammāsambuddhassa',
@@ -1464,8 +1651,14 @@ titleOverride     = uiLang === 'en' ? an_en : an_vi;
 titleMetaOverride = uiLang === 'en' ? an_vi : an_en;
 }
 }
-if (titleEl) titleEl.textContent = titleOverride || titleFromBilara || titleFallback;
+var resolvedTitle = titleOverride || titleFromBilara || titleFallback;
+if (titleEl) titleEl.textContent = resolvedTitle;
+applyTitleBookmarkState();
 var paliName = (meta.titlePali || subtitleFromBilara || '').trim();
+isAN = (rootKey === 'AN');
+isSN = (rootKey === 'SN');
+fallbackTitle = (resolvedTitle || '').trim();
+superLastSlotEl = null;
 if (superTitleEl) {
 var superParts = [];
 if (rootShort) superParts.push(rootShort);
@@ -1474,12 +1667,34 @@ superParts.push(parentShort);
 }
 var codeTxt = (meta.code || '').trim();
 if (codeTxt) superParts.push(codeTxt);
-if (paliName) superParts.push(paliName);
+if (isSN) {
+// SN: last slot dynamic — updates with current vagga on scroll
+superTitleEl.textContent = '';
+for (var spi = 0; spi < superParts.length; spi++) {
+if (spi > 0) superTitleEl.appendChild(document.createTextNode(' · '));
+var spSpan = document.createElement('span');
+spSpan.textContent = superParts[spi];
+superTitleEl.appendChild(spSpan);
+}
+if (superParts.length > 0) superTitleEl.appendChild(document.createTextNode(' · '));
+var dynSpan = document.createElement('span');
+dynSpan.id = 'superLastSlot';
+dynSpan.textContent = fallbackTitle;
+superTitleEl.appendChild(dynSpan);
+superLastSlotEl = dynSpan;
+} else {
+// AN / DN / MN: last slot static
+var lastSlotText = isAN ? fallbackTitle : paliName;
+if (lastSlotText) superParts.push(lastSlotText);
 superTitleEl.textContent = superParts.join(' · ');
 }
+}
+lastAppliedVaggaIdx = -2;
+lastAppliedSuttaIdx = -2;
 if (subtitleEl) subtitleEl.textContent = '';
-if (titleMetaEl) {
 var altName = titleMetaOverride || (uiLang === 'en' ? (meta.titleVi || '') : (meta.titleEn || ''));
+fallbackTitleMeta = (altName || '').trim();
+if (titleMetaEl) {
 titleMetaEl.textContent = altName;
 }
 var normId = String(id).replace(/([A-Za-z]+)0*(\d)/g, '$1$2');
@@ -1503,6 +1718,31 @@ var CHUNK_SIZE = 50;
 var EST_ROW_H = 120;
 virtChunks = [];
 virtAllRows = rowsForView;
+keyToRowIdx = Object.create(null);
+vaggaMarkers = [];
+suttaMarkers = [];
+for (var vki = 0; vki < virtAllRows.length; vki++) {
+var vkey = String(virtAllRows[vki].key || '');
+keyToRowIdx[vkey] = vki;
+if ((isAN || isSN) && /:0\.2$/.test(vkey)) {
+vaggaMarkers.push({
+rowIdx: vki,
+titleVi: (virtAllRows[vki].vie || '').trim(),
+titleEn: (virtAllRows[vki].eng || '').trim(),
+titlePali: (virtAllRows[vki].pali || '').trim()
+});
+}
+if (isSN && /:0\.3$/.test(vkey)) {
+suttaMarkers.push({
+rowIdx: vki,
+titleVi: (virtAllRows[vki].vie || '').trim(),
+titleEn: (virtAllRows[vki].eng || '').trim(),
+titlePali: (virtAllRows[vki].pali || '').trim()
+});
+}
+}
+lastAppliedVaggaIdx = -2;
+lastAppliedSuttaIdx = -2;
 var placeFrag = document.createDocumentFragment();
 for (var ci = 0; ci < rowsForView.length; ci += CHUNK_SIZE) {
 var ce = Math.min(ci + CHUNK_SIZE, rowsForView.length);
@@ -1547,6 +1787,17 @@ else setTimeout(doPreload, 800);
 } catch(e){}
 }
 function openSutra(id) { renderSutra(id); }
+(function wireBookmarkCurrent() {
+var btn = $('btnBookmarkCurrent');
+if (!btn) return;
+btn.addEventListener('click', function (e) {
+e.stopPropagation();
+if (!currentSutraId) return;
+var now = toggleBookmark(currentSutraId);
+reflectBookmarkState(currentSutraId, now);
+if (activeNikayaKey === 'BM') renderBookmarksList();
+});
+})();
 var btnRandom = $('btnRandom');
 if (btnRandom) btnRandom.onclick = function () {
 if (!SUTRA_ORDER.length) return;
@@ -1714,6 +1965,7 @@ uiLang = uiLang === 'vi' ? 'en' : 'vi';
 storage.set(LANG_STORAGE_KEY, uiLang); window.SUTRA_UI_LANG = uiLang;
 renderUiLangFlag(); applyUiLanguageToSearchUi(); applyUiLanguageToSettingsPanel(); renderGuideDialog();
 buildSutraMenuFromIndex(); highlightActiveInMenu(); updateNavButtons();
+updateBookmarksCount(); applyTitleBookmarkState();
 if (currentSutraId) renderSutra(currentSutraId); else renderWelcomeScreen();
 });
 }
@@ -1726,7 +1978,9 @@ if (btnVie)  { btnVie.classList.toggle('active',  showVie);  btnVie.setAttribute
 if (btnLayout) { btnLayout.classList.toggle('active', card ? card.classList.contains('stack') : false); }
 var _bsk = $('btnSegKey'); if (_bsk) { _bsk.classList.toggle('active', showSegKey); _bsk.setAttribute('aria-pressed', String(showSegKey)); }
 var _bsh = $('btnSegHdr'); if (_bsh) { _bsh.classList.toggle('active', showColHdr); _bsh.setAttribute('aria-pressed', String(showColHdr)); }
+loadBookmarks();
 applyVisibility(); applySegKeyHdrVis(); loadZoom(); loadLineHeight(); buildSutraMenuFromIndex(); initDelegations();
+updateBookmarksCount();
 var startId = storage.get(KEY_LAST);
 if (startId) openSutra(startId); else renderWelcomeScreen();
 if (!synthSupported) {
