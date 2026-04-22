@@ -1,5 +1,4 @@
 window.SUTRA_INDEX = [
-  /* ====================== DĪGHA NIKĀYA (DN) ====================== */
   {
     type: "nikaya",
     key: "DN",
@@ -42,8 +41,6 @@ window.SUTRA_INDEX = [
   { type: "sutta", id: "dn34", code: "DN 34", titlePali: "Dasuttara Sutta", titleVi: "Kinh Thập Thượng", titleEn: "Up to Ten" }
 ]
   },
-
-  /* ====================== MAJJHIMA NIKĀYA (MN) ====================== */
   {
     type: "nikaya",
     key: "MN",
@@ -209,8 +206,6 @@ window.SUTRA_INDEX = [
 
 
   },
-
-  /* ====================== SAṂYUTTA NIKĀYA (SN) ====================== */
   {
     type: "nikaya",
     key: "SN",
@@ -257,26 +252,24 @@ window.SUTRA_INDEX = [
   { type: "sutta", id: "sn38_v1", code: "SN 38", titlePali: "Mahātaṇhāsaṅkhaya Sutta", titleVi: "Kinh Diệt Ái Lớn", titleEn: "The Greater Discourse on the Destruction of Craving" },
   { type: "sutta", id: "sn39_v1", code: "SN 39", titlePali: "Mahāassapura Sutta", titleVi: "Kinh Đại Assapura", titleEn: "The Greater Discourse at Assapura" },
   { type: "sutta", id: "sn40_v1", code: "SN 40", titlePali: "Cūḷaassapura Sutta", titleVi: "Kinh Tiểu Assapura", titleEn: "The Shorter Discourse at Assapura" },
-  { type: "sutta", id: "sn41_v1", code: "SN 41", titlePali: "Sāleyyaka Sutta", titleVi: "Kinh Sāleyyaka", titleEn: "The People of Sālā" },
-  { type: "sutta", id: "sn42_v1", code: "SN 42", titlePali: "Verañjaka Sutta", titleVi: "Kinh Verañja", titleEn: "At Verañjā" },
-  { type: "sutta", id: "sn43_v1", code: "SN 43", titlePali: "Mahāvedalla Sutta", titleVi: "Kinh Đại Vấn Đáp", titleEn: "The Greater Set of Questions and Answers" },
-  { type: "sutta", id: "sn44_v1", code: "SN 44", titlePali: "Cūḷavedalla Sutta", titleVi: "Kinh Tiểu Vấn Đáp", titleEn: "The Shorter Set of Questions and Answers" },
-  { type: "sutta", id: "sn45_v1", code: "SN 45", titlePali: "Cūḷadhammasamādāna Sutta", titleVi: "Kinh Tiểu Thọ Trì Pháp", titleEn: "The Shorter Discourse on Taking Up Practices" },
-  { type: "sutta", id: "sn46_v1", code: "SN 46", titlePali: "Mahādhammasamādāna Sutta", titleVi: "Kinh Đại Thọ Trì Pháp", titleEn: "The Greater Discourse on Taking Up Practices" },
-  { type: "sutta", id: "sn47_v1", code: "SN 47", titlePali: "Vīmaṃsaka Sutta", titleVi: "Kinh Tư Sát", titleEn: "The Inquirer" },
-  { type: "sutta", id: "sn48_v1", code: "SN 48", titlePali: "Kosambiya Sutta", titleVi: "Kinh Kosambi", titleEn: "The Kosambiyans" },
-  { type: "sutta", id: "sn49_v1", code: "SN 49", titlePali: "Brahmanimantanika Sutta", titleVi: "Kinh Phạm Thiên Thỉnh Phật", titleEn: "The Invitation of the Brahmā" },
-  { type: "sutta", id: "sn50_v1", code: "SN 50", titlePali: "Māratajjaniya Sutta", titleVi: "Kinh Quở Trách Ác Ma", titleEn: "The Rebuke to Māra" },
-  { type: "sutta", id: "sn51_v1", code: "SN 51", titlePali: "Kandaraka Sutta", titleVi: "Kinh Kandaraka", titleEn: "With Kandaraka" },
-  { type: "sutta", id: "sn52_v1", code: "SN 52", titlePali: "Aṭṭhakanāgara Sutta", titleVi: "Kinh Aṭṭhakanāgara", titleEn: "The Man from Aṭṭhakanagara" },
-  { type: "sutta", id: "sn53_v1", code: "SN 53", titlePali: "Sekha Sutta", titleVi: "Kinh Hữu Học", titleEn: "The Disciple in Higher Training" },
-  { type: "sutta", id: "sn54_v1", code: "SN 54", titlePali: "Potaliya Sutta", titleVi: "Kinh Potaliya", titleEn: "To Potaliya" },
-  { type: "sutta", id: "sn55_v1", code: "SN 55", titlePali: "Jīvaka Sutta", titleVi: "Kinh Jīvaka", titleEn: "To Jīvaka" },
-  { type: "sutta", id: "sn56_v1", code: "SN 56", titlePali: "Upāli Sutta", titleVi: "Kinh Upāli", titleEn: "To Upāli" }
+  { type: "sutta", id: "sn41_v1", code: "SN 41", titlePali: "Saṁyutta Nikāya 41", titleVi: "Kinh Sāleyyaka", titleEn: "The People of Sālā" },
+  { type: "sutta", id: "sn42_v1", code: "SN 42", titlePali: "Saṁyutta Nikāya 42", titleVi: "Kinh Verañja", titleEn: "At Verañjā" },
+  { type: "sutta", id: "sn43_v1", code: "SN 43", titlePali: "Saṁyutta Nikāya 43", titleVi: "Kinh Đại Vấn Đáp", titleEn: "The Greater Set of Questions and Answers" },
+  { type: "sutta", id: "sn44_v1", code: "SN 44", titlePali: "Saṁyutta Nikāya 44", titleVi: "Kinh Tiểu Vấn Đáp", titleEn: "The Shorter Set of Questions and Answers" },
+  { type: "sutta", id: "sn45_v1", code: "SN 45", titlePali: "Saṁyutta Nikāya 45", titleVi: "Kinh Tiểu Thọ Trì Pháp", titleEn: "The Shorter Discourse on Taking Up Practices" },
+  { type: "sutta", id: "sn46_v1", code: "SN 46", titlePali: "Saṁyutta Nikāya 46", titleVi: "Kinh Đại Thọ Trì Pháp", titleEn: "The Greater Discourse on Taking Up Practices" },
+  { type: "sutta", id: "sn47_v1", code: "SN 47", titlePali: "Saṁyutta Nikāya 47", titleVi: "Kinh Tư Sát", titleEn: "The Inquirer" },
+  { type: "sutta", id: "sn48_v1", code: "SN 48", titlePali: "Saṁyutta Nikāya 48", titleVi: "Kinh Kosambi", titleEn: "Linked Discourses 48" },
+  { type: "sutta", id: "sn49_v1", code: "SN 49", titlePali: "Saṁyutta Nikāya 49", titleVi: "Kinh Phạm Thiên Thỉnh Phật", titleEn: "The Invitation of the Brahmā" },
+  { type: "sutta", id: "sn50_v1", code: "SN 50", titlePali: "Saṁyutta Nikāya 50", titleVi: "Kinh Quở Trách Ác Ma", titleEn: "The Rebuke to Māra" },
+  { type: "sutta", id: "sn51_v1", code: "SN 51", titlePali: "Saṁyutta Nikāya 51", titleVi: "Kinh Kandaraka", titleEn: "With Kandaraka" },
+  { type: "sutta", id: "sn52_v1", code: "SN 52", titlePali: "Saṁyutta Nikāya 52", titleVi: "Kinh Aṭṭhakanāgara", titleEn: "The Man from Aṭṭhakanagara" },
+  { type: "sutta", id: "sn53_v1", code: "SN 53", titlePali: "Saṁyutta Nikāya 53", titleVi: "Kinh Hữu Học", titleEn: "The Disciple in Higher Training" },
+  { type: "sutta", id: "sn54_v1", code: "SN 54", titlePali: "Saṁyutta Nikāya 54", titleVi: "Kinh Potaliya", titleEn: "To Potaliya" },
+  { type: "sutta", id: "sn55_v1", code: "SN 55", titlePali: "Saṁyutta Nikāya 55", titleVi: "Kinh Jīvaka", titleEn: "Linked Discourses 55" },
+  { type: "sutta", id: "sn56_v1", code: "SN 56", titlePali: "Saṁyutta Nikāya 56", titleVi: "Kinh Upāli", titleEn: "Linked Discourses 56" }
 ]
 },
-
-  /* ====================== AṄGUTTARA NIKĀYA (AN) ====================== */
   {
     type: "nikaya",
     key: "AN",
@@ -284,37 +277,18 @@ window.SUTRA_INDEX = [
     labelEn: "Aṅguttara Nikāya - Numerical Discourses",
     children: [
   
-  { type: "sutta", id: "an1_v1", code: "AN 1", titlePali: "Brahmajāla Sutta", titleVi: "Nhóm Một Pháp", titleEn: "The Supreme Net" },
-  { type: "sutta", id: "an2_v1", code: "AN 2", titlePali: "Sāmaññaphala Sutta", titleVi: "Nhóm Hai Pháp", titleEn: "The Fruits of the Contemplative Life" },
-  { type: "sutta", id: "an3_v1", code: "AN 3", titlePali: "Ambaṭṭha Sutta", titleVi: "Nhóm Ba Pháp", titleEn: "About Ambaṭṭha" },
-  { type: "sutta", id: "an4_v1", code: "AN 4", titlePali: "Soṇadaṇḍa Sutta", titleVi: "Nhóm Bốn Pháp", titleEn: "With Soṇadaṇḍa" },
-  { type: "sutta", id: "an5_v1", code: "AN 5– V1", titlePali: "Kūṭadanta Sutta", titleVi: "Nhóm Năm Pháp", titleEn: "With Kūṭadanta" },
-  { type: "sutta", id: "an6_v1", code: "AN 6", titlePali: "Mahāli Sutta", titleVi: "Nhóm Sáu Pháp", titleEn: "With Mahāli" },
-  { type: "sutta", id: "an7_v1", code: "AN 7", titlePali: "Jāliya Sutta", titleVi: "Nhóm Bảy Pháp", titleEn: "With Jāliya" },
-  { type: "sutta", id: "an8_v1", code: "AN 8", titlePali: "Kassapasīhanāda Sutta", titleVi: "Nhóm Tám Pháp", titleEn: "The Lion’s Roar to Kassapa" },
-  { type: "sutta", id: "an9_v1", code: "AN 9", titlePali: "Poṭṭhapāda Sutta", titleVi: "Nhóm Chín Pháp", titleEn: "With Poṭṭhapāda" },
-  { type: "sutta", id: "an10_v1", code: "AN 10", titlePali: "Subha Sutta", titleVi: "Nhóm Mười Pháp", titleEn: "To Subha" },
-  { type: "sutta", id: "an11_v1", code: "AN 11", titlePali: "Kevaṭṭa Sutta", titleVi: "Nhóm Mười Một Pháp", titleEn: "With Kevaṭṭa" }
-    
-]
+  { type: "sutta", id: "an1_v1", code: "AN 1", titlePali: "Aṅguttara Nikāya 1", titleVi: "Nhóm Một Pháp", titleEn: "Numbered Discourses 1" },
+  { type: "sutta", id: "an2_v1", code: "AN 2", titlePali: "Aṅguttara Nikāya 2", titleVi: "Nhóm Hai Pháp", titleEn: "Numbered Discourses 2" },
+  { type: "sutta", id: "an3_v1", code: "AN 3", titlePali: "Aṅguttara Nikāya 3", titleVi: "Nhóm Ba Pháp", titleEn: "Numbered Discourses 3" },
+  { type: "sutta", id: "an4_v1", code: "AN 4", titlePali: "Aṅguttara Nikāya 4", titleVi: "Nhóm Bốn Pháp", titleEn: "Numbered Discourses 4" },
+  { type: "sutta", id: "an5_v1", code: "AN 5", titlePali: "Aṅguttara Nikāya 5", titleVi: "Nhóm Năm Pháp", titleEn: "Numbered Discourses 5" },
+  { type: "sutta", id: "an6_v1", code: "AN 6", titlePali: "Aṅguttara Nikāya 6", titleVi: "Nhóm Sáu Pháp", titleEn: "Numbered Discourses 6" },
+  { type: "sutta", id: "an7_v1", code: "AN 7", titlePali: "Aṅguttara Nikāya 7", titleVi: "Nhóm Bảy Pháp", titleEn: "Numbered Discourses 7" },
+  { type: "sutta", id: "an8_v1", code: "AN 8", titlePali: "Aṅguttara Nikāya 8", titleVi: "Nhóm Tám Pháp", titleEn: "Numbered Discourses 8" },
+  { type: "sutta", id: "an9_v1", code: "AN 9", titlePali: "Aṅguttara Nikāya 9", titleVi: "Nhóm Chín Pháp", titleEn: "Numbered Discourses 9" },
+  { type: "sutta", id: "an10_v1", code: "AN 10", titlePali: "Aṅguttara Nikāya 10", titleVi: "Nhóm Mười Pháp", titleEn: "Numbered Discourses 10" },
+  { type: "sutta", id: "an11_v1", code: "AN 11", titlePali: "Aṅguttara Nikāya 11", titleVi: "Nhóm Mười Một Pháp", titleEn: "Numbered Discourses 11" }
+	]
    }
-
- //  /* ====================== KHUDDAKA NIKĀYA (KN) ====================== */
- //  {
- //    type: "nikaya",
- //    key: "KN",
- //    labelVi: "Khuddaka Nikāya - Tiểu Bộ Kinh",
- //    labelEn: "Khuddaka Nikāya - Minor Collection",
- //    children: [
- //   { type: "sutta", id: "kn-khp", code: "Khp", href: "kn-khuddakapatha.html", titlePali: "Khp – Khuddakapāṭha (Short Passages)", titleVi: "Khp – Khuddakapāṭha — Kinh Tiểu Tụng" },
- // { type: "sutta", id: "kn-dhp", code: "Dhp", href: "kn-dhammapada.html", titlePali: "Dhp – Dhammapada (The Dhamma Verses)", titleVi: "Dhp – Dhammapada — Kinh Pháp Cú" },
- // { type: "sutta", id: "kn-ud", code: "Ud", href: "kn-udana.html", titlePali: "Ud – Udāna (Inspired Utterances)", titleVi: "Ud – Udāna — Kinh Cảm Hứng Ngữ" },
- // { type: "sutta", id: "kn-it", code: "It", href: "kn-itivuttaka.html", titlePali: "It – Itivuttaka (This Was Said)", titleVi: "It – Itivuttaka — Kinh Như Thị Ngữ" },
- // { type: "sutta", id: "kn-sn", code: "Sn", href: "kn-suttanipata.html", titlePali: "Sn – Sutta Nipāta (Collection of Discourses)", titleVi: "Sn – Sutta Nipāta — Kinh Tập" },
- // { type: "sutta", id: "kn-thag", code: "Thag", href: "kn-theragatha.html", titlePali: "Thag – Theragāthā (Verses of the Elder Monks)", titleVi: "Thag – Theragāthā — Kinh Trưởng Lão Tăng Kệ" },
- // { type: "sutta", id: "kn-thig", code: "Thig", href: "kn-therigatha.html", titlePali: "Thig – Therīgāthā (Verses of the Elder Nuns)", titleVi: "Thig – Therīgāthā — Kinh Trưởng Lão Ni Kệ" }
- //    ]
- //  }
-
-  
-];
+]
+;
