@@ -1532,11 +1532,16 @@ scheduleNextPreload(id);
 function scheduleNextPreload(currentId) {
 try {
 var idx = SUTRA_ORDER.indexOf(currentId); if (idx === -1) return;
-var nextId = SUTRA_ORDER[idx + 1]; if (!nextId) return;
 var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 if (conn && conn.saveData) return;
 if (navigator.deviceMemory && navigator.deviceMemory < 2) return;
-var doPreload = function () { loadMerged(nextId).catch(function () {}); };
+var nextId = SUTRA_ORDER[idx + 1];
+var prevId = idx > 0 ? SUTRA_ORDER[idx - 1] : null;
+var doPreload = function () {
+if (nextId) loadMerged(nextId).catch(function () {});
+if (prevId) loadMerged(prevId).catch(function () {});
+};
+if (!nextId && !prevId) return;
 if ('requestIdleCallback' in window) requestIdleCallback(doPreload, { timeout: 2000 });
 else setTimeout(doPreload, 800);
 } catch(e){}
@@ -1627,32 +1632,6 @@ var idx = SUTRA_ORDER.indexOf(currentSutraId);
 if (idx !== -1 && idx < SUTRA_ORDER.length - 1) openSutra(SUTRA_ORDER[idx + 1]);
 };
 var synthSupported = 'speechSynthesis' in window;
-var synth = synthSupported ? window.speechSynthesis : null;
-var cachedVoices = [];
-if (synthSupported) {
-try { cachedVoices = synth.getVoices() || []; } catch(e){}
-synth.addEventListener('voiceschanged', function () { try { cachedVoices = synth.getVoices() || []; } catch(e){} });
-}
-function ensureVoicesLoaded(timeout) {
-timeout = timeout || 1200;
-return new Promise(function (resolve) {
-if (!synth) return resolve([]);
-try { var v = synth.getVoices(); if (v && v.length) { cachedVoices = v; return resolve(v); } } catch(e){}
-var onChange = function () {
-try {
-var v2 = synth.getVoices();
-if (v2 && v2.length) { synth.removeEventListener('voiceschanged', onChange); cachedVoices = v2; resolve(v2); }
-} catch(e){}
-};
-synth.addEventListener('voiceschanged', onChange);
-setTimeout(function () {
-try { synth.removeEventListener('voiceschanged', onChange); } catch(e){}
-try { cachedVoices = synth.getVoices() || []; } catch(e){}
-resolve(cachedVoices);
-}, timeout);
-});
-}
-var ttsState = { activeLang: null, index: 0, isPlaying: false, isPaused: false, currentUtter: null };
 function setTtsUiState(state) {
 if (!btnReadTts || !btnPauseTts || !btnStopTts) return;
 if (!synthSupported || isRendering) {
@@ -1683,98 +1662,49 @@ if (relativeTop < viewTop || relativeTop + rowRect.height > viewBottom) {
 scrollEl.scrollTo({ top: Math.max(0, relativeTop - 20), behavior: 'auto' });
 }
 }
-function pickVoice(langPrefix) {
-var lp = (langPrefix || '').toLowerCase();
-var list = cachedVoices.filter(function (v) { return v.lang && v.lang.toLowerCase().startsWith(lp); });
-return list.find(function (v) { return /google|microsoft/i.test(v.name || ''); }) || list[0] || null;
+var _ttsModulePromise = null;
+var _ttsApi = null;
+function loadScript(src) {
+return new Promise(function (resolve, reject) {
+var s = document.createElement('script');
+s.src = src; s.async = true;
+s.onload = function () { resolve(); };
+s.onerror = function (e) { reject(e); };
+document.head.appendChild(s);
+});
+}
+function ensureTTSLoaded() {
+if (_ttsApi) return Promise.resolve(_ttsApi);
+if (!_ttsModulePromise) {
+_ttsModulePromise = loadScript('tts.js').then(function () {
+if (!window.TTSModule) throw new Error('TTSModule failed to load');
+_ttsApi = window.TTSModule.init({
+getVirtAllRows: function () { return virtAllRows; },
+getCurrentSutraId: function () { return currentSutraId; },
+getUiLang: function () { return uiLang; },
+getIsRendering: function () { return isRendering; },
+clearRowHighlight: clearRowHighlight,
+highlightRowAt: highlightRowAt,
+setTtsUiState: setTtsUiState,
+storage: storage,
+});
+return _ttsApi;
+});
+}
+return _ttsModulePromise;
 }
 function resetTts(clearHighlight, clearStorage) {
-if (synthSupported && synth) { try { synth.cancel(); } catch(e){} }
-ttsState.isPlaying = ttsState.isPaused = false;
-ttsState.currentUtter = null; ttsState.index = 0; ttsState.activeLang = null;
+if (synthSupported && window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch(e){} }
+if (_ttsApi) { try { _ttsApi.reset(clearHighlight, clearStorage); return; } catch(e){} }
 if (clearHighlight) clearRowHighlight();
-if (clearStorage && currentSutraId) {
-storage.remove('tts_state_' + currentSutraId);
-}
+if (clearStorage && currentSutraId) storage.remove('tts_state_' + currentSutraId);
 setTtsUiState('idle');
 }
-function saveTtsState() {
-if (!currentSutraId || !ttsState.activeLang) return;
-storage.set('tts_state_' + currentSutraId,
-JSON.stringify({ lang: ttsState.activeLang, index: ttsState.index }));
-}
-function speakNextRow() {
-if (!synthSupported || !synth || !ttsState.activeLang) return;
-if (ttsState.index >= virtAllRows.length) return resetTts(true, true);
-var rowData = virtAllRows[ttsState.index];
-var raw = ttsState.activeLang === 'vi' ? (rowData && rowData.vie) : (rowData && rowData.eng);
-var text = (raw || '').trim();
-if (!text) { ttsState.index++; return speakNextRow(); }
-highlightRowAt(ttsState.index); saveTtsState();
-var utter = new SpeechSynthesisUtterance(text);
-if (ttsState.activeLang === 'vi') {
-utter.lang = 'vi-VN'; var v = pickVoice('vi'); if (v) utter.voice = v;
-utter.rate = 0.98; utter.pitch = 0.95;
-} else {
-utter.lang = 'en-US'; var v2 = pickVoice('en'); if (v2) utter.voice = v2;
-}
-utter.onend = function () {
-ttsState.currentUtter = null;
-if (!ttsState.activeLang || ttsState.isPaused || !ttsState.isPlaying) return;
-ttsState.index++; speakNextRow();
+if (btnReadTts) btnReadTts.onclick = async function () {
+try { var api = await ensureTTSLoaded(); api.start(); } catch (e) { console.error('TTS load failed:', e); }
 };
-utter.onerror = function (e) {
-ttsState.currentUtter = null;
-if (e.error === 'canceled' || ttsState.isPaused) return;
-resetTts(true, false);
-};
-ttsState.currentUtter = utter; ttsState.isPlaying = true; ttsState.isPaused = false;
-setTtsUiState('playing');
-try { synth.speak(utter); } catch(e) { resetTts(true, false); }
-}
-async function startTtsByUiLang() {
-if (isRendering) {
-alert(uiLang === 'en' ? 'Please wait for the text to finish loading.' : 'Vui lòng chờ tải xong nội dung rồi hãy bấm đọc.');
-return;
-}
-if (!synthSupported) {
-alert(uiLang === 'en' ? 'Your browser does not support TTS.' : 'Trình duyệt không hỗ trợ đọc TTS.');
-return;
-}
-var targetLang = uiLang === 'en' ? 'en' : 'vi';
-if (ttsState.activeLang === targetLang && ttsState.isPlaying) return;
-if (ttsState.activeLang === targetLang && ttsState.isPaused) {
-ttsState.isPaused = false; ttsState.isPlaying = true;
-setTtsUiState('playing'); speakNextRow(); return;
-}
-resetTts(true, false); ttsState.activeLang = targetLang; await ensureVoicesLoaded();
-if (currentSutraId) {
-try {
-var raw = storage.get('tts_state_' + currentSutraId);
-if (raw) {
-var st = JSON.parse(raw);
-if (st && st.lang === targetLang && typeof st.index === 'number') ttsState.index = st.index;
-}
-} catch(e){}
-}
-if (!Number.isInteger(ttsState.index) || ttsState.index < 0) ttsState.index = 0;
-speakNextRow();
-}
-function pauseTtsByUiLang() {
-if (!synthSupported || !synth) return;
-if (!ttsState.activeLang || !ttsState.isPlaying || !ttsState.currentUtter) return;
-ttsState.isPaused = true;
-ttsState.isPlaying = false;
-try { synth.cancel(); } catch(e){}
-ttsState.currentUtter = null; saveTtsState(); clearRowHighlight(); setTtsUiState('paused');
-}
-function stopTtsByUiLang() {
-if (!synthSupported || !synth) return;
-resetTts(true, true);
-}
-if (btnReadTts)  btnReadTts.onclick  = startTtsByUiLang;
-if (btnPauseTts) btnPauseTts.onclick = pauseTtsByUiLang;
-if (btnStopTts)  btnStopTts.onclick  = stopTtsByUiLang;
+if (btnPauseTts) btnPauseTts.onclick = function () { if (_ttsApi) _ttsApi.pause(); };
+if (btnStopTts)  btnStopTts.onclick  = function () { if (_ttsApi) _ttsApi.stop(); };
 function initUiLang() {
 renderUiLangFlag(); applyUiLanguageToSearchUi(); applyUiLanguageToSettingsPanel(); renderGuideDialog();
 if (!btnUiLang) return;
@@ -1911,8 +1841,7 @@ var lines = [
 'Loaded packs:     ' + LOADED_PACKS.size,
 '',
 '── TTS ──',
-'Lang/index:       ' + (ttsState.activeLang || '-') + ' / ' + ttsState.index,
-'Playing/Paused:   ' + ttsState.isPlaying + ' / ' + ttsState.isPaused,
+'Module loaded:    ' + (_ttsApi ? 'yes' : 'no'),
 ]);
 if (mem) {
 lines.push('');
