@@ -341,7 +341,7 @@ var viHtml =
 '</ul>' +
 '<h3>⚙ Cài đặt</h3>' +
 '<ul>' +
-'<li><strong>Giao diện</strong>: <strong>🌙/☀</strong> tối/sáng · <strong>VN/EN</strong> ngôn ngữ giao diện · <strong>🎲</strong> bài kinh ngẫu nhiên.</li>' +
+'<li><strong>Giao diện</strong>: <strong>🌙/☀</strong> tối/sáng · <strong>VN/EN</strong> ngôn ngữ giao diện · <strong>🖨</strong> in / lưu PDF bài kinh hiện tại. Trên điện thoại/máy tính bảng, hộp thoại in cho phép <strong>"Save to Files"</strong> (iOS) hoặc <strong>"Save as PDF"</strong> (Android) để tải file về. Lưu ý: bài kinh dài (hàng ngàn đoạn) có thể <strong>mất vài giây đến vài chục giây</strong> để chuẩn bị — vui lòng đợi.</li>' +
 '<li><strong>Ngôn ngữ</strong>: bật/tắt cột <code>PĀLI</code> · <code>ENGLISH</code> · <code>VIỆT</code> (luôn giữ tối thiểu 1 cột).</li>' +
 '<li><strong>Bố cục</strong>: <code>☰ Xếp dọc</code> — stack 3 cột · <code># Segment</code> — ẩn/hiện mã đoạn · <code>▦ Label</code> — ẩn/hiện nhãn cột.</li>' +
 '<li><strong>Cỡ chữ</strong>: slider 80–160% (chỉ áp cho nội dung). <strong>Giãn dòng</strong>: 1.3–2.6.</li>' +
@@ -400,7 +400,7 @@ var enHtml =
 '</ul>' +
 '<h3>⚙ Settings</h3>' +
 '<ul>' +
-'<li><strong>Interface</strong>: <strong>🌙/☀</strong> dark/light · <strong>VN/EN</strong> interface language · <strong>🎲</strong> random sutta.</li>' +
+'<li><strong>Interface</strong>: <strong>🌙/☀</strong> dark/light · <strong>VN/EN</strong> interface language · <strong>🖨</strong> print / save current sutta to PDF. On phone/tablet, the native print sheet offers <strong>"Save to Files"</strong> (iOS) or <strong>"Save as PDF"</strong> (Android) to download the file. Note: long suttas (thousands of segments) may need <strong>a few seconds to tens of seconds</strong> to prepare — please wait.</li>' +
 '<li><strong>Languages</strong>: toggle <code>PĀLI</code> · <code>ENGLISH</code> · <code>VIỆT</code> columns (at least one must stay on).</li>' +
 '<li><strong>Layout</strong>: <code>☰ Stack</code> — vertical stack · <code># Segment</code> — show/hide segment IDs · <code>▦ Label</code> — show/hide column headers.</li>' +
 '<li><strong>Font size</strong>: slider 80–160% (body text only). <strong>Line height</strong>: 1.3–2.6.</li>' +
@@ -796,12 +796,12 @@ lastAppliedSuttaIdx = anIdx;
 }
 return;
 }
-// SN: vagga drives breadcrumb last slot, sub-sutta drives h1 + titleMeta
+// SN: vagga appended AFTER Saṁyutta (not replacing) — sub-sutta drives h1 + titleMeta
 var vIdx = findActiveMarkerIdx(vaggaMarkers, curIdx);
 if (vIdx !== lastAppliedVaggaIdx && superLastSlotEl) {
-superLastSlotEl.textContent = vIdx < 0
-? fallbackTitle
-: (pickPrimaryByLang(vaggaMarkers[vIdx]) || fallbackTitle);
+var vaggaText = vIdx < 0 ? '' : (pickPrimaryByLang(vaggaMarkers[vIdx]) || '');
+superLastSlotEl.textContent = vaggaText;
+if (superLastSlotEl._sep) superLastSlotEl._sep.style.display = vaggaText ? '' : 'none';
 lastAppliedVaggaIdx = vIdx;
 }
 var sIdx = findActiveMarkerIdx(suttaMarkers, curIdx);
@@ -1668,7 +1668,8 @@ superParts.push(parentShort);
 var codeTxt = (meta.code || '').trim();
 if (codeTxt) superParts.push(codeTxt);
 if (isSN) {
-// SN: last slot dynamic — updates with current vagga on scroll
+// SN hierarchy: Nikāya · SN-code · Saṁyutta (static) · [Vagga dynamic, appears on scroll into a vagga]
+if (fallbackTitle) superParts.push(fallbackTitle);
 superTitleEl.textContent = '';
 for (var spi = 0; spi < superParts.length; spi++) {
 if (spi > 0) superTitleEl.appendChild(document.createTextNode(' · '));
@@ -1676,12 +1677,17 @@ var spSpan = document.createElement('span');
 spSpan.textContent = superParts[spi];
 superTitleEl.appendChild(spSpan);
 }
-if (superParts.length > 0) superTitleEl.appendChild(document.createTextNode(' · '));
+var sepNode = document.createElement('span');
+sepNode.className = 'super-sep';
+sepNode.textContent = ' · ';
+sepNode.style.display = 'none';
+superTitleEl.appendChild(sepNode);
 var dynSpan = document.createElement('span');
 dynSpan.id = 'superLastSlot';
-dynSpan.textContent = fallbackTitle;
+dynSpan.textContent = '';
 superTitleEl.appendChild(dynSpan);
 superLastSlotEl = dynSpan;
+superLastSlotEl._sep = sepNode;
 } else {
 // AN / DN / MN: last slot static
 var lastSlotText = isAN ? fallbackTitle : paliName;
@@ -1798,12 +1804,152 @@ reflectBookmarkState(currentSutraId, now);
 if (activeNikayaKey === 'BM') renderBookmarksList();
 });
 })();
-var btnRandom = $('btnRandom');
-if (btnRandom) btnRandom.onclick = function () {
-if (!SUTRA_ORDER.length) return;
-var i = Math.floor(Math.random() * SUTRA_ORDER.length);
-openSutra(SUTRA_ORDER[i]);
+function buildSuttaPrintHtml(id, merged) {
+var meta = findMetaById(id) || {};
+var title = (titleEl && titleEl.textContent) || (meta.titleVi || meta.titleEn || id);
+var subtitle = (subtitleEl && subtitleEl.textContent) || '';
+var supertitle = (superTitleEl && superTitleEl.textContent) || '';
+var titleMeta = (titleMetaEl && titleMetaEl.textContent) || '';
+var headers = uiLang === 'en'
+? { pali: 'Pali', eng: 'English', vie: 'Vietnamese' }
+: { pali: 'Pali', eng: 'English', vie: 'Tiếng Việt' };
+function esc(s) {
+return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+});
+}
+function shortKey(raw) {
+if (!raw) return '';
+if (raw.indexOf(':') !== -1) {
+var parts = raw.split(':');
+var prefix = parts[0].replace(/([a-zA-Z]+)(\d*)/, function (_, l, n) { return l.toUpperCase() + n; });
+return parts[1] ? prefix + '.' + parts[1] : prefix;
+}
+return String(raw).toUpperCase();
+}
+var activeLangCount = (showPali ? 1 : 0) + (showEng ? 1 : 0) + (showVie ? 1 : 0);
+var singleLang = activeLangCount === 1;
+function tag(name) { return singleLang ? '' : '<span class="lang-tag">' + esc(name) + '</span>'; }
+function rowHtml(r) {
+var tp = (r.pali || '').trim();
+var te = (r.eng || '').trim();
+var tv = (r.vie || '').trim();
+var keyRaw = String(r.key || '');
+var isSectionNum = (tp.length <= 6 && te.length <= 6 && tv.length <= 6) &&
+/^[IVXLCDM]+\.?$|^\d+\.?$/.test(tp || te || tv);
+if (isSectionNum) return '';
+var isSource = /:source$/i.test(keyRaw);
+var isSubtitle = /:0\.[123]$/.test(keyRaw);
+var cls = 'prow';
+if (isSource) cls += ' prow-source';
+if (isSubtitle) cls += ' prow-subtitle';
+var inner = [];
+if (showSegKey !== false) {
+inner.push('<div class="prow-key">' + esc(shortKey(keyRaw)) + '</div>');
+}
+if (showPali && tp) inner.push('<div class="prow-pali">' + tag(headers.pali) + esc(tp) + '</div>');
+if (showEng && te) inner.push('<div class="prow-eng">' + tag(headers.eng) + esc(te) + '</div>');
+if (showVie && tv) inner.push('<div class="prow-vie">' + tag(headers.vie) + esc(tv) + '</div>');
+if (!inner.length) return '';
+return '<div class="' + cls + '">' + inner.join('') + '</div>';
+}
+var bodyRows = [], sourceRows = [];
+merged.rows.forEach(function (r) {
+if (/:source$/i.test(String(r.key || ''))) sourceRows.push(r);
+else bodyRows.push(r);
+});
+var rowsHtml = bodyRows.map(rowHtml).join('') + sourceRows.map(rowHtml).join('');
+var docTitle = esc((meta.code ? meta.code + ' · ' : '') + title);
+var footerText = uiLang === 'en'
+? 'Sutta Archive · Pāli & English: SuttaCentral / Bilara · ID: ' + esc(id)
+: 'Sutta Archive · Pāli & Anh: SuttaCentral / Bilara · Mã bài: ' + esc(id);
+return '<!DOCTYPE html><html lang="' + uiLang + '"><head><meta charset="utf-8">' +
+'<meta name="viewport" content="width=device-width,initial-scale=1">' +
+'<title>' + docTitle + '</title>' +
+'<style>' +
+'@page { size: A4; margin: 0; }' +
+'* { box-sizing: border-box; }' +
+'html, body { margin: 0; padding: 0; }' +
+'body { font-family: Cambria, "Noto Serif", Georgia, "Times New Roman", serif; color: #111; line-height: 1.55; font-size: 11pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
+'.sheet { width: 100%; border-collapse: collapse; }' +
+'.sheet > thead > tr > td, .sheet > tbody > tr > td, .sheet > tfoot > tr > td { padding: 0 22mm; vertical-align: top; }' +
+'.pad-top { height: 20mm; }' +
+'.pad-bot { height: 22mm; }' +
+'.phdr { text-align: center; border-bottom: 1px solid #999; padding-bottom: 12px; margin-bottom: 18px; }' +
+'.phdr .supertitle { font-size: 9pt; color: #666; letter-spacing: 1.5px; text-transform: uppercase; font-family: Consolas, "Courier New", monospace; }' +
+'.phdr h1 { font-size: 20pt; margin: 6px 0 4px; font-weight: 500; letter-spacing: -0.3px; }' +
+'.phdr .subtitle { font-size: 11pt; color: #444; font-style: italic; }' +
+'.phdr .meta { font-size: 9.5pt; color: #777; margin-top: 4px; }' +
+'.prow { margin: 0 0 10px; page-break-inside: avoid; break-inside: avoid; }' +
+'.prow-key { font-family: Consolas, "Courier New", monospace; font-size: 7.5pt; color: #999; margin-bottom: 2px; letter-spacing: 0.3px; }' +
+'.prow-pali { font-style: italic; color: #333; margin-bottom: 2px; }' +
+'.prow-eng { color: #222; margin-bottom: 2px; }' +
+'.prow-vie { color: #111; }' +
+'.lang-tag { display: inline-block; font-family: Consolas, "Courier New", monospace; font-size: 7pt; text-transform: uppercase; color: #aaa; margin-right: 6px; letter-spacing: 0.5px; vertical-align: 1px; }' +
+'.prow-subtitle { text-align: center; font-size: 12pt; margin-bottom: 14px; }' +
+'.prow-subtitle .prow-key, .prow-subtitle .lang-tag { display: none; }' +
+'.prow-source { font-size: 9pt; color: #888; margin-top: 18px; padding-top: 10px; border-top: 1px dashed #ccc; }' +
+'.pftr { margin-top: 22px; padding-top: 10px; border-top: 1px solid #ddd; font-size: 8pt; color: #888; text-align: center; }' +
+'@media print { .prow { margin-bottom: 9px; } }' +
+'</style></head><body>' +
+'<table class="sheet">' +
+'<thead><tr><td><div class="pad-top"></div></td></tr></thead>' +
+'<tbody><tr><td>' +
+'<header class="phdr">' +
+(supertitle ? '<div class="supertitle">' + esc(supertitle) + '</div>' : '') +
+'<h1>' + esc(title) + '</h1>' +
+(subtitle && subtitle !== '—' ? '<div class="subtitle">' + esc(subtitle) + '</div>' : '') +
+(titleMeta ? '<div class="meta">' + esc(titleMeta) + '</div>' : '') +
+'</header>' +
+'<main>' + rowsHtml + '</main>' +
+'<footer class="pftr">' + footerText + '</footer>' +
+'</td></tr></tbody>' +
+'<tfoot><tr><td><div class="pad-bot"></div></td></tr></tfoot>' +
+'</table>' +
+'</body></html>';
+}
+function printCurrentSuttaPdf() {
+if (!currentSutraId) return;
+var id = currentSutraId;
+var merged = MERGED_CACHE.get(id);
+var ensure = merged ? Promise.resolve(merged) : loadMerged(id);
+Promise.resolve(ensure).then(function (m) {
+if (!m || !m.rows || !m.rows.length) return;
+var html = buildSuttaPrintHtml(id, m);
+var iframe = document.createElement('iframe');
+iframe.setAttribute('aria-hidden', 'true');
+iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0;pointer-events:none;';
+document.body.appendChild(iframe);
+var printed = false;
+var cleanedUp = false;
+var cleanup = function () {
+if (cleanedUp) return; cleanedUp = true;
+if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+};
+var doPrint = function () {
+if (printed) return; printed = true;
+try {
+iframe.contentWindow.focus();
+iframe.contentWindow.onafterprint = function () { setTimeout(cleanup, 1000); };
+window.addEventListener('focus', function onReturn() {
+window.removeEventListener('focus', onReturn);
+setTimeout(cleanup, 1500);
+}, { once: true });
+iframe.contentWindow.print();
+} catch (e) { console.warn(e); cleanup(); }
+setTimeout(cleanup, 180000);
+};
+iframe.onload = function () { setTimeout(doPrint, 400); };
+var doc = iframe.contentWindow.document;
+doc.open(); doc.write(html); doc.close();
+setTimeout(doPrint, 2000);
+}).catch(function (e) { console.warn('[PDF] generation failed', e); });
+}
+var btnPrintPdf = $('btnPrintPdf');
+if (btnPrintPdf) btnPrintPdf.onclick = function () {
+if (!currentSutraId) return;
 togglePanel(settingsPanel, false);
+printCurrentSuttaPdf();
 };
 var btnPrev = $('btnPrev');
 var btnNext = $('btnNext');
