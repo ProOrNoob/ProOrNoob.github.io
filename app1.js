@@ -2562,7 +2562,7 @@ document.head.appendChild(s);
 function ensureTTSLoaded() {
 if (_ttsApi) return Promise.resolve(_ttsApi);
 if (!_ttsModulePromise) {
-_ttsModulePromise = loadScript('tts.js').then(function () {
+_ttsModulePromise = loadScript('tts1.js').then(function () {
 if (!window.TTSModule) throw new Error('TTSModule failed to load');
 _ttsApi = window.TTSModule.init({
 getVirtAllRows: function () { return virtAllRows; },
