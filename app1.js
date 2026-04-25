@@ -93,7 +93,11 @@ if (b) Object.keys(b).forEach(function (k) { set.add(k); });
 if (c) Object.keys(c).forEach(function (k) { set.add(k); });
 return Array.from(set);
 }
+var _BILARA_COLLATOR = (typeof Intl !== 'undefined' && Intl.Collator)
+? new Intl.Collator('en', { numeric: true })
+: null;
 function sortBilaraKeys(keys) {
+if (_BILARA_COLLATOR) return keys.sort(_BILARA_COLLATOR.compare);
 return keys.sort(function (x, y) { return x.localeCompare(y, 'en', { numeric: true }); });
 }
 function getCommentPack(lang, id) {
@@ -216,7 +220,52 @@ window.SUTRA_UI_LANG = uiLang;
 var KEY_LAST     = 'lastSutraId';
 var KEY_VIEW     = 'sutra_view_prefs';
 var KEY_ANCHOR_K = function (id) { return 'scroll_anchor_key_' + id; };
-var KEY_ANCHOR_O = function (id) { return 'scroll_anchor_off_' + id; };
+// ── URL hash live sync ─────────────────────────────────────────────
+// Format: #<segPrefix>:<path>  (vd  #dn1:2.3.4) — segment key chuẩn Bilara.
+// segPrefix khác sutta id của file: dn1↔dn01, sn1↔sn1_v1, an10↔an10_v1...
+var _SEG_PREFIX_MAP = null;
+function _resolveSegPrefixToSuttaId(prefix) {
+if (_SEG_PREFIX_MAP === null) {
+_SEG_PREFIX_MAP = {};
+if (window.SUTRA_INDEX) {
+(function walk(arr) {
+for (var i = 0; i < arr.length; i++) {
+var n = arr[i];
+if (n && n.type === 'sutta' && n.id) {
+var p = String(n.id).replace(/_v\d+$/, '').replace(/^([a-z]+)0+(\d)/, '$1$2');
+_SEG_PREFIX_MAP[p] = n.id;
+}
+if (n && n.children) walk(n.children);
+}
+})(window.SUTRA_INDEX);
+}
+}
+return _SEG_PREFIX_MAP[prefix] || prefix;
+}
+function _parseAnchorHash() {
+var h = String(location.hash || '').replace(/^#/, '');
+if (!h) return null;
+var m = h.match(/^([A-Za-z0-9_-]+)(?::.+)?$/);
+if (!m) return null;
+var rawPrefix = m[1].toLowerCase();
+var suttaId = _resolveSegPrefixToSuttaId(rawPrefix);
+return { sutta: suttaId, key: h };
+}
+function _writeAnchorHash(key) {
+if (!key) return;
+try { history.replaceState(null, '', '#' + key); } catch (e) { /* ignore */ }
+}
+function _clearAnchorHash() {
+try {
+if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+} catch (e) { /* ignore */ }
+}
+// Hash ưu tiên hơn localStorage NẾU hash trỏ đúng sutta đang xem.
+function getAnchorKeyFor(id) {
+var h = _parseAnchorHash();
+if (h && h.sutta === id && h.key) return h.key;
+return storage.get(KEY_ANCHOR_K(id));
+}
 var WIDE_STORAGE_KEY = 'sutra_layout_wide';
 var isWide = storage.get(WIDE_STORAGE_KEY) === '1';
 /* ============================================================
@@ -809,6 +858,41 @@ grid.classList.toggle('hide-vie',  !showVie);
 updateVisibleCols();
 }
 window.addEventListener('resize', function () { updateVisibleCols(); updateMenuPanelTop(); });
+// Khi ẩn 1 ngôn ngữ → tắt Highlight + Commentary của ngôn ngữ đó (đồng bộ),
+// nhưng nhớ trạng thái cũ vào _langDepsBackup để khôi phục khi hiện lại.
+var _langDepsBackup = { pli: null, eng: null, vie: null };
+function _applyHlBtnUi(lang) {
+var on = lang === 'pli' ? hlPli : lang === 'eng' ? hlEng : hlVie;
+var id = lang === 'pli' ? 'btnHlPli' : lang === 'eng' ? 'btnHlEng' : 'btnHlVie';
+var b = $(id);
+if (b) { b.classList.toggle('active', !!on); b.setAttribute('aria-pressed', String(!!on)); }
+}
+function _syncDepsOnLangHide(lang) {
+if (lang === 'pli') {
+_langDepsBackup.pli = { hl: hlPli, cmt: showCmtPli };
+hlPli = false; showCmtPli = false;
+} else if (lang === 'eng') {
+_langDepsBackup.eng = { hl: hlEng, cmt: showCmtEng };
+hlEng = false; showCmtEng = false;
+} else if (lang === 'vie') {
+_langDepsBackup.vie = { hl: hlVie, cmt: showCmtVie };
+hlVie = false; showCmtVie = false;
+}
+_applyHlBtnUi(lang);
+syncCmtButtons();
+applySegKeyHdrVis();
+}
+function _syncDepsOnLangShow(lang) {
+var bak = _langDepsBackup[lang];
+if (!bak) return;  // không có backup → giữ nguyên (false)
+if (lang === 'pli')      { hlPli = !!bak.hl; showCmtPli = !!bak.cmt; }
+else if (lang === 'eng') { hlEng = !!bak.hl; showCmtEng = !!bak.cmt; }
+else if (lang === 'vie') { hlVie = !!bak.hl; showCmtVie = !!bak.cmt; }
+_langDepsBackup[lang] = null;
+_applyHlBtnUi(lang);
+syncCmtButtons();
+applySegKeyHdrVis();
+}
 if (btnPali) btnPali.onclick = function () {
 if (showPali && (showEng || showVie)) { /* will set false */ }
 else if (!showPali) { /* will set true */ }
@@ -817,6 +901,7 @@ preserveTopAndSave(function () {
 showPali = !showPali;
 btnPali.classList.toggle('active', showPali);
 btnPali.setAttribute('aria-pressed', String(showPali));
+if (!showPali) _syncDepsOnLangHide('pli'); else _syncDepsOnLangShow('pli');
 applyVisibility(); saveViewPrefs(); maybeRerenderIfModeChanged();
 });
 };
@@ -828,6 +913,7 @@ preserveTopAndSave(function () {
 showEng = !showEng;
 btnEng.classList.toggle('active', showEng);
 btnEng.setAttribute('aria-pressed', String(showEng));
+if (!showEng) _syncDepsOnLangHide('eng'); else _syncDepsOnLangShow('eng');
 applyVisibility(); saveViewPrefs(); maybeRerenderIfModeChanged();
 });
 };
@@ -839,6 +925,7 @@ preserveTopAndSave(function () {
 showVie = !showVie;
 btnVie.classList.toggle('active', showVie);
 btnVie.setAttribute('aria-pressed', String(showVie));
+if (!showVie) _syncDepsOnLangHide('vie'); else _syncDepsOnLangShow('vie');
 applyVisibility(); saveViewPrefs(); maybeRerenderIfModeChanged();
 });
 };
@@ -1159,19 +1246,8 @@ if (Math.abs(targetY - scrollRoot.scrollTop) > 1) {
 _progScrollUntil = Date.now() + 800;
 scrollRoot.scrollTop = targetY;
 }
-// Re-save + cancel pending debounce một lần nữa (defensive)
-storage.set(KEY_ANCHOR_K(currentSutraId), topKey);
 if (_saveAnchorDebounced && _saveAnchorDebounced.cancel) _saveAnchorDebounced.cancel();
 });
-// Multi-stage re-save: cover case layout tiếp tục shift sau RAF
-setTimeout(function () {
-if (currentSutraId) storage.set(KEY_ANCHOR_K(currentSutraId), topKey);
-if (_saveAnchorDebounced && _saveAnchorDebounced.cancel) _saveAnchorDebounced.cancel();
-}, 100);
-setTimeout(function () {
-if (currentSutraId) storage.set(KEY_ANCHOR_K(currentSutraId), topKey);
-if (_saveAnchorDebounced && _saveAnchorDebounced.cancel) _saveAnchorDebounced.cancel();
-}, 500);
 }
 function saveScrollAnchorNow() {
 if (!currentSutraId) return;
@@ -1186,24 +1262,27 @@ return;
 var scrollRoot = getScrollRoot();
 if (!scrollRoot || scrollRoot.scrollTop === 0) {
 storage.remove(KEY_ANCHOR_K(currentSutraId));
+_clearAnchorHash();
 if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] cleared (scrollTop=0) for', currentSutraId);
 return;
 }
-// Ưu tiên compute sync từ DOM; fallback sang firstVisibleKey nếu DOM chưa có rows.
-var topKey = computeTopVisibleKey() || firstVisibleKey;
+// Ưu tiên cache từ IntersectionObserver (O(1)) — chỉ scan DOM khi cache trống.
+// Trên file lớn (hàng nghìn rows), DOM scan + getBoundingClientRect loop là bottleneck chính.
+var topKey = firstVisibleKey || computeTopVisibleKey();
 if (!topKey) {
 if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] skip — no top key computable');
 return;
 }
 firstVisibleKey = topKey; // sync cache để updateDynamicTitles nhất quán
 storage.set(KEY_ANCHOR_K(currentSutraId), topKey);
+_writeAnchorHash(topKey);
 if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE]', currentSutraId, '→', topKey, 'scrollTop=' + scrollRoot.scrollTop);
 }
 function restoreScrollByAnchor(id) {
 var scrollRoot = getScrollRoot();
 if (!scrollRoot) return false;
 try {
-var key = storage.get(KEY_ANCHOR_K(id));
+var key = getAnchorKeyFor(id);
 if (window.DEBUG_ANCHOR) console.log('[ANCHOR RESTORE] id=' + id + ' key=' + key);
 if (!key) return false;
 var foundIdx = -1;
@@ -1227,11 +1306,14 @@ break;
 }
 if (window.DEBUG_ANCHOR) console.log('[ANCHOR RESTORE] foundIdx=' + foundIdx + ' in virtAllRows.length=' + virtAllRows.length);
 if (foundIdx < 0) return false;
-ensureAllChunksUpTo(foundIdx);
+// Chỉ materialize chunk chứa anchor (eager-around-anchor đã render ±1 chunks).
+// IntersectionObserver sẽ tự materialize neighbors khi user scroll. Tránh render
+// hàng nghìn row sync khi anchor ở cuối file dài.
+ensureRowRendered(foundIdx);
 if (window.DEBUG_ANCHOR) {
 var matCnt = 0;
 for (var mc = 0; mc < virtChunks.length; mc++) if (virtChunks[mc].materialized) matCnt++;
-console.log('[ANCHOR RESTORE] chunks materialized after ensureAllChunksUpTo: ' + matCnt + '/' + virtChunks.length);
+console.log('[ANCHOR RESTORE] chunks materialized after ensureRowRendered: ' + matCnt + '/' + virtChunks.length);
 }
 var safeKey = safeCssEscape(key);
 var row = scrollRoot.querySelector('.sutra-row[data-key="' + safeKey + '"]');
@@ -1275,28 +1357,26 @@ if (document.visibilityState === 'hidden') saveScrollAnchorNow();
 });
 var suppressBackTop = false;
 function toggleBackTop(show) { if (!btnBackTop) return; btnBackTop.classList.toggle('visible', show); }
-// Dual save: throttle (leading-edge, responsive) + debounce (trailing-edge, stable layout).
-// Cả 2 skip nếu _progScrollUntil > now (suppress window cho programmatic scroll).
-var _saveAnchorThrottled = throttle(saveScrollAnchorNow, 200);
-var _saveAnchorDebounced = debounce(saveScrollAnchorNow, 180);
+// Throttle save (leading-edge) + debounce (trailing-edge) cho final stable top sau khi user dừng scroll.
+// `pagehide` + `visibilitychange` đã đảm bảo save lúc rời trang nên debounce ngắn là đủ.
+// Skip nếu _progScrollUntil > now (suppress window cho programmatic scroll).
+var _saveAnchorThrottled = throttle(saveScrollAnchorNow, 250);
+var _saveAnchorDebounced = debounce(saveScrollAnchorNow, 200);
 var _backTopThrottled = throttle(function (v) { toggleBackTop(v); }, 120);
 if (scrollEl) scrollEl.addEventListener('scroll', function () {
 if (!suppressBackTop) _backTopThrottled(scrollEl.scrollTop > 0);
-_saveAnchorThrottled();  // save ngay (leading edge) để không miss
-_saveAnchorDebounced();  // save lại khi scroll idle (final stable top)
+_saveAnchorThrottled();
+_saveAnchorDebounced();
 }, { passive: true });
 if (btnBackTop && scrollEl) btnBackTop.onclick = function () {
 suppressBackTop = true;
 toggleBackTop(false);
-setMobileHeaderHidden(false);
-mobileLastScrollTop = 0;
 scrollEl.scrollTo({ top: 0, behavior: 'smooth' });
 var done = function () {
 suppressBackTop = false;
 toggleBackTop(false);
 if (currentSutraId) {
 storage.remove(KEY_ANCHOR_K(currentSutraId));
-storage.remove(KEY_ANCHOR_O(currentSutraId));
 }
 };
 if ('onscrollend' in scrollEl) {
@@ -1312,42 +1392,6 @@ requestAnimationFrame(poll);
 requestAnimationFrame(poll);
 }
 };
-var headerEl = card ? card.querySelector('.header') : null;
-var mobileLastScrollTop = 0;
-var mobileHeaderHidden = false;
-var MOBILE_SCROLL_THRESHOLD = 1;
-function isMobileViewport() {
-return window.innerWidth <= 500;
-}
-function setMobileHeaderHidden() {
-}
-if (scrollEl) {
-var isHeaderScrollTicking = false;
-scrollEl.addEventListener('scroll', function () {
-if (!isHeaderScrollTicking) {
-window.requestAnimationFrame(function () {
-if (isMobileViewport() && headerEl) {
-var st = scrollEl.scrollTop;
-if (st >= 0 && st <= scrollEl.scrollHeight - scrollEl.clientHeight) {
-if (st <= 10) {
-setMobileHeaderHidden(false);
-} else if (st > 50 && st > mobileLastScrollTop) {
-setMobileHeaderHidden(true);
-}
-mobileLastScrollTop = st;
-}
-}
-isHeaderScrollTicking = false;
-});
-isHeaderScrollTicking = true;
-}
-}, { passive: true });
-scrollEl.addEventListener('scroll', function () {
-if (!suppressBackTop) _backTopThrottled(scrollEl.scrollTop > 0);
-_saveAnchorThrottled();
-_saveAnchorDebounced();
-}, { passive: true });
-}
 function buildSuttaLinkHtml(s) {
 var codePrefix = s.code ? s.code + ' – ' : '';
 var viLabel = s.titleVi || '', enLabel = s.titleEn || '', paliLabel = s.titlePali || '';
@@ -1647,7 +1691,69 @@ var matches = FLAT_SUTTAS.filter(function (x) { return x.flat.includes(q); }).sl
 renderSearchResults(matches, query);
 }
 if (searchInput) searchInput.addEventListener('input', debounce(function (e) { applySearch(e.target.value); }, 180));
+// ── Share / copy segment link ──────────────────────────────────────
+function _showToast(msg) {
+var t = document.getElementById('appToast');
+if (!t) {
+t = document.createElement('div');
+t.id = 'appToast';
+t.className = 'app-toast';
+t.setAttribute('role', 'status');
+t.setAttribute('aria-live', 'polite');
+document.body.appendChild(t);
+}
+t.textContent = msg;
+t.classList.add('show');
+clearTimeout(_showToast._tm);
+_showToast._tm = setTimeout(function () { t.classList.remove('show'); }, 1800);
+}
+function _buildShareUrl(keyRaw) {
+return location.origin + location.pathname + '#' + keyRaw;
+}
+function shareSegment(keyRaw) {
+if (!keyRaw) return;
+var url = _buildShareUrl(keyRaw);
+var titleText = (document.getElementById('title') || {}).textContent || 'Sutta Archive';
+// Web Share API ưu tiên — chủ yếu mobile; user chọn Zalo/FB/Messenger từ system sheet.
+if (navigator.share) {
+navigator.share({ title: titleText, text: keyRaw, url: url }).catch(function () { /* user huỷ — không cần fallback */ });
+return;
+}
+// Fallback: copy clipboard.
+var done = function () { _showToast(uiLang === 'en' ? 'Link copied' : 'Đã sao chép link'); };
+var fail = function () { _showToast(uiLang === 'en' ? 'Copy failed' : 'Sao chép thất bại'); };
+if (navigator.clipboard && navigator.clipboard.writeText) {
+navigator.clipboard.writeText(url).then(done).catch(function () {
+_legacyCopy(url) ? done() : fail();
+});
+} else {
+_legacyCopy(url) ? done() : fail();
+}
+}
+function _legacyCopy(text) {
+try {
+var ta = document.createElement('textarea');
+ta.value = text;
+ta.style.position = 'fixed'; ta.style.left = '-9999px';
+document.body.appendChild(ta);
+ta.select();
+var ok = document.execCommand('copy');
+document.body.removeChild(ta);
+return ok;
+} catch (e) { return false; }
+}
 function initDelegations() {
+if (grid && !grid._shareDel) {
+grid.addEventListener('click', function (ev) {
+var btn = ev.target.closest('.sutra-seg-share');
+if (btn && grid.contains(btn)) {
+ev.preventDefault();
+ev.stopPropagation();
+shareSegment(btn.getAttribute('data-share-key'));
+}
+});
+grid._shareDel = true;
+}
 if (sutraMenuList && !sutraMenuList._del) {
 sutraMenuList.addEventListener('click', function (ev) {
 var starBtn = ev.target.closest('.menu-bookmark-btn');
@@ -1774,10 +1880,21 @@ var prefix = parts[0].replace(/([a-zA-Z]+)(\d*)/, function (_, letters, nums) { 
 keyShort = parts[1] ? prefix + '.' + parts[1] : prefix;
 } else { keyShort = keyRaw.toUpperCase(); }
 if (keyShort) {
+var segWrap = document.createElement('div');
+segWrap.className = 'sutra-seg-keywrap';
 var seg = document.createElement('div');
 seg.className = 'sutra-seg-key'; seg.textContent = keyShort;
 seg.setAttribute('aria-hidden', 'true');
-wrap.appendChild(seg);
+segWrap.appendChild(seg);
+var shareBtn = document.createElement('button');
+shareBtn.type = 'button';
+shareBtn.className = 'sutra-seg-share';
+shareBtn.setAttribute('data-share-key', keyRaw);
+shareBtn.setAttribute('aria-label', uiLang === 'en' ? 'Share / copy link to this segment' : 'Chia sẻ / sao chép link đoạn này');
+shareBtn.title = uiLang === 'en' ? 'Share / copy link' : 'Chia sẻ / sao chép link';
+shareBtn.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5l-3-3-3 3"/><path d="M8 2v9"/><path d="M3 9v3a2 2 0 002 2h6a2 2 0 002-2V9"/></svg>';
+segWrap.appendChild(shareBtn);
+wrap.appendChild(segWrap);
 }
 var row = document.createElement('div');
 row.className = 'sutra-row'; row.setAttribute('data-key', keyRaw);
@@ -2019,13 +2136,6 @@ return;
 }
 }
 }
-function ensureAllChunksUpTo(rowIdx) {
-for (var k = 0; k < virtChunks.length; k++) {
-var c = virtChunks[k];
-if (c.rowStart > rowIdx) break;
-if (!c.materialized) materializeChunk(c);
-}
-}
 async function renderSutra(id) {
 if (!id || !grid) return;
 // KHÔNG save anchor ở đây nữa: layout có thể đã shift giữa lúc user scroll và click
@@ -2039,8 +2149,6 @@ virtAllRows = [];
 firstVisibleKey = null;
 firstVisibleOffsetFromGrid = 0;
 cachedRows = [];
-setMobileHeaderHidden(false);
-mobileLastScrollTop = 0;
 var token = ++renderToken;
 isRendering = true;
 grid.setAttribute('aria-busy', 'true');
@@ -2170,7 +2278,9 @@ grid.innerHTML = '';
 cachedRows = [];
 applyVisibility();
 var CHUNK_SIZE = 50;
-var EST_ROW_H = 120;
+// Heuristic chiều cao placeholder. Over-estimate tốt hơn under-estimate
+// (tránh scrollbar nhảy khi chunk materialize từ 120 → ~200 trong layout thật).
+var EST_ROW_H = singleLang ? 130 : (card && card.classList.contains('stack') ? 220 : 180);
 virtChunks = [];
 virtAllRows = rowsForView;
 keyToRowIdx = viewData.keyToRowIdx;
@@ -2194,7 +2304,7 @@ TRƯỚC khi browser paint → hết flash đen. Anchor restore ở RAF kế ti�
 sẽ scroll đúng vị trí vì chunk chứa anchor đã render sẵn. */
 (function eagerAroundAnchor() {
 try {
-var anchorKey = storage.get(KEY_ANCHOR_K(id));
+var anchorKey = getAnchorKeyFor(id);
 var anchorIdx = (anchorKey && keyToRowIdx[anchorKey] != null) ? keyToRowIdx[anchorKey] : 0;
 var anchorChunkIdx = Math.floor(anchorIdx / CHUNK_SIZE);
 var lo = Math.max(0, anchorChunkIdx - 1);
@@ -2204,11 +2314,14 @@ for (var eci = lo; eci <= hi; eci++) materializeChunk(virtChunks[eci]);
 // Không có dòng này → frame paint đầu tiên ở scrollTop=0 nơi chunk 0 là placeholder rỗng,
 // dark mode thấy body bg (#0b0c0e) → flash đen cho bài dài có anchor xa.
 var scroller = getScrollRoot ? getScrollRoot() : scrollEl;
-console.log('[EAGER-FIX]', 'anchorKey=', anchorKey, 'anchorIdx=', anchorIdx, 'chunkIdx=', anchorChunkIdx, 'scroller=', scroller && scroller.id, 'scrollH=', scroller && scroller.scrollHeight, 'clientH=', scroller && scroller.clientHeight, 'offsetTop=', virtChunks[anchorChunkIdx] ? virtChunks[anchorChunkIdx].div.offsetTop : null);
 if (anchorChunkIdx > 0 && scroller && virtChunks[anchorChunkIdx] && virtChunks[anchorChunkIdx].div) {
 var targetY = virtChunks[anchorChunkIdx].div.offsetTop;
 scroller.scrollTop = targetY;
-console.log('[EAGER-FIX] tried to set', targetY, '→ actual=', scroller.scrollTop);
+if (window.DEBUG_ANCHOR) {
+console.log('[EAGER-FIX]', 'anchorKey=', anchorKey, 'anchorIdx=', anchorIdx,
+'chunkIdx=', anchorChunkIdx, 'targetY=', targetY,
+'→ actual=', scroller.scrollTop);
+}
 }
 } catch (e) { /* ignore */ }
 })();
@@ -2244,7 +2357,12 @@ if ('requestIdleCallback' in window) requestIdleCallback(doPreload, { timeout: 2
 else setTimeout(doPreload, 800);
 } catch(e){}
 }
-function openSutra(id) { renderSutra(id); }
+function openSutra(id) {
+// Self-heal: nếu caller truyền segment prefix (vd "dn1") thay vì sutta file id ("dn01"),
+// resolve qua SUTRA_INDEX. Bảo vệ khỏi LS bị pollute, hash, legacy bookmarks.
+if (id) id = _resolveSegPrefixToSuttaId(id);
+renderSutra(id);
+}
 (function wireBookmarkCurrent() {
 var btn = $('btnBookmarkCurrent');
 if (!btn) return;
@@ -2622,7 +2740,15 @@ loadBookmarks();
 applyVisibility(); applySegKeyHdrVis(); loadZoom(); loadLineHeight(); buildSutraMenuFromIndex(); initDelegations();
 updateBookmarksCount();
 var startId = storage.get(KEY_LAST);
+var _bootHash = _parseAnchorHash();
+if (_bootHash && _bootHash.sutta) startId = _bootHash.sutta;
 if (startId) openSutra(startId); else renderWelcomeScreen();
+window.addEventListener('hashchange', function () {
+var h = _parseAnchorHash();
+if (!h) return;
+if (h.sutta !== currentSutraId) openSutra(h.sutta);
+else restoreScrollByAnchor(currentSutraId);
+});
 if (!synthSupported) {
 [btnReadTts, btnPauseTts, btnStopTts].forEach(function (b) { if (b) b.disabled = true; });
 } else {
