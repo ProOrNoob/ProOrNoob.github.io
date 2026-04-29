@@ -758,6 +758,7 @@ if (panel === settingsPanel && btnSettings) {
 btnSettings.setAttribute('aria-expanded', String(isOpen));
 btnSettings.classList.toggle('active', isOpen);
 if (!isOpen) _clearStickyHover(btnSettings);
+document.body.classList.toggle('settings-open', isOpen);
 }
 if (panel === sutraMenuPanel && btnSutraMenu) {
 btnSutraMenu.setAttribute('aria-expanded', String(isOpen));
@@ -1474,27 +1475,93 @@ var _saveAnchorThrottled = throttle(saveScrollAnchorNow, 250);
 var _saveAnchorDebounced = debounce(saveScrollAnchorNow, 200);
 var _backTopThrottled = throttle(function (v) { toggleBackTop(v); }, 120);
 var _progressIdleTimer = null;
+function _ensureProgressElements(wrap) {
+var bar = wrap.querySelector('.rp-bar');
+if (!bar) {
+bar = document.createElement('span');
+bar.className = 'rp-bar';
+wrap.insertBefore(bar, wrap.firstChild);
+}
+var existing = wrap.querySelectorAll('.rp-dot');
+if (existing.length !== 5) {
+Array.prototype.forEach.call(existing, function (d) { d.remove(); });
+for (var i = 0; i < 5; i++) {
+var d = document.createElement('span');
+d.className = 'rp-dot';
+d.dataset.idx = String(i);
+wrap.appendChild(d);
+}
+}
+return { bar: bar, dots: wrap.querySelectorAll('.rp-dot') };
+}
 function updateReadingProgress() {
-var fill = document.getElementById('readingProgressFill');
 var wrap = document.getElementById('readingProgress');
 var pctEl = document.getElementById('readingProgressPct');
-if (!fill || !wrap || !scrollEl) return;
+if (!wrap || !scrollEl) return;
 var max = scrollEl.scrollHeight - scrollEl.clientHeight;
 if (max <= 10 || !currentSutraId) {
-fill.style.transform = 'translateY(8px)';
 wrap.classList.remove('visible');
 return;
 }
-// Match wrap bounds với grid scroll area → dot chỉ di chuyển trong vùng nội dung,
-// không trồi lên header hay xuống footer.
 var gridRect = scrollEl.getBoundingClientRect();
 wrap.style.top = gridRect.top + 'px';
 wrap.style.bottom = Math.max(0, window.innerHeight - gridRect.bottom) + 'px';
 var pct = Math.min(1, Math.max(0, scrollEl.scrollTop / max));
 var wrapH = gridRect.height;
-var travelY = wrapH - 8 - 16 - 8;  // grid height - margins - dot
-var dotY = 8 + pct * Math.max(0, travelY);
-fill.style.transform = 'translateY(' + dotY.toFixed(1) + 'px)';
+var BAR_HEIGHT = 48;
+var DOT_SIZE = 4;
+var DOT_SPACING_INIT = (BAR_HEIGHT - DOT_SIZE) / 4;
+var leadStart = 8 + (BAR_HEIGHT - DOT_SIZE);
+var range = Math.max(0, wrapH - 16 - leadStart);
+var leadY = leadStart + pct * range;
+var els = _ensureProgressElements(wrap);
+var bar = els.bar;
+var dots = els.dots;
+var BAR_FULL_END = 0.05;
+var BAR_FADE_END = 0.08;
+var BALL_START_PCT = 0.025;
+var BALL_FULL_AT = 0.04;
+var BALL_PHASE_TRIGGER = 0.05;
+var initLead = leadStart + BALL_PHASE_TRIGGER * range;
+var ballPct = Math.max(0, pct - BALL_PHASE_TRIGGER);
+var SPEEDS = [1.00, 0.82, 0.64, 0.46, 0.28];
+var FADE_WIN = [null, [0.65, 0.97], [0.50, 0.80], [0.35, 0.63], [0.20, 0.43]];
+var topDotY = pct < BALL_PHASE_TRIGGER
+? (leadY - 4 * DOT_SPACING_INIT)
+: (initLead - 4 * DOT_SPACING_INIT) + ballPct * SPEEDS[4] * range;
+var barOp;
+if (pct <= BAR_FULL_END) barOp = 1;
+else if (pct >= BAR_FADE_END) barOp = 0;
+else barOp = (BAR_FADE_END - pct) / (BAR_FADE_END - BAR_FULL_END);
+bar.style.top = topDotY.toFixed(1) + 'px';
+bar.style.height = '';
+bar.style.opacity = barOp.toFixed(2);
+var gradientFactor = Math.max(0, Math.min(1, (pct - 0.03) / 0.02));
+var bottomMix = (100 - 75 * gradientFactor).toFixed(0);
+bar.style.background = 'linear-gradient(to bottom,var(--accent) 0%,var(--accent) 30%,color-mix(in oklab,var(--accent) ' + bottomMix + '%,transparent) 100%)';
+var dotAppearOp;
+if (pct < BALL_START_PCT) dotAppearOp = 0;
+else if (pct >= BALL_FULL_AT) dotAppearOp = 1;
+else dotAppearOp = (pct - BALL_START_PCT) / (BALL_FULL_AT - BALL_START_PCT);
+for (var i = 0; i < 5; i++) {
+var dot = dots[i];
+var dotY = pct < BALL_PHASE_TRIGGER
+? (leadY - i * DOT_SPACING_INIT)
+: (initLead - i * DOT_SPACING_INIT) + ballPct * SPEEDS[i] * range;
+dot.style.top = dotY.toFixed(1) + 'px';
+var op;
+var fw = FADE_WIN[i];
+if (!fw) {
+op = dotAppearOp;
+} else if (pct < fw[0]) {
+op = dotAppearOp;
+} else if (pct >= fw[1]) {
+op = 0;
+} else {
+op = dotAppearOp * (1 - (pct - fw[0]) / (fw[1] - fw[0]));
+}
+dot.style.opacity = Math.max(0, Math.min(1, op)).toFixed(2);
+}
 if (pctEl) pctEl.textContent = Math.round(pct * 100) + '%';
 wrap.classList.add('visible');
 wrap.classList.remove('idle');
