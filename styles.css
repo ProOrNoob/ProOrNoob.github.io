@@ -150,6 +150,8 @@
 .sutra-row-wrap.is-subtitle[data-key$=":0.1"] .sutra-seg-share,
 .sutra-row-wrap.is-subtitle[data-key$=":0.2"] .sutra-seg-share{display:none !important}
 /* Sticky hover fix — khi user tap nút để đóng panel, force clear mọi :hover/:active state để không ghost */
+.bar-pill.no-hover,.bar-pill.no-hover:hover,.bar-pill.no-hover:active,.bar-pill.no-hover:focus,.bar-pill.no-hover:focus-visible{background:transparent !important;color:var(--ink-3) !important;transform:none !important;box-shadow:none !important;transition:none !important}
+.bar-pill.no-hover svg{color:var(--ink-3) !important;opacity:0.9 !important;transform:none !important;transition:none !important}
 /* Touch-only: tắt hover/active background để tránh sticky shadow trên iOS/Android.
    Desktop KHÔNG bị ảnh hưởng — vẫn có hover smooth + color transition như cũ. */
 html.is-touch .bar-pill:hover,
