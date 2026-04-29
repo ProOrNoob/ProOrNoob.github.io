@@ -808,14 +808,11 @@ if (!isOpen) _clearStickyHover(btnSutraMenu);
 }
 }
 }
-/* Touch device fix: khi user tap nút để đóng panel, browser giữ :hover/:active
-   trên element vừa touch → ghost background quanh nút. Blur + force "no-hover"
-   class trong 280ms → CSS sẽ override mọi state về transparent → hết ghost. */
+/* Touch device fix: chỉ blur button khi đóng panel (CSS .is-touch đã ngăn sticky hover bg).
+   Trước đây có .no-hover class 280ms nhưng gây flicker library button — bỏ luôn. */
 function _clearStickyHover(btn) {
 if (!btn) return;
 try { btn.blur(); } catch(_){}
-btn.classList.add('no-hover');
-setTimeout(function () { btn.classList.remove('no-hover'); }, 280);
 }
 function positionSettingsPanel() {
 if (!settingsPanel || !btnSutraMenu || !card) return;
