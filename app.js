@@ -783,10 +783,13 @@ panel.setAttribute('inert', '');
 if (panel === settingsPanel && btnSettings) {
 btnSettings.setAttribute('aria-expanded', String(isOpen));
 btnSettings.classList.toggle('active', isOpen);
+// Mobile: blur khi đóng để clear sticky :focus / :hover ghost state
+if (!isOpen) try { btnSettings.blur(); } catch(_){}
 }
 if (panel === sutraMenuPanel && btnSutraMenu) {
 btnSutraMenu.setAttribute('aria-expanded', String(isOpen));
 btnSutraMenu.classList.toggle('is-open', isOpen);
+if (!isOpen) try { btnSutraMenu.blur(); } catch(_){}
 }
 }
 }
