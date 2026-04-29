@@ -146,6 +146,7 @@ document.documentElement.setAttribute('data-theme','dark');
 <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3M3.5 7.5L8 3l4.5 4.5"/></svg>
 </button>
 </div>
+<div id="readingProgress" aria-hidden="true"><div id="readingProgressFill"></div><span id="readingProgressPct"></span></div>
 <div class="modal-scrim" aria-hidden="true"></div>
 <div id="sutraMenuPanel" class="panel" role="dialog"
 aria-label="Danh mục bài kinh" aria-hidden="true" inert>
@@ -317,6 +318,7 @@ aria-label="Giãn dòng">
 </div>
 <div class="slider-resets">
 <button class="slider-reset-btn debug-only" id="btnDebug" title="Debug info" aria-label="Debug info">🐞</button>
+<button class="slider-reset-btn" id="btnProgressToggle" aria-pressed="true" title="Hiện/ẩn thanh tiến độ đọc" aria-label="Hiện/ẩn thanh tiến độ đọc">▮ %</button>
 <button class="slider-reset-btn" id="btnZoomReset" title="Reset cỡ chữ" aria-label="Reset cỡ chữ">↺ A</button>
 <button class="slider-reset-btn" id="btnLineHeightReset" title="Reset giãn dòng" aria-label="Reset giãn dòng">↺ ☰</button>
 </div>

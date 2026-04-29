@@ -627,6 +627,13 @@ var viHtml =
 '<li><strong>Nav title</strong> giữa footer — bấm để mở thư viện ngay bài đang đọc.</li>' +
 '<li><strong>‹ TRƯỚC / SAU ›</strong> ở footer: chuyển bài tuần tự trong bộ kinh.</li>' +
 '<li><strong>⬆ Back to top</strong> (FAB góc phải): về đầu bài, xoá vị trí đã lưu.</li>' +
+'<li><strong>Thanh tiến độ đọc</strong> dọc bên trái + badge <code>%</code> góc dưới-phải: cho biết đã đọc tới đâu. Tắt/bật trong Cài đặt (nút <code>▮ %</code>).</li>' +
+'</ul>' +
+'<h3>🔗 Chia sẻ & Sao chép</h3>' +
+'<ul>' +
+'<li><strong>🔗 Share đầu bài</strong> (góc trên-phải header): chia sẻ link bài kinh — Copy link · Facebook · Zalo · X (Twitter) · Email · Hệ thống chia sẻ (mobile).</li>' +
+'<li><strong>🔗 Share đoạn</strong> (icon nhỏ cạnh mã đoạn): chia sẻ link đến đúng đoạn đó — paste link mở app sẽ cuộn thẳng đến đoạn.</li>' +
+'<li><strong>📋 Copy</strong> cạnh label <code>PĀLI</code> / <code>ENGLISH</code> / <code>VIỆT</code>: sao chép văn bản của cột đó cho đoạn hiện tại.</li>' +
 '</ul>' +
 '<h3>⚙ Cài đặt</h3>' +
 '<ul>' +
@@ -635,6 +642,7 @@ var viHtml =
 '<li><strong>Bố cục</strong>: <code>☰ Xếp dọc</code> — stack 3 cột · <code># Segment</code> — ẩn/hiện mã đoạn · <code>▦ Label</code> — ẩn/hiện nhãn cột.</li>' +
 '<li><strong>Cỡ chữ</strong>: slider 80–160% (chỉ áp cho nội dung). <strong>Giãn dòng</strong>: 1.3–2.6.</li>' +
 '<li><strong>↺ A</strong> / <strong>↺ ☰</strong>: reset cỡ chữ / giãn dòng về mặc định.</li>' +
+'<li><strong>▮ %</strong>: bật/tắt thanh tiến độ đọc (dọc bên trái + badge phần trăm).</li>' +
 '<li><strong>🐞</strong>: debug.</li>' +
 '</ul>' +
 '<h3>🔊 Đọc to (TTS)</h3>' +
@@ -686,6 +694,13 @@ var enHtml =
 '<li><strong>Nav title</strong> in the footer center — tap to open the library at the current sutta.</li>' +
 '<li><strong>‹ PREV / NEXT ›</strong>: navigate sequentially within the nikāya.</li>' +
 '<li><strong>⬆ Back to top</strong> (bottom-right FAB): jump to top and clear the scroll anchor.</li>' +
+'<li><strong>Reading progress bar</strong> on the left edge + <code>%</code> badge bottom-right: shows how far you have read. Toggle in Settings (<code>▮ %</code> button).</li>' +
+'</ul>' +
+'<h3>🔗 Share & Copy</h3>' +
+'<ul>' +
+'<li><strong>🔗 Title share</strong> (top-right of header): share link to the sutta — Copy link · Facebook · Zalo · X (Twitter) · Email · System share (mobile).</li>' +
+'<li><strong>🔗 Segment share</strong> (small icon next to segment ID): share link to that exact segment — opening the link scrolls directly to it.</li>' +
+'<li><strong>📋 Copy</strong> next to <code>PĀLI</code> / <code>ENGLISH</code> / <code>VIỆT</code> labels: copy the text of that column for the current segment.</li>' +
 '</ul>' +
 '<h3>⚙ Settings</h3>' +
 '<ul>' +
@@ -694,6 +709,7 @@ var enHtml =
 '<li><strong>Layout</strong>: <code>☰ Stack</code> — vertical stack · <code># Segment</code> — show/hide segment IDs · <code>▦ Label</code> — show/hide column headers.</li>' +
 '<li><strong>Font size</strong>: slider 80–160% (body text only). <strong>Line height</strong>: 1.3–2.6.</li>' +
 '<li><strong>↺ A</strong> / <strong>↺ ☰</strong>: reset font size / line height.</li>' +
+'<li><strong>▮ %</strong>: toggle reading progress bar (vertical bar on left + percentage badge).</li>' +
 '<li><strong>🐞</strong>: debug.</li>' +
 '</ul>' +
 '<h3>🔊 Text-to-Speech</h3>' +
@@ -1190,6 +1206,27 @@ lineHeightLevel = clampLh(parseInt(sliderLineHeight.value, 10) / 100); applyLine
 });
 if (btnZoomReset) btnZoomReset.onclick = function () { zoomLevel = 1; applyZoom(); saveZoom(); };
 if (btnLhReset)   btnLhReset.onclick   = function () { lineHeightLevel = 1.85; applyLineHeight(); saveLineHeight(); };
+/* Reading progress toggle — persist via localStorage */
+(function _wireProgressToggle() {
+var btn = $('btnProgressToggle');
+if (!btn) return;
+var KEY = 'sutra_show_progress';
+function apply(on) {
+document.documentElement.classList.toggle('hide-reading-progress', !on);
+btn.setAttribute('aria-pressed', String(!!on));
+btn.classList.toggle('active', !!on);
+}
+var saved = null;
+try { saved = storage.get(KEY); } catch(_){}
+var isOn = saved !== '0';  // default ON
+apply(isOn);
+btn.addEventListener('click', function () {
+isOn = !isOn;
+apply(isOn);
+try { storage.set(KEY, isOn ? '1' : '0'); } catch(_){}
+if (isOn) try { updateReadingProgress(); } catch(_){}
+});
+})();
 var anchorObserver = null;
 var firstVisibleKey = null;
 var firstVisibleOffsetFromGrid = 0;
@@ -1453,11 +1490,37 @@ function toggleBackTop(show) { if (!btnBackTop) return; btnBackTop.classList.tog
 var _saveAnchorThrottled = throttle(saveScrollAnchorNow, 250);
 var _saveAnchorDebounced = debounce(saveScrollAnchorNow, 200);
 var _backTopThrottled = throttle(function (v) { toggleBackTop(v); }, 120);
+var _progressIdleTimer = null;
+function updateReadingProgress() {
+var fill = document.getElementById('readingProgressFill');
+var wrap = document.getElementById('readingProgress');
+var pctEl = document.getElementById('readingProgressPct');
+if (!fill || !wrap || !scrollEl) return;
+var max = scrollEl.scrollHeight - scrollEl.clientHeight;
+if (max <= 10 || !currentSutraId) {
+fill.style.transform = 'scaleY(0)';
+wrap.classList.remove('visible');
+return;
+}
+var pct = Math.min(1, Math.max(0, scrollEl.scrollTop / max));
+fill.style.transform = 'scaleY(' + pct.toFixed(4) + ')';
+if (pctEl) pctEl.textContent = Math.round(pct * 100) + '%';
+wrap.classList.add('visible');
+// Show badge khi user scroll, auto-fade sau 1.5s idle
+wrap.classList.remove('idle');
+clearTimeout(_progressIdleTimer);
+_progressIdleTimer = setTimeout(function () {
+wrap.classList.add('idle');
+}, 1500);
+}
+var _readingProgressThrottled = throttle(updateReadingProgress, 80);
 if (scrollEl) scrollEl.addEventListener('scroll', function () {
 if (!suppressBackTop) _backTopThrottled(scrollEl.scrollTop > 0);
 _saveAnchorThrottled();
 _saveAnchorDebounced();
+_readingProgressThrottled();
 }, { passive: true });
+window.addEventListener('resize', updateReadingProgress);
 if (btnBackTop && scrollEl) btnBackTop.onclick = function () {
 suppressBackTop = true;
 toggleBackTop(false);
@@ -1673,8 +1736,8 @@ b.hidden = !currentSutraId;
 }
 function _buildTitleShareUrl() {
 if (!currentSutraId) return location.href;
-var key = firstVisibleKey || currentSutraId;
-return location.origin + location.pathname + '#' + key;
+// Title share: luôn link đến đầu bài kinh, không kèm segment hiện tại đang scroll
+return location.origin + location.pathname + '#' + currentSutraId;
 }
 function _getShareTitle() {
 var t = ($('title') || {}).textContent || '';
@@ -1682,17 +1745,8 @@ t = t.trim();
 return t && t !== 'Chưa chọn bài' ? t : 'Sutta Archive';
 }
 function _showShareToast(msg) {
-var existing = document.querySelector('.app-toast');
-if (existing) existing.remove();
-var toast = document.createElement('div');
-toast.className = 'app-toast';
-toast.textContent = msg;
-document.body.appendChild(toast);
-requestAnimationFrame(function () { toast.classList.add('show'); });
-setTimeout(function () {
-toast.classList.remove('show');
-setTimeout(function () { try { toast.remove(); } catch (_) {} }, 300);
-}, 1800);
+// Tận dụng _showToast (đã fix Safari fade transition)
+if (typeof _showToast === 'function') { _showToast(msg); return; }
 }
 function _closeShareMenu() {
 var menu = $('shareMenu');
@@ -1728,7 +1782,8 @@ var title = _getShareTitle();
 var text = title + ' — Sutta Archive';
 var en = (typeof uiLang !== 'undefined' && uiLang === 'en');
 if (action === 'native' && typeof navigator.share === 'function') {
-try { await navigator.share({ title: title, text: text, url: url }); } catch (_) {}
+// Bỏ field `text` để iOS share sheet không copy text thay vì url
+try { await navigator.share({ title: title, url: url }); } catch (_) {}
 _closeShareMenu(); return;
 }
 if (action === 'copy') {
@@ -1916,8 +1971,15 @@ t.setAttribute('aria-live', 'polite');
 document.body.appendChild(t);
 }
 t.textContent = msg;
-t.classList.add('show');
+// Safari fix: force re-trigger transition.
+// 1. Remove .show + force reflow → reset state
+// 2. Use rAF + add .show → Safari registers transition properly
+t.classList.remove('show');
+// eslint-disable-next-line no-unused-expressions
+t.offsetWidth;
 clearTimeout(_showToast._tm);
+clearTimeout(_showToast._tm2);
+requestAnimationFrame(function () { t.classList.add('show'); });
 _showToast._tm = setTimeout(function () { t.classList.remove('show'); }, 1800);
 }
 function _buildShareUrl(keyRaw) {
@@ -1927,9 +1989,10 @@ function shareSegment(keyRaw) {
 if (!keyRaw) return;
 var url = _buildShareUrl(keyRaw);
 var titleText = (document.getElementById('title') || {}).textContent || 'Sutta Archive';
-// Web Share API ưu tiên — chủ yếu mobile; user chọn Zalo/FB/Messenger từ system sheet.
+// Web Share API: bỏ field `text` vì iOS có thể copy text thay vì url khi user chọn Copy
+// → chỉ truyền title + url để hệ thống share đúng URL đầy đủ (kèm domain).
 if (navigator.share) {
-navigator.share({ title: titleText, text: keyRaw, url: url }).catch(function () { /* user huỷ — không cần fallback */ });
+navigator.share({ title: titleText, url: url }).catch(function () { /* user huỷ — không cần fallback */ });
 return;
 }
 // Fallback: copy clipboard.
@@ -1963,6 +2026,24 @@ if (btn && grid.contains(btn)) {
 ev.preventDefault();
 ev.stopPropagation();
 shareSegment(btn.getAttribute('data-share-key'));
+return;
+}
+var copyBtn = ev.target.closest('.sutra-col-copy');
+if (copyBtn && grid.contains(copyBtn)) {
+ev.preventDefault();
+ev.stopPropagation();
+var col = copyBtn.closest('.sutra-col');
+if (!col) return;
+var body = col.querySelector('.sutra-col-body');
+var text = body ? (body.textContent || '').trim() : '';
+if (!text) return;
+var done = function () { _showToast(uiLang === 'en' ? 'Text copied' : 'Đã sao chép'); };
+var fail = function () { _showToast(uiLang === 'en' ? 'Copy failed' : 'Sao chép thất bại'); };
+if (navigator.clipboard && navigator.clipboard.writeText) {
+navigator.clipboard.writeText(text).then(done).catch(function () { _legacyCopy(text) ? done() : fail(); });
+} else {
+_legacyCopy(text) ? done() : fail();
+}
 }
 });
 grid._shareDel = true;
@@ -2131,7 +2212,17 @@ col.appendChild(h);
 function makeCol(className, headerText, contentText, contentClass, cmtText) {
 var col  = document.createElement('div'); col.className = 'sutra-col ' + className;
 var hdr  = document.createElement('div'); hdr.className = 'sutra-col-header';
-hdr.textContent = headerText; hdr.setAttribute('aria-hidden', 'true');
+var hdrLabel = document.createElement('span');
+hdrLabel.className = 'sutra-col-header-label';
+hdrLabel.textContent = headerText;
+hdr.appendChild(hdrLabel);
+var copyBtn = document.createElement('button');
+copyBtn.type = 'button';
+copyBtn.className = 'sutra-col-copy';
+copyBtn.setAttribute('aria-label', uiLang === 'en' ? 'Copy this paragraph' : 'Sao chép đoạn này');
+copyBtn.title = uiLang === 'en' ? 'Copy' : 'Sao chép';
+copyBtn.innerHTML = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="4.5" width="7.5" height="7.5" rx="1"/><path d="M2 9V3a1 1 0 0 1 1-1h6"/></svg>';
+hdr.appendChild(copyBtn);
 var body = document.createElement('div'); body.className = 'sutra-col-body';
 var inner = document.createElement('div'); inner.className = contentClass;
 inner.textContent = contentText || '';
@@ -2552,6 +2643,7 @@ updateVisibleCols(); restoreScrollByAnchor(id);
 setupAnchorObserver(); updateNavButtons();
 // Snapshot mode hiện tại vào DOM_MODE_CACHE → lần sau toggle về mode này sẽ instant
 try { _dmSaveCurrent(); } catch (_) {}
+try { updateReadingProgress(); } catch (_) {}
 setTimeout(function () {
 isRendering = false;
 setTtsUiState('idle');
