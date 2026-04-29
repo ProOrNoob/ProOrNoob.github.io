@@ -371,10 +371,99 @@ if (paragraphBreak && bufSegCount >= PARAGRAPH_BREAK_LEN) flush();
 }
 flush(); return out;
 }
+/* ============================================================
+DOM mode cache — Phương án B: Cache cây DOM theo (suttaId, mode).
+Khi user toggle giữa multi ↔ single (hoặc giữa các ngôn ngữ single),
+detach chunk DIVs hiện tại, attach chunks đã cache → swap ~10ms thay vì rebuild ~150ms.
+Lần đầu mỗi mode vẫn full build; lần 2+ instant.
+============================================================ */
+var DOM_MODE_CACHE = new Map();           // 'id|mode' → snapshot
+var DOM_MODE_CACHE_MAX = 6;               // ~1.5 sutta × 4 mode
+function _dmCacheKey(id, mode) { return id + '|' + (mode || 'multi'); }
+function _dmSnapshotCurrent() {
+if (!currentSutraId || !virtChunks || !virtChunks.length) return null;
+return {
+chunks: virtChunks.slice(),
+rows: virtAllRows,
+cachedRows: cachedRows.slice(),
+keyToRowIdx: keyToRowIdx,
+vaggaMarkers: vaggaMarkers,
+suttaMarkers: suttaMarkers,
+isAN: isAN, isSN: isSN,
+fallbackTitle: fallbackTitle,
+scrollTop: grid ? grid.scrollTop : 0,
+scrollKey: firstVisibleKey
+};
+}
+function _dmSaveCurrent() {
+if (!currentSutraId) return;
+var mode = lastSingleLangMode || 'multi';
+var snap = _dmSnapshotCurrent();
+if (!snap) return;
+var k = _dmCacheKey(currentSutraId, mode);
+DOM_MODE_CACHE.delete(k); DOM_MODE_CACHE.set(k, snap);
+while (DOM_MODE_CACHE.size > DOM_MODE_CACHE_MAX) {
+DOM_MODE_CACHE.delete(DOM_MODE_CACHE.keys().next().value);
+}
+}
+function _dmInvalidateForSutta(id) {
+if (!id) return;
+var keys = [];
+DOM_MODE_CACHE.forEach(function (_v, k) { if (k.indexOf(id + '|') === 0) keys.push(k); });
+keys.forEach(function (k) { DOM_MODE_CACHE.delete(k); });
+}
+function _dmTryRestore(targetMode) {
+if (!currentSutraId || !grid) return false;
+var k = _dmCacheKey(currentSutraId, targetMode);
+var snap = DOM_MODE_CACHE.get(k);
+if (!snap) return false;
+// Lưu state hiện tại trước khi swap (lần sau quay lại sẽ instant)
+_dmSaveCurrent();
+// Touch LRU cho entry sắp dùng
+DOM_MODE_CACHE.delete(k); DOM_MODE_CACHE.set(k, snap);
+// Tear down observers cũ
+if (anchorObserver) { anchorObserver.disconnect(); anchorObserver = null; }
+teardownChunkObservers();
+// Detach divs hiện tại — chúng đã được snap khác giữ reference
+while (grid.firstChild) grid.removeChild(grid.firstChild);
+// Restore module state
+virtChunks = snap.chunks;
+virtAllRows = snap.rows;
+cachedRows = snap.cachedRows;
+keyToRowIdx = snap.keyToRowIdx;
+vaggaMarkers = snap.vaggaMarkers;
+suttaMarkers = snap.suttaMarkers;
+isAN = snap.isAN; isSN = snap.isSN;
+fallbackTitle = snap.fallbackTitle;
+lastAppliedVaggaIdx = -2; lastAppliedSuttaIdx = -2;
+// Re-attach chunk DIVs
+var frag = document.createDocumentFragment();
+for (var i = 0; i < snap.chunks.length; i++) frag.appendChild(snap.chunks[i].div);
+grid.appendChild(frag);
+applyVisibility();
+// Re-setup observers (chunk obs trigger materialize cho chunks visible)
+setupChunkObservers();
+setupAnchorObserver();
+// Restore scroll
+if (typeof snap.scrollTop === 'number') grid.scrollTop = snap.scrollTop;
+firstVisibleKey = snap.scrollKey || null;
+lastSingleLangMode = targetMode;
+return true;
+}
+var _modeRerenderTimer = null;
 function maybeRerenderIfModeChanged() {
 var mode = getSingleVisibleLang();
 if (mode === lastSingleLangMode) return;
+// Debounce: gộp các toggle liên tục lại để tránh rerender chồng chất.
+clearTimeout(_modeRerenderTimer);
+_modeRerenderTimer = setTimeout(function () {
+_modeRerenderTimer = null;
+var modeNow = getSingleVisibleLang();
+if (modeNow === lastSingleLangMode) return;
+// Cache hit → swap DOM ~10ms thay vì rebuild ~150ms
+if (_dmTryRestore(modeNow)) return;
 if (currentSutraId) renderSutra(currentSutraId);
+}, 180);
 }
 /* ============================================================
 View-mode cache: pre-computed rowsForView + keyIndex + markers per (suttaId, mode).
@@ -675,17 +764,13 @@ PANEL LOGIC
 function togglePanel(panel, force) {
 if (!panel) return;
 var isOpen = typeof force === 'boolean' ? force : !panel.classList.contains('open');
-/* FIX: Before closing a panel, move focus OUT of it if it currently
-contains the focused element. This prevents the browser error:
-"Blocked aria-hidden on an element because its descendant retained focus" */
 if (!isOpen && panel.contains(document.activeElement)) {
-// Move focus to a safe element outside the panel
-if (btnSutraMenu) {
-btnSutraMenu.focus();
-} else {
-document.activeElement.blur();
+try {
+if (btnSutraMenu) btnSutraMenu.focus();
+else document.activeElement.blur();
+} catch(_){}
 }
-}
+try {
 panel.classList.toggle('open', isOpen);
 if (isOpen) {
 panel.setAttribute('aria-hidden', 'false');
@@ -694,6 +779,7 @@ panel.removeAttribute('inert');
 panel.setAttribute('aria-hidden', 'true');
 panel.setAttribute('inert', '');
 }
+} finally {
 if (panel === settingsPanel && btnSettings) {
 btnSettings.setAttribute('aria-expanded', String(isOpen));
 btnSettings.classList.toggle('active', isOpen);
@@ -701,6 +787,7 @@ btnSettings.classList.toggle('active', isOpen);
 if (panel === sutraMenuPanel && btnSutraMenu) {
 btnSutraMenu.setAttribute('aria-expanded', String(isOpen));
 btnSutraMenu.classList.toggle('is-open', isOpen);
+}
 }
 }
 function positionSettingsPanel() {
@@ -1571,7 +1658,130 @@ btn.classList.toggle('is-on', on);
 btn.setAttribute('aria-pressed', on ? 'true' : 'false');
 btn.setAttribute('aria-label', label);
 btn.setAttribute('title', label);
+applyShareBtnVisibility();
 }
+/* ============================================================
+SHARE: nút chia sẻ + dropdown (FB / Zalo / Twitter / Email / Copy / Native)
+============================================================ */
+function applyShareBtnVisibility() {
+var b = $('btnShareCurrent');
+if (!b) return;
+b.hidden = !currentSutraId;
+}
+function _buildTitleShareUrl() {
+if (!currentSutraId) return location.href;
+var key = firstVisibleKey || currentSutraId;
+return location.origin + location.pathname + '#' + key;
+}
+function _getShareTitle() {
+var t = ($('title') || {}).textContent || '';
+t = t.trim();
+return t && t !== 'Chưa chọn bài' ? t : 'Sutta Archive';
+}
+function _showShareToast(msg) {
+var existing = document.querySelector('.app-toast');
+if (existing) existing.remove();
+var toast = document.createElement('div');
+toast.className = 'app-toast';
+toast.textContent = msg;
+document.body.appendChild(toast);
+requestAnimationFrame(function () { toast.classList.add('show'); });
+setTimeout(function () {
+toast.classList.remove('show');
+setTimeout(function () { try { toast.remove(); } catch (_) {} }, 300);
+}, 1800);
+}
+function _closeShareMenu() {
+var menu = $('shareMenu');
+var btn = $('btnShareCurrent');
+if (!menu || !btn) return;
+menu.setAttribute('aria-hidden', 'true');
+setTimeout(function () { if (menu.getAttribute('aria-hidden') === 'true') menu.hidden = true; }, 200);
+btn.setAttribute('aria-expanded', 'false');
+}
+function _openShareMenu() {
+var menu = $('shareMenu');
+var btn = $('btnShareCurrent');
+if (!menu || !btn) return;
+menu.hidden = false;
+// Show below button by default; if not enough space, show above
+var rect = btn.getBoundingClientRect();
+var menuH = (typeof navigator.share === 'function') ? 280 : 240;
+var spaceBelow = window.innerHeight - rect.bottom;
+var top = spaceBelow > menuH + 16 ? rect.bottom + 8 : Math.max(8, rect.top - menuH - 8);
+var left = Math.max(8, Math.min(rect.left, window.innerWidth - 220));
+menu.style.top = top + 'px';
+menu.style.left = left + 'px';
+var nativeItem = $('shareItemNative');
+if (nativeItem) nativeItem.hidden = !(typeof navigator.share === 'function');
+requestAnimationFrame(function () {
+menu.setAttribute('aria-hidden', 'false');
+btn.setAttribute('aria-expanded', 'true');
+});
+}
+async function _handleShareAction(action) {
+var url = _buildTitleShareUrl();
+var title = _getShareTitle();
+var text = title + ' — Sutta Archive';
+var en = (typeof uiLang !== 'undefined' && uiLang === 'en');
+if (action === 'native' && typeof navigator.share === 'function') {
+try { await navigator.share({ title: title, text: text, url: url }); } catch (_) {}
+_closeShareMenu(); return;
+}
+if (action === 'copy') {
+var msg = en ? 'Link copied' : 'Đã sao chép link';
+try { await navigator.clipboard.writeText(url); _showShareToast(msg); }
+catch (_) {
+var ta = document.createElement('textarea');
+ta.value = url; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+document.body.appendChild(ta); ta.select();
+try { document.execCommand('copy'); _showShareToast(msg); } catch (__) {}
+ta.remove();
+}
+_closeShareMenu(); return;
+}
+var pop = 'noopener,noreferrer,width=620,height=520';
+if (action === 'facebook') {
+window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url), '_blank', pop);
+} else if (action === 'zalo') {
+window.open('https://zalo.me/share/?u=' + encodeURIComponent(url) + '&t=' + encodeURIComponent(text), '_blank', pop);
+} else if (action === 'twitter') {
+window.open('https://twitter.com/intent/tweet?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text), '_blank', pop);
+} else if (action === 'email') {
+location.href = 'mailto:?subject=' + encodeURIComponent(text) + '&body=' + encodeURIComponent(text + '\n\n' + url);
+}
+_closeShareMenu();
+}
+(function _wireShareUI() {
+var btn = $('btnShareCurrent');
+var menu = $('shareMenu');
+if (!btn || !menu) return;
+btn.addEventListener('click', function (e) {
+e.stopPropagation();
+var isOpen = menu.getAttribute('aria-hidden') !== 'true' && !menu.hidden;
+if (isOpen) _closeShareMenu(); else _openShareMenu();
+});
+menu.addEventListener('click', function (e) {
+var item = e.target.closest('.share-menu-item');
+if (!item) return;
+e.stopPropagation();
+var action = item.getAttribute('data-share');
+if (action) _handleShareAction(action);
+});
+document.addEventListener('click', function (e) {
+if (menu.hidden || menu.getAttribute('aria-hidden') === 'true') return;
+if (e.target.closest('#shareMenu') || e.target.closest('#btnShareCurrent')) return;
+_closeShareMenu();
+});
+document.addEventListener('keydown', function (e) {
+if (e.key === 'Escape' && !menu.hidden && menu.getAttribute('aria-hidden') !== 'true') {
+_closeShareMenu(); btn.focus();
+}
+});
+window.addEventListener('resize', function () {
+if (!menu.hidden && menu.getAttribute('aria-hidden') !== 'true') _closeShareMenu();
+});
+})();
 function findNikayaOfSutta(suttaId) {
 var index = window.SUTRA_INDEX || [];
 for (var i = 0; i < index.length; i++) {
@@ -1892,7 +2102,7 @@ shareBtn.className = 'sutra-seg-share';
 shareBtn.setAttribute('data-share-key', keyRaw);
 shareBtn.setAttribute('aria-label', uiLang === 'en' ? 'Share / copy link to this segment' : 'Chia sẻ / sao chép link đoạn này');
 shareBtn.title = uiLang === 'en' ? 'Share / copy link' : 'Chia sẻ / sao chép link';
-shareBtn.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5l-3-3-3 3"/><path d="M8 2v9"/><path d="M3 9v3a2 2 0 002 2h6a2 2 0 002-2V9"/></svg>';
+shareBtn.innerHTML = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="10" r="2.4"/><circle cx="15" cy="5" r="2.4"/><circle cx="15" cy="15" r="2.4"/><path d="M7.2 8.9l5.6-3.4M7.2 11.1l5.6 3.4"/></svg>';
 segWrap.appendChild(shareBtn);
 wrap.appendChild(segWrap);
 }
@@ -2138,9 +2348,9 @@ return;
 }
 async function renderSutra(id) {
 if (!id || !grid) return;
-// KHÔNG save anchor ở đây nữa: layout có thể đã shift giữa lúc user scroll và click
-// → recompute lúc này sẽ ghi đè giá trị scroll-save đúng bằng giá trị mới có thể sai lệch.
-// Rely on scroll-triggered saves (throttled 120ms) để giữ anchor chính xác tại thời điểm user scroll.
+// Khi đổi sutta → drop cache mode của sutta cũ để tiết kiệm memory.
+// (Mode swap chỉ có ý nghĩa trong cùng 1 sutta.)
+if (currentSutraId && currentSutraId !== id) _dmInvalidateForSutta(currentSutraId);
 resetTts(true, false);
 if (anchorObserver) { anchorObserver.disconnect(); anchorObserver = null; }
 teardownChunkObservers();
@@ -2169,7 +2379,12 @@ updateNavButtons();
 if (!merged || !merged.rows || !merged.rows.length) {
 if (titleEl) titleEl.textContent = uiLang === 'en' ? 'Sutta data not found' : 'Không tìm thấy dữ liệu bài kinh';
 if (subtitleEl) subtitleEl.textContent = (uiLang === 'en' ? 'ID: ' : 'Mã bài: ') + id;
-grid.innerHTML = ''; isRendering = false;
+grid.innerHTML = '<div style="max-width:520px;margin:48px auto;padding:24px;text-align:center;font-family:var(--serif-vi);color:var(--ink-3);font-style:italic;border:1px dashed var(--rule);border-radius:6px">'
++ (uiLang === 'en'
+? 'No data for this sutta yet. Please choose another.'
+: 'Bài kinh chưa có dữ liệu — vui lòng chọn bài khác.')
++ '</div>';
+isRendering = false;
 grid.setAttribute('aria-busy', 'false'); setTtsUiState('idle'); return;
 }
 var titleFromBilara    = (pickTextForUiLangSuffix(merged, id, ':0.2') || '').trim();
@@ -2332,6 +2547,8 @@ grid.setAttribute('aria-busy', 'false');
 requestAnimationFrame(function () {
 updateVisibleCols(); restoreScrollByAnchor(id);
 setupAnchorObserver(); updateNavButtons();
+// Snapshot mode hiện tại vào DOM_MODE_CACHE → lần sau toggle về mode này sẽ instant
+try { _dmSaveCurrent(); } catch (_) {}
 setTimeout(function () {
 isRendering = false;
 setTtsUiState('idle');

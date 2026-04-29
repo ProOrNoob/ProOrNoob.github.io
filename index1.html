@@ -5,6 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 <meta name="description" content="Collection of Nikaya Suttas in Pali, English, and Vietnamese, sourced from SuttaCentral and Bilara json project">
 <title>Sutta Archive</title>
+<script>
+(function(){
+try {
+var t = localStorage.getItem('sutra-dark-mode');
+if (t === 'dark') {
+document.documentElement.setAttribute('data-theme','dark');
+} else if (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+document.documentElement.setAttribute('data-theme','dark');
+}
+} catch(e){}
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;1,400;1,500&family=Noto+Serif:ital,wght@0,400;0,500;1,400&family=Geist+Mono:wght@300;400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
@@ -23,11 +35,59 @@
 <section class="header" role="region" aria-label="Sutta title">
 <div id="supertitle"></div>
 <h1 id="title">Chưa chọn bài</h1>
+<button type="button" id="btnShareCurrent" class="title-share-btn" hidden aria-haspopup="menu" aria-expanded="false" aria-label="Chia sẻ bài kinh" title="Chia sẻ">
+<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<circle cx="5" cy="10" r="2.4"/>
+<circle cx="15" cy="5" r="2.4"/>
+<circle cx="15" cy="15" r="2.4"/>
+<path d="M7.2 8.9l5.6-3.4M7.2 11.1l5.6 3.4"/>
+</svg>
+</button>
 <button type="button" id="btnBookmarkCurrent" class="title-bookmark-btn" hidden aria-pressed="false" aria-label="Đánh dấu bài kinh này" title="Đánh dấu">
 <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 <path d="M10 2.3l2.39 4.84 5.34.78-3.86 3.77.91 5.31L10 14.49l-4.78 2.51.91-5.31L2.27 7.92l5.34-.78z"/>
 </svg>
 </button>
+<div id="shareMenu" class="share-menu" role="menu" aria-hidden="true" hidden>
+<button type="button" class="share-menu-item" data-share="copy" role="menuitem">
+<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<rect x="6" y="6" width="11" height="11" rx="1.5"/>
+<path d="M3 13V4a1 1 0 0 1 1-1h9"/>
+</svg>
+<span class="share-label" data-vi="Sao chép link" data-en="Copy link">Sao chép link</span>
+</button>
+<button type="button" class="share-menu-item" data-share="facebook" role="menuitem">
+<svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path d="M11.4 19v-7.4h2.5l.4-2.9h-2.9V6.9c0-.8.2-1.4 1.5-1.4h1.6V2.9c-.3 0-1.2-.1-2.3-.1-2.2 0-3.8 1.4-3.8 3.9v2h-2.5v2.9h2.5V19h2.9z"/>
+</svg>
+<span class="share-label">Facebook</span>
+</button>
+<button type="button" class="share-menu-item" data-share="zalo" role="menuitem">
+<svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path d="M10 3C5.6 3 2 5.8 2 9.3c0 2 1.2 3.7 3.1 4.9l-.5 1.9c-.1.3.2.6.5.4l2.4-1.3c.8.2 1.6.3 2.5.3 4.4 0 8-2.8 8-6.3S14.4 3 10 3zm-3.5 6.5c.4 0 .7.3.7.7s-.3.7-.7.7-.7-.3-.7-.7.3-.7.7-.7zm3.5 0c.4 0 .7.3.7.7s-.3.7-.7.7-.7-.3-.7-.7.3-.7.7-.7zm3.5 0c.4 0 .7.3.7.7s-.3.7-.7.7-.7-.3-.7-.7.3-.7.7-.7z"/>
+</svg>
+<span class="share-label">Zalo</span>
+</button>
+<button type="button" class="share-menu-item" data-share="twitter" role="menuitem">
+<svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path d="M14.6 2h2.7l-5.9 6.7L18.3 18h-5.4l-4.2-5.5L3.8 18H1.1l6.3-7.1L1 2h5.5l3.8 5.1L14.6 2zm-1 14.4h1.5L6 3.5H4.4l9.2 12.9z"/>
+</svg>
+<span class="share-label" data-vi="X (Twitter)" data-en="X (Twitter)">X (Twitter)</span>
+</button>
+<button type="button" class="share-menu-item" data-share="email" role="menuitem">
+<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<rect x="2.5" y="4.5" width="15" height="11" rx="1.5"/>
+<path d="M3 5.5l7 5 7-5"/>
+</svg>
+<span class="share-label">Email</span>
+</button>
+<button type="button" class="share-menu-item" data-share="native" role="menuitem" hidden id="shareItemNative">
+<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M10 3v9M6 7l4-4 4 4M4 13v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3"/>
+</svg>
+<span class="share-label" data-vi="Hệ thống chia sẻ" data-en="System share">Hệ thống chia sẻ</span>
+</button>
+</div>
 <div id="subtitle" class="vi" aria-live="polite">—</div>
 <div id="titleMeta"></div>
 </section>
