@@ -152,15 +152,21 @@
 /* Sticky hover fix — khi user tap nút để đóng panel, force clear mọi :hover/:active state để không ghost */
 .bar-pill.no-hover,.bar-pill.no-hover:hover,.bar-pill.no-hover:active,.bar-pill.no-hover:focus,.bar-pill.no-hover:focus-visible{background:transparent !important;color:var(--ink-3) !important;transform:none !important;box-shadow:none !important;transition:none !important}
 .bar-pill.no-hover svg{color:var(--ink-3) !important;opacity:0.9 !important;transform:none !important;transition:none !important}
-/* User request: BỎ tất cả hiệu ứng hover/active/focus trên bar-pill để tránh sticky shadow trên iOS/Android.
-   GIỮ chỉ class .is-open / .active (intentional state khi panel mở). */
-.bar-pill,.bar-pill svg{transition:none !important}
-.bar-pill:hover,.bar-pill:active,.bar-pill:focus,.bar-pill:focus-visible{background:transparent !important;color:var(--ink-3) !important;transform:none !important;box-shadow:none !important;outline:none !important}
-.bar-pill:hover svg,.bar-pill:active svg,.bar-pill:focus svg{color:var(--ink-3) !important;opacity:0.9 !important;transform:none !important}
-/* Override KHI panel đang mở — vẫn cho thấy state */
-.bar-pill.is-open,.bar-pill.is-open:hover,.bar-pill.is-open:focus,.bar-pill.is-open:active,
-.bar-pill.active,.bar-pill.active:hover,.bar-pill.active:focus,.bar-pill.active:active{background:color-mix(in oklab,var(--accent) 10%,transparent) !important;color:var(--ink) !important}
-.bar-pill.is-open svg,.bar-pill.active svg{color:var(--accent) !important;opacity:1 !important}
+/* Touch-only: tắt hover/active background để tránh sticky shadow trên iOS/Android.
+   Desktop KHÔNG bị ảnh hưởng — vẫn có hover smooth + color transition như cũ. */
+html.is-touch .bar-pill:hover,
+html.is-touch .bar-pill:active,
+html.is-touch .bar-pill:focus,
+html.is-touch .bar-pill:focus-visible{background:transparent !important;transform:none !important;box-shadow:none !important}
+html.is-touch .bar-pill:hover svg,
+html.is-touch .bar-pill:active svg{transform:none !important}
+/* Override KHI panel đang mở (touch device) — giữ accent background làm state indicator */
+html.is-touch .bar-pill.is-open,
+html.is-touch .bar-pill.is-open:hover,
+html.is-touch .bar-pill.is-open:focus,
+html.is-touch .bar-pill.is-open:active,
+html.is-touch .bar-pill.active,
+html.is-touch .bar-pill.active:hover{background:color-mix(in oklab,var(--accent) 10%,transparent) !important}
 html.hide-reading-progress #readingProgress{display:none !important}
 #btnProgressToggle[aria-pressed="false"]{opacity:0.5;text-decoration:line-through}
 /* iOS/iPad Safari fix: chống auto-zoom khi tap input (font ≥ 16px) + chống double-tap zoom (touch-action:manipulation) */
