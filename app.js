@@ -345,7 +345,7 @@ if (/:0\.1$/.test(key)) continue;
 // :0.2 = numbered heading (vd "4. Phẩm Tâm Không Được Điều Phục") → flush, output riêng
 if (isNumberedHeadingLine(t)) {
 flush();
-var rr = { key: key, pali:'', eng:'', vie:'', _merged: true };
+var rr = { key: key, pali:'', eng:'', vie:'', _merged: true, _isHeading: true };
 if (lang==='pali') rr.pali=t;
 if (lang==='eng') rr.eng=t;
 if (lang==='vie') rr.vie=t;
@@ -879,6 +879,16 @@ btnGuide.onclick = function (e) {
 e.stopPropagation();
 openGuide();  // mở guide overlay, giữ nguyên sidebar
 };
+}
+var dedTextEl = $('dedicationText');
+if (dedTextEl) {
+dedTextEl.classList.add('ded-clickable');
+dedTextEl.setAttribute('title', uiLang === 'en' ? 'Double-click to return to home' : 'Nháy đôi để về trang chủ');
+dedTextEl.addEventListener('dblclick', function (e) {
+e.preventDefault();
+try { storage.remove(KEY_LAST); } catch(_) {}
+location.replace(location.pathname + location.search);
+});
 }
 if (guideOverlay) {
 guideOverlay.addEventListener('click', function (e) {
@@ -2195,7 +2205,7 @@ if (isSectionNum) wrap.classList.add('is-section-num');
 if (/:source$/i.test(keyRaw)) wrap.classList.add('is-source');
 // Merged paragraph rows (từ mergeRowsToParagraphRows) giữ key :0.3 để marker tra cứu
 // nhưng KHÔNG áp is-subtitle vì nội dung là cả đoạn văn, không phải tiêu đề ngắn.
-if (/:0\.[123]$/.test(keyRaw) && !r._merged) wrap.classList.add('is-subtitle');
+if (/:0\.[123]$/.test(keyRaw) && (!r._merged || r._isHeading)) wrap.classList.add('is-subtitle');
 wrap.setAttribute('data-key', keyRaw);
 var keyShort = '';
 if (keyRaw.includes(':')) {
@@ -2359,9 +2369,21 @@ if (!grid || currentSutraId) return;
 var isEn = uiLang === 'en';
 if (superTitleEl) superTitleEl.textContent = '';
 if (titleMetaEl)  titleMetaEl.textContent  = '';
-if (titleEl)      titleEl.textContent      = isEn ? 'Sutta Archive' : 'Kho lưu trữ Kinh';
+if (titleEl)      titleEl.textContent      = 'Tạng Kinh Nikāya';
 if (subtitleEl)   subtitleEl.textContent   = '';
 applyTitleBookmarkState();
+var heroSub = isEn
+? 'Reverently saluting the Blessed One, the Worthy One, the Perfectly Self-Awakened. A library of canonical suttas for practitioners and scholars.'
+: 'Cung kính đảnh lễ Đức Thế Tôn, bậc A-la-hán, Chánh Đẳng Giác. Một thư viện kinh điển dành cho người tu học và nghiên cứu Phật pháp.';
+var heroLangs = ['Pāli', 'English', isEn ? 'Vietnamese' : 'Việt'];
+var heroLangsHtml = heroLangs.map(function (l) { return '<span>' + escapeHtml(l) + '</span>'; }).join('<span class="dot" aria-hidden="true"></span>');
+var heroHtml =
+'<div class="welcome-hero">' +
+'<div class="welcome-hero-pali">Namo tassa bhagavato arahato sammāsambuddhassa</div>' +
+'<h1 class="welcome-hero-title">Tạng <em>Kinh</em><br>Nikāya</h1>' +
+'<div class="welcome-hero-sub">' + escapeHtml(heroSub) + '</div>' +
+'<div class="welcome-hero-langs">' + heroLangsHtml + '</div>' +
+'</div>';
 var quotes = [
 {
 pali: 'Namo tassa bhagavato arahato sammāsambuddhassa',
@@ -2391,11 +2413,17 @@ return '<div class="welcome-quote">' +
 '<div class="wq-note">' + escapeHtml(q.note) + '</div>' +
 '</div>';
 }).join('<div class="wq-sep" aria-hidden="true">❧</div>');
-var hintHtml = isEn
-? '<strong>Begin reading</strong><br>Tap <strong>Library</strong> at the bottom left to choose a sutta · Tap <strong>⚙ Settings</strong> to adjust display · Tap <strong>?</strong> top-right for guide.'
-: '<strong>Bắt đầu</strong><br>Bấm <strong>Thư viện</strong> (góc dưới trái) để chọn bài kinh · Bấm <strong>⚙ Cài đặt</strong> để chỉnh hiển thị · Bấm <strong>?</strong> góc trên phải để xem hướng dẫn.';
+var hintLines = isEn
+? ['Open the <strong>Library</strong> to browse all suttas',
+   'Use <strong>⚙ Settings</strong> to customize the display',
+   'Tap <strong>?</strong> to view the guide']
+: ['Vào <strong>Thư viện</strong> để xem danh sách bài kinh',
+   'Bấm <strong>⚙ Cài đặt</strong> để tùy chỉnh hiển thị',
+   'Chọn <strong>?</strong> để xem hướng dẫn'];
+var hintHtml = hintLines.map(function (l) { return '<div class="hint-line">' + l + '</div>'; }).join('');
 grid.innerHTML =
 '<div class="welcome-screen">' +
+heroHtml +
 '<div class="welcome-quotes">' + quotesHtml + '</div>' +
 '<div class="welcome-box">' + hintHtml + '</div>' +
 '</div>';
@@ -3243,7 +3271,7 @@ var msg = 'Xóa TOÀN BỘ ' + count + ' items trong localStorage?\n' +
 'Trang sẽ reload về trạng thái mặc định.';
 if (!confirm(msg)) return;
 try { localStorage.clear(); } catch(_) {}
-location.reload();
+location.replace(location.pathname + location.search);
 });
 }
 init();
