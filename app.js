@@ -240,12 +240,14 @@ if (n && n.children) walk(n.children);
 })(window.SUTRA_INDEX);
 }
 }
-return _SEG_PREFIX_MAP[prefix] || prefix;
+return _SEG_PREFIX_MAP[prefix]
+|| _SEG_PREFIX_MAP[prefix.replace(/\.\d+$/, '')]
+|| prefix;
 }
 function _parseAnchorHash() {
 var h = String(location.hash || '').replace(/^#/, '');
 if (!h) return null;
-var m = h.match(/^([A-Za-z0-9_-]+)(?::.+)?$/);
+var m = h.match(/^([A-Za-z0-9._-]+)(?::.+)?$/);
 if (!m) return null;
 var rawPrefix = m[1].toLowerCase();
 var suttaId = _resolveSegPrefixToSuttaId(rawPrefix);
@@ -1230,6 +1232,19 @@ isOn = !isOn;
 apply(isOn);
 try { storage.set(KEY, isOn ? '1' : '0'); } catch(_){}
 if (isOn) try { updateReadingProgress(); } catch(_){}
+});
+})();
+(function _wireRandom() {
+var btn = $('btnRandom');
+if (!btn) return;
+btn.addEventListener('click', function () {
+if (!FLAT_SUTTAS.length) populateFlatSuttas();
+var pool = FLAT_SUTTAS.filter(function (s) { return s.id !== currentSutraId; });
+if (!pool.length) pool = FLAT_SUTTAS;
+if (!pool.length) return;
+var pick = pool[Math.floor(Math.random() * pool.length)];
+closePanels();
+openSutra(pick.id);
 });
 })();
 var anchorObserver = null;
@@ -2634,7 +2649,7 @@ for (var eci = lo; eci <= hi; eci++) materializeChunk(virtChunks[eci]);
 // Sync pre-scroll: đưa viewport về vùng đã materialize TRƯỚC khi browser paint.
 // Không có dòng này → frame paint đầu tiên ở scrollTop=0 nơi chunk 0 là placeholder rỗng,
 // dark mode thấy body bg (#0b0c0e) → flash đen cho bài dài có anchor xa.
-var scroller = getScrollRoot ? getScrollRoot() : scrollEl;
+var scroller = getScrollRoot() || scrollEl;
 if (anchorChunkIdx > 0 && scroller && virtChunks[anchorChunkIdx] && virtChunks[anchorChunkIdx].div) {
 var targetY = virtChunks[anchorChunkIdx].div.offsetTop;
 scroller.scrollTop = targetY;

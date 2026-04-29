@@ -104,7 +104,7 @@ document.documentElement.setAttribute('data-theme','dark');
 </button>
 </div>
 <div class="status-center">
-<button id="btnPrev" class="nav-pill" disabled aria-label="Bài trước" title="Bài trước">
+<button type="button" id="btnPrev" class="nav-pill" disabled aria-label="Bài trước" title="Bài trước">
 <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3L5 8l5 5"/></svg>
 </button>
 <button type="button" id="sidebar-btn" class="bar-pill status-library-btn" title="Thư viện — mục lục bài kinh" aria-label="Mở danh mục bài kinh" aria-expanded="false">
@@ -113,7 +113,7 @@ document.documentElement.setAttribute('data-theme','dark');
 </svg>
 <span class="sidebar-label" id="sidebarBtnLabel">Thư viện</span>
 </button>
-<button id="btnNext" class="nav-pill" disabled aria-label="Bài tiếp theo" title="Bài tiếp">
+<button type="button" id="btnNext" class="nav-pill" disabled aria-label="Bài tiếp theo" title="Bài tiếp">
 <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>
 </button>
 </div>
@@ -142,7 +142,7 @@ document.documentElement.setAttribute('data-theme','dark');
 </button>
 </div>
 </div>
-<button id="btnBackTop" aria-label="Lên đầu trang" title="Back to top">
+<button type="button" id="btnBackTop" aria-label="Lên đầu trang" title="Back to top">
 <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3M3.5 7.5L8 3l4.5 4.5"/></svg>
 </button>
 </div>
@@ -318,6 +318,7 @@ aria-label="Giãn dòng">
 </div>
 <div class="slider-resets">
 <button class="slider-reset-btn debug-only" id="btnDebug" title="Debug info" aria-label="Debug info">🐞</button>
+<button class="slider-reset-btn" type="button" id="btnRandom" title="Bài kinh ngẫu nhiên" aria-label="Bài kinh ngẫu nhiên">🎲</button>
 <button class="slider-reset-btn" id="btnProgressToggle" aria-pressed="true" title="Hiện/ẩn thanh tiến độ đọc" aria-label="Hiện/ẩn thanh tiến độ đọc">▮ %</button>
 <button class="slider-reset-btn" id="btnZoomReset" title="Reset cỡ chữ" aria-label="Reset cỡ chữ">↺ A</button>
 <button class="slider-reset-btn" id="btnLineHeightReset" title="Reset giãn dòng" aria-label="Reset giãn dòng">↺ ☰</button>
