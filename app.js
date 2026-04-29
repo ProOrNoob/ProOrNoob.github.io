@@ -1506,15 +1506,17 @@ var pctEl = document.getElementById('readingProgressPct');
 if (!fill || !wrap || !scrollEl) return;
 var max = scrollEl.scrollHeight - scrollEl.clientHeight;
 if (max <= 10 || !currentSutraId) {
-fill.style.transform = 'scaleY(0)';
+fill.style.transform = 'translateY(8px)';
 wrap.classList.remove('visible');
 return;
 }
 var pct = Math.min(1, Math.max(0, scrollEl.scrollTop / max));
-fill.style.transform = 'scaleY(' + pct.toFixed(4) + ')';
+// Dot di chuyển dọc viewport: 8px (top margin) → viewport_h - 16 (bottom margin) - 8 (dot height)
+var travelY = window.innerHeight - 8 - 16 - 8;
+var dotY = 8 + pct * Math.max(0, travelY);
+fill.style.transform = 'translateY(' + dotY.toFixed(1) + 'px)';
 if (pctEl) pctEl.textContent = Math.round(pct * 100) + '%';
 wrap.classList.add('visible');
-// Show badge khi user scroll, auto-fade sau 1.5s idle
 wrap.classList.remove('idle');
 clearTimeout(_progressIdleTimer);
 _progressIdleTimer = setTimeout(function () {
