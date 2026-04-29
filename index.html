@@ -189,16 +189,34 @@ aria-label="Tìm kiếm bài kinh" autocomplete="off">
 <ul id="sutraMenuList" class="sutra-list" role="tree" aria-label="Mục lục bài kinh"></ul>
 </div>
 <div id="settingsPanel" class="panel" aria-hidden="true" inert>
-<div class="set-panel-header">
-<div class="panel-title" id="settingsTitle">Tuỳ chỉnh</div>
-</div>
+<span id="settingsTitle" hidden>Tuỳ chỉnh</span>
 <div class="set-panel-body">
 <div class="set-sec" id="interfaceSection">
 <div class="set-sec-hd">
+<div class="set-hd-left">
 <span class="set-sec-title" id="settingsInterfaceLabel">Giao diện</span>
+<button class="set-hdr-btn debug-only" id="btnDebug" title="Debug info" aria-label="Debug info">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
+<path d="M9 7l-5 5 5 5"/>
+<path d="M15 7l5 5-5 5"/>
+</svg>
+</button>
+</div>
+<button class="set-hdr-btn" id="btnSettingsClose" title="Đóng" aria-label="Đóng cài đặt">
+<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" width="16" height="16">
+<path d="M5 5l10 10M15 5l-10 10"/>
+</svg>
+</button>
 </div>
 <div class="set-sec-body">
-<div class="set-pills cols-3">
+<div class="set-pills cols-4">
+<button class="pill set-icon-pill active" id="btnProgressToggle" aria-pressed="true"
+title="Hiện/ẩn thanh tiến độ đọc" aria-label="Hiện/ẩn thanh tiến độ đọc">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+<rect x="3" y="10" width="18" height="4" rx="1" fill="currentColor" fill-opacity="0.15"/>
+<rect x="3" y="10" width="11" height="4" rx="1" fill="currentColor"/>
+</svg>
+</button>
 <button class="pill set-icon-pill" id="btnDarkMode" aria-label="Chuyển sáng/tối" title="Chế độ tối">
 <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
 <circle cx="12" cy="12" r="7"/>
@@ -308,6 +326,7 @@ aria-label="Tìm kiếm bài kinh" autocomplete="off">
 min="80" max="160" step="5" value="100"
 aria-label="Cỡ chữ">
 <span class="slider-value-badge" id="zoomValueBadge">100%</span>
+<button class="slider-reset-btn" id="btnZoomReset" title="Reset cỡ chữ" aria-label="Reset cỡ chữ">↺</button>
 </div>
 <div class="slider-row">
 <span class="set-mini-label" id="settingsLineHeightLabel">Giãn dòng</span>
@@ -315,13 +334,7 @@ aria-label="Cỡ chữ">
 min="130" max="260" step="5" value="185"
 aria-label="Giãn dòng">
 <span class="slider-value-badge" id="lineHeightValueBadge">1.85</span>
-</div>
-<div class="slider-resets">
-<button class="slider-reset-btn debug-only" id="btnDebug" title="Debug info" aria-label="Debug info">🐞</button>
-<button class="slider-reset-btn" type="button" id="btnRandom" title="Bài kinh ngẫu nhiên" aria-label="Bài kinh ngẫu nhiên">🎲</button>
-<button class="slider-reset-btn" id="btnProgressToggle" aria-pressed="true" title="Hiện/ẩn thanh tiến độ đọc" aria-label="Hiện/ẩn thanh tiến độ đọc">▮ %</button>
-<button class="slider-reset-btn" id="btnZoomReset" title="Reset cỡ chữ" aria-label="Reset cỡ chữ">↺ A</button>
-<button class="slider-reset-btn" id="btnLineHeightReset" title="Reset giãn dòng" aria-label="Reset giãn dòng">↺ ☰</button>
+<button class="slider-reset-btn" id="btnLineHeightReset" title="Reset giãn dòng" aria-label="Reset giãn dòng">↺</button>
 </div>
 </div>
 </div>

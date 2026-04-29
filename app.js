@@ -604,43 +604,31 @@ if (!dlg) return;
 var isEn = uiLang === 'en';
 var viHtml =
 '<h2>Hướng dẫn sử dụng</h2>' +
-'<em>Trang đọc kinh tam ngữ Pāli · English · Tiếng Việt — nguồn SuttaCentral.</em>' +
 '<h3>📖 Thư viện bài kinh</h3>' +
 '<ul>' +
-'<li>Bấm <strong>Thư viện</strong> ở giữa footer để mở mục lục.</li>' +
-'<li>Chọn 1 trong <strong>5 tile</strong>: <code>DN</code> Trường Bộ · <code>MN</code> Trung Bộ · <code>SN</code> Tương Ưng · <code>AN</code> Tăng Chi · <strong>★ Đã lưu</strong> (bài đã đánh dấu).</li>' +
-'<li><strong>DN / MN</strong>: danh sách bài kinh phẳng. <strong>SN / AN</strong>: nhóm theo Chủ đề / Phẩm, bấm mở rộng.</li>' +
-'<li><strong>Tìm kiếm</strong>: lọc theo tên, mã (vd <code>mn 23</code>), hoặc từ khóa — tìm xuyên cả 4 bộ. <em>Không cần gõ dấu</em> (gõ "pham vong" vẫn tìm thấy "Phạm Võng").</li>' +
-'<li>Bấm <strong>×</strong> hoặc click ngoài panel để đóng.</li>' +
+'<li>Bấm <strong>Thư viện</strong> ở giữa footer để mở danh sách kinh. Hoặc nhập vào <strong>Tìm kiếm</strong> để tìm bài kinh.</li>' +
 '</ul>' +
 '<h3>⭐ Đánh dấu (Bookmark)</h3>' +
 '<ul>' +
-'<li>Bấm <strong>☆</strong> cạnh tiêu đề bài đang đọc (góc trên-phải header) để lưu / bỏ lưu.</li>' +
-'<li>Bấm <strong>☆</strong> cạnh tên mỗi bài trong thư viện để lưu nhanh mà không cần mở bài.</li>' +
-'<li>Tile <strong>★ Đã lưu</strong> hiện số bài đang lưu — bấm để xem danh sách. Sắp theo thứ tự tự nhiên trong bộ kinh.</li>' +
-'<li>Danh sách lưu trong trình duyệt, không đồng bộ giữa thiết bị.</li>' +
+'<li>Bấm <strong>☆</strong> cạnh tiêu đề bài đang đọc (góc trên-trái) để lưu / bỏ lưu bài kinh yêu thích.</li>' +
+'<li>Tile <strong>★ Đã lưu</strong> hiện số bài yêu thích đã lưu.</li>' +
 '</ul>' +
 '<h3>📜 Đọc kinh</h3>' +
 '<ul>' +
-'<li><strong>Header tiêu đề</strong>: Nikāya · Mã · Tên Pāli · Tên đối ngữ (VI/EN).</li>' +
-'<li>Nội dung chia thành <strong>đoạn (segment)</strong> — mã hiển thị góc trái (vd <code>MN23.1.1</code>).</li>' +
-'<li>Desktop: <strong>Pāli full-width trên</strong>, <strong>English + Việt</strong> song song bên dưới. Mobile / iPad tự xếp dọc.</li>' +
-'<li><strong>Số phẩm / chương</strong> căn giữa, tô đậm làm dấu phân đoạn. Dòng <strong>SOURCE</strong> cuối bài ghi nguồn.</li>' +
-'<li><strong>Nav title</strong> giữa footer — bấm để mở thư viện ngay bài đang đọc.</li>' +
-'<li><strong>‹ TRƯỚC / SAU ›</strong> ở footer: chuyển bài tuần tự trong bộ kinh.</li>' +
-'<li><strong>⬆ Back to top</strong> (FAB góc phải): về đầu bài, xoá vị trí đã lưu.</li>' +
-'<li><strong>Thanh tiến độ đọc</strong> dọc bên trái + badge <code>%</code> góc dưới-phải: cho biết đã đọc tới đâu. Tắt/bật trong Cài đặt (nút <code>▮ %</code>).</li>' +
+'<li>Nút <strong>‹ TRƯỚC / SAU ›</strong>: dùng chuyển bài kinh.</li>' +
+'<li><strong>⬆</strong>: về đầu bài kinh.</li>' +
+'<li>Thanh tiến độ đọc dọc bên trái + badge <code>%</code> góc dưới-phải: cho biết đã đọc tới đâu. Tắt/bật trong Cài đặt (nút <code>▮ %</code>).</li>' +
 '</ul>' +
 '<h3>🔗 Chia sẻ & Sao chép</h3>' +
 '<ul>' +
-'<li><strong>🔗 Share đầu bài</strong> (góc trên-phải header): chia sẻ link bài kinh — Copy link · Facebook · Zalo · X (Twitter) · Email · Hệ thống chia sẻ (mobile).</li>' +
-'<li><strong>🔗 Share đoạn</strong> (icon nhỏ cạnh mã đoạn): chia sẻ link đến đúng đoạn đó — paste link mở app sẽ cuộn thẳng đến đoạn.</li>' +
+'<li><strong>🔗 Share đầu bài</strong> (góc trên-phải): chia sẻ link bài kinh.</li>' +
+'<li><strong>🔗 Share đoạn</strong> (icon nhỏ cạnh mã đoạn): chia sẻ link đến đúng đoạn đó.</li>' +
 '<li><strong>📋 Copy</strong> cạnh label <code>PĀLI</code> / <code>ENGLISH</code> / <code>VIỆT</code>: sao chép văn bản của cột đó cho đoạn hiện tại.</li>' +
 '</ul>' +
 '<h3>⚙ Cài đặt</h3>' +
 '<ul>' +
-'<li><strong>Giao diện</strong>: <strong>🌙/☀</strong> tối/sáng · <strong>VN/EN</strong> ngôn ngữ giao diện · <strong>🖨</strong> in / lưu PDF bài kinh hiện tại. Trên điện thoại/máy tính bảng, hộp thoại in cho phép <strong>"Save to Files"</strong> (iOS) hoặc <strong>"Save as PDF"</strong> (Android) để tải file về. Lưu ý: bài kinh dài (hàng ngàn đoạn) có thể <strong>mất vài giây đến vài chục giây</strong> để chuẩn bị — vui lòng đợi.</li>' +
-'<li><strong>Ngôn ngữ</strong>: bật/tắt cột <code>PĀLI</code> · <code>ENGLISH</code> · <code>VIỆT</code> (luôn giữ tối thiểu 1 cột).</li>' +
+'<li><strong>Giao diện</strong>: <strong>🌙/☀</strong> tối/sáng · <strong>VN/EN</strong> ngôn ngữ giao diện · <strong>🖨</strong> in / lưu PDF bài kinh hiện tại. Lưu ý: bài kinh dài (hàng ngàn đoạn) có thể mất vài giây đến vài chục giây để chuẩn bị — vui lòng đợi.</li>' +
+'<li><strong>Ngôn ngữ</strong>: bật/tắt cột <code>PĀLI</code> · <code>ENGLISH</code> · <code>VIỆT</code>.</li>' +
 '<li><strong>Bố cục</strong>: <code>☰ Xếp dọc</code> — stack 3 cột · <code># Segment</code> — ẩn/hiện mã đoạn · <code>▦ Label</code> — ẩn/hiện nhãn cột.</li>' +
 '<li><strong>Cỡ chữ</strong>: slider 80–160% (chỉ áp cho nội dung). <strong>Giãn dòng</strong>: 1.3–2.6.</li>' +
 '<li><strong>↺ A</strong> / <strong>↺ ☰</strong>: reset cỡ chữ / giãn dòng về mặc định.</li>' +
@@ -652,89 +640,55 @@ var viHtml =
 '<li><strong>▶ Play</strong>: đọc kinh theo ngôn ngữ giao diện (Việt hoặc Anh). Pāli chưa hỗ trợ.</li>' +
 '<li><strong>⏸ Pause</strong>: giới hạn trình duyệt — khi tiếp tục sẽ đọc lại câu hiện tại từ đầu.</li>' +
 '<li><strong>⏹ Stop</strong>: dừng hẳn, lần sau Play đọc từ đầu bài.</li>' +
-'<li>Vị trí đọc lưu theo từng bài — mở lại sẽ tiếp tục từ đoạn trước.</li>' +
-'<li>Android cần cài <strong>Google TTS Engine</strong> để có giọng tiếng Việt.</li>' +
-'</ul>' +
-'<h3>💾 Lưu tự động</h3>' +
-'<ul>' +
-'<li><strong>Vị trí cuộn</strong> theo từng bài · <strong>Bài mở gần nhất</strong> (mở lại app tự tiếp tục).</li>' +
-'<li><strong>Danh sách đã lưu</strong> · <strong>Tile đang chọn</strong> (DN/MN/SN/AN/★).</li>' +
-'<li><strong>Cài đặt</strong>: ngôn ngữ, cột hiển thị, bố cục, cỡ chữ, giãn dòng, dark mode, vị trí TTS.</li>' +
-'</ul>' +
-'<h3>🎹 Phím tắt</h3>' +
-'<ul>' +
-'<li><kbd>Esc</kbd> — đóng panel đang mở (Thư viện / Cài đặt / Guide)</li>' +
+'<li><em>*Một số thiết bị không hỗ trợ sẽ không đọc được.</em></li>' +
 '</ul>' +
 '<h3>ℹ Nguồn</h3>' +
 '<p>Văn bản Pāli + bản dịch tiếng Anh Bhikkhu Sujato từ <a href="https://suttacentral.net/" target="_blank" rel="noopener">SuttaCentral</a> (dự án Bilara). Bản dịch tiếng Việt biên tập từ nhiều nguồn, có thể còn sai sót — vui lòng đối chiếu bản Pāli và tiếng Anh.</p>' +
-'<p>Góp ý, báo lỗi: <code>tuanctvn199@gmail.com</code></p>' +
+'<p>Góp ý, báo lỗi: <a href="mailto:tuanctvn199@gmail.com">tuanctvn199@gmail.com</a></p>' +
 '<button id="btnCloseGuide" type="button">Đóng</button>';
 var enHtml =
 '<h2>User Guide</h2>' +
-'<em>Trilingual sutta reader: Pāli · English · Vietnamese — source SuttaCentral.</em>' +
-'<h3>📖 Library</h3>' +
+'<h3>📖 Sutta Library</h3>' +
 '<ul>' +
-'<li>Tap <strong>Library</strong> in the footer center to open the catalogue.</li>' +
-'<li>Choose one of <strong>5 tiles</strong>: <code>DN</code> Long · <code>MN</code> Middle · <code>SN</code> Connected · <code>AN</code> Numerical · <strong>★ Saved</strong> (bookmarked suttas).</li>' +
-'<li><strong>DN / MN</strong>: flat list of all suttas. <strong>SN / AN</strong>: grouped by Saṁyutta / Vagga — tap to expand.</li>' +
-'<li><strong>Search</strong>: filter by name, code (<code>mn 23</code>) or keyword — across all 4 nikāyas. <em>Diacritics optional</em> ("pham vong" finds "Phạm Võng").</li>' +
-'<li>Tap <strong>×</strong> or click outside to close.</li>' +
+'<li>Tap <strong>Library</strong> in the footer center to open the sutta list. Or use <strong>Search</strong> to find a sutta.</li>' +
 '</ul>' +
 '<h3>⭐ Bookmarks</h3>' +
 '<ul>' +
-'<li>Tap <strong>☆</strong> next to the current sutta title (top-right of header) to save / unsave.</li>' +
-'<li>Tap <strong>☆</strong> next to any sutta in the library to save it without opening.</li>' +
-'<li>The <strong>★ Saved</strong> tile shows a count — tap to view the list. Sorted by natural order in each nikāya.</li>' +
-'<li>Bookmarks are stored locally in the browser, not synced across devices.</li>' +
+'<li>Tap <strong>☆</strong> next to the current sutta title (top-left) to save / unsave a favorite sutta.</li>' +
+'<li>The <strong>★ Saved</strong> tile shows the count of saved suttas.</li>' +
 '</ul>' +
 '<h3>📜 Reading</h3>' +
 '<ul>' +
-'<li><strong>Title header</strong>: Nikāya · Code · Pāli name · Counterpart name (VI/EN).</li>' +
-'<li>Content split into <strong>segments</strong> — ID on the left (e.g. <code>MN23.1.1</code>).</li>' +
-'<li>Desktop: <strong>Pāli full-width top</strong>, <strong>English + Vietnamese</strong> side-by-side below. Mobile / iPad auto-stacks vertically.</li>' +
-'<li><strong>Chapter numbers</strong> centered as dividers. <strong>SOURCE</strong> row at the end.</li>' +
-'<li><strong>Nav title</strong> in the footer center — tap to open the library at the current sutta.</li>' +
-'<li><strong>‹ PREV / NEXT ›</strong>: navigate sequentially within the nikāya.</li>' +
-'<li><strong>⬆ Back to top</strong> (bottom-right FAB): jump to top and clear the scroll anchor.</li>' +
-'<li><strong>Reading progress bar</strong> on the left edge + <code>%</code> badge bottom-right: shows how far you have read. Toggle in Settings (<code>▮ %</code> button).</li>' +
+'<li><strong>‹ PREV / NEXT ›</strong> buttons: navigate between suttas.</li>' +
+'<li><strong>⬆</strong>: jump to the top of the sutta.</li>' +
+'<li>Reading progress bar (left edge) + <code>%</code> badge (bottom-right): shows how far you have read. Toggle in Settings (<code>▮ %</code>).</li>' +
 '</ul>' +
 '<h3>🔗 Share & Copy</h3>' +
 '<ul>' +
-'<li><strong>🔗 Title share</strong> (top-right of header): share link to the sutta — Copy link · Facebook · Zalo · X (Twitter) · Email · System share (mobile).</li>' +
-'<li><strong>🔗 Segment share</strong> (small icon next to segment ID): share link to that exact segment — opening the link scrolls directly to it.</li>' +
+'<li><strong>🔗 Title share</strong> (top-right): share link to the sutta.</li>' +
+'<li><strong>🔗 Segment share</strong> (small icon next to segment ID): share link to that exact segment.</li>' +
 '<li><strong>📋 Copy</strong> next to <code>PĀLI</code> / <code>ENGLISH</code> / <code>VIỆT</code> labels: copy the text of that column for the current segment.</li>' +
 '</ul>' +
 '<h3>⚙ Settings</h3>' +
 '<ul>' +
-'<li><strong>Interface</strong>: <strong>🌙/☀</strong> dark/light · <strong>VN/EN</strong> interface language · <strong>🖨</strong> print / save current sutta to PDF. On phone/tablet, the native print sheet offers <strong>"Save to Files"</strong> (iOS) or <strong>"Save as PDF"</strong> (Android) to download the file. Note: long suttas (thousands of segments) may need <strong>a few seconds to tens of seconds</strong> to prepare — please wait.</li>' +
-'<li><strong>Languages</strong>: toggle <code>PĀLI</code> · <code>ENGLISH</code> · <code>VIỆT</code> columns (at least one must stay on).</li>' +
-'<li><strong>Layout</strong>: <code>☰ Stack</code> — vertical stack · <code># Segment</code> — show/hide segment IDs · <code>▦ Label</code> — show/hide column headers.</li>' +
+'<li><strong>Interface</strong>: <strong>🌙/☀</strong> dark/light · <strong>VN/EN</strong> interface language · <strong>🖨</strong> print / save current sutta to PDF. Note: long suttas (thousands of segments) may take a few seconds to tens of seconds to prepare — please wait.</li>' +
+'<li><strong>Languages</strong>: toggle <code>PĀLI</code> · <code>ENGLISH</code> · <code>VIỆT</code> columns.</li>' +
+'<li><strong>Layout</strong>: <code>☰ Stack</code> — stack 3 columns · <code># Segment</code> — show/hide segment IDs · <code>▦ Label</code> — show/hide column headers.</li>' +
 '<li><strong>Font size</strong>: slider 80–160% (body text only). <strong>Line height</strong>: 1.3–2.6.</li>' +
 '<li><strong>↺ A</strong> / <strong>↺ ☰</strong>: reset font size / line height.</li>' +
-'<li><strong>▮ %</strong>: toggle reading progress bar (vertical bar on left + percentage badge).</li>' +
+'<li><strong>▮ %</strong>: toggle reading progress bar.</li>' +
 '<li><strong>🐞</strong>: debug.</li>' +
 '</ul>' +
-'<h3>🔊 Text-to-Speech</h3>' +
+'<h3>🔊 Text-to-Speech (TTS)</h3>' +
 '<ul>' +
 '<li><strong>▶ Play</strong>: reads in UI language (VI or EN). Pāli not supported.</li>' +
 '<li><strong>⏸ Pause</strong>: browser limitation — resume restarts the current sentence.</li>' +
 '<li><strong>⏹ Stop</strong>: stops entirely; next Play starts from the beginning.</li>' +
-'<li>TTS position is saved per sutta — reopening resumes where you left off.</li>' +
-'<li>Android may need <strong>Google TTS Engine</strong> for the Vietnamese voice.</li>' +
-'</ul>' +
-'<h3>💾 Auto-save</h3>' +
-'<ul>' +
-'<li><strong>Scroll position</strong> per sutta · <strong>Last opened sutta</strong> (auto-restored on reload).</li>' +
-'<li><strong>Bookmarks</strong> · <strong>Active tile</strong> (DN/MN/SN/AN/★).</li>' +
-'<li><strong>Settings</strong>: language, visible columns, layout, font size, line height, dark mode, TTS position.</li>' +
-'</ul>' +
-'<h3>🎹 Shortcuts</h3>' +
-'<ul>' +
-'<li><kbd>Esc</kbd> — close open panel (Library / Settings / Guide)</li>' +
+'<li><em>*Some devices may not support TTS and won\'t read.</em></li>' +
 '</ul>' +
 '<h3>ℹ Sources</h3>' +
-'<p>Pāli text and Bhikkhu Sujato English translations from <a href="https://suttacentral.net/" target="_blank" rel="noopener">SuttaCentral</a> (Bilara project). Vietnamese translations compiled from multiple sources — please cross-reference Pāli and English originals.</p>' +
-'<p>Feedback / bug reports: <code>tuanctvn199@gmail.com</code></p>' +
+'<p>Pāli text and Bhikkhu Sujato English translations from <a href="https://suttacentral.net/" target="_blank" rel="noopener">SuttaCentral</a> (Bilara project). Vietnamese translations compiled from multiple sources — please cross-reference with Pāli and English originals.</p>' +
+'<p>Feedback / bug reports: <a href="mailto:tuanctvn199@gmail.com">tuanctvn199@gmail.com</a></p>' +
 '<button id="btnCloseGuide" type="button">Close</button>';
 dlg.innerHTML = isEn ? enHtml : viHtml;
 var btnClose = $('btnCloseGuide');
@@ -822,13 +776,12 @@ btn.classList.add('no-hover');
 setTimeout(function () { btn.classList.remove('no-hover'); }, 280);
 }
 function positionSettingsPanel() {
-if (!settingsPanel || !btnSutraMenu || !card) return;
-var left   = btnSutraMenu.offsetLeft + btnSutraMenu.offsetWidth + 6;
-var cardH  = card.offsetHeight;
-var btnBottom = btnSutraMenu.offsetTop + btnSutraMenu.offsetHeight;
-var bottom = cardH - btnBottom;
-settingsPanel.style.left   = left + 'px';
-settingsPanel.style.bottom = bottom + 'px';
+if (!settingsPanel || !btnSettings) return;
+var r = btnSettings.getBoundingClientRect();
+var footer = document.querySelector('.status');
+var footerH = footer ? footer.offsetHeight : (window.innerHeight - r.top);
+settingsPanel.style.left   = r.left + 'px';
+settingsPanel.style.bottom = (footerH + 8) + 'px';
 settingsPanel.style.top    = 'auto';
 settingsPanel.style.right  = 'auto';
 }
@@ -874,6 +827,14 @@ togglePanel(sutraMenuPanel, false);
 positionSettingsPanel();
 }
 togglePanel(settingsPanel, willOpen);
+_blurIfMouse(btnSettings);
+};
+}
+var btnSettingsClose = $('btnSettingsClose');
+if (btnSettingsClose) {
+btnSettingsClose.onclick = function (e) {
+e.stopPropagation();
+togglePanel(settingsPanel, false);
 };
 }
 if (btnGuide && guideOverlay) {
@@ -1247,19 +1208,6 @@ isOn = !isOn;
 apply(isOn);
 try { storage.set(KEY, isOn ? '1' : '0'); } catch(_){}
 if (isOn) try { updateReadingProgress(); } catch(_){}
-});
-})();
-(function _wireRandom() {
-var btn = $('btnRandom');
-if (!btn) return;
-btn.addEventListener('click', function () {
-if (!FLAT_SUTTAS.length) populateFlatSuttas();
-var pool = FLAT_SUTTAS.filter(function (s) { return s.id !== currentSutraId; });
-if (!pool.length) pool = FLAT_SUTTAS;
-if (!pool.length) return;
-var pick = pool[Math.floor(Math.random() * pool.length)];
-closePanels();
-openSutra(pick.id);
 });
 })();
 var anchorObserver = null;
@@ -3028,13 +2976,18 @@ revealCurrentSuttaInMenu();
 }
 });
 }
+function _blurIfMouse(btn) {
+try { if (!btn.matches(':focus-visible')) btn.blur(); } catch(_){}
+}
 if (btnPrev) btnPrev.onclick = function () {
 var idx = SUTRA_ORDER.indexOf(currentSutraId);
 if (idx > 0) openSutra(SUTRA_ORDER[idx - 1]);
+_blurIfMouse(btnPrev);
 };
 if (btnNext) btnNext.onclick = function () {
 var idx = SUTRA_ORDER.indexOf(currentSutraId);
 if (idx !== -1 && idx < SUTRA_ORDER.length - 1) openSutra(SUTRA_ORDER[idx + 1]);
+_blurIfMouse(btnNext);
 };
 var synthSupported = 'speechSynthesis' in window;
 function setTtsUiState(state) {
