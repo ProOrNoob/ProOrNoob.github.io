@@ -745,7 +745,9 @@ if (!guideOverlay) return;
 renderGuideDialog();
 guideOverlay.classList.add('show');
 guideOverlay.setAttribute('aria-hidden', 'false');
-setTimeout(function () { var b = $('btnCloseGuide'); if (b) b.focus(); }, 50);
+var dialog = guideOverlay.querySelector('.guide-dialog');
+if (dialog) dialog.scrollTop = 0;
+setTimeout(function () { var b = $('btnCloseGuide'); if (b) b.focus({ preventScroll: true }); }, 50);
 }
 function closeGuide() {
 if (!guideOverlay) return;
@@ -2369,64 +2371,92 @@ if (!grid || currentSutraId) return;
 var isEn = uiLang === 'en';
 if (superTitleEl) superTitleEl.textContent = '';
 if (titleMetaEl)  titleMetaEl.textContent  = '';
-if (titleEl)      titleEl.textContent      = 'Tạng Kinh Nikāya';
+if (titleEl)      titleEl.textContent      = '';
 if (subtitleEl)   subtitleEl.textContent   = '';
+document.documentElement.classList.add('is-welcome');
 applyTitleBookmarkState();
 var heroSub = isEn
-? 'Reverently saluting the Blessed One, the Worthy One, the Perfectly Self-Awakened. A library of canonical suttas for practitioners and scholars.'
-: 'Cung kính đảnh lễ Đức Thế Tôn, bậc A-la-hán, Chánh Đẳng Giác. Một thư viện kinh điển dành cho người tu học và nghiên cứu Phật pháp.';
-var heroLangs = ['Pāli', 'English', isEn ? 'Vietnamese' : 'Việt'];
-var heroLangsHtml = heroLangs.map(function (l) { return '<span>' + escapeHtml(l) + '</span>'; }).join('<span class="dot" aria-hidden="true"></span>');
-var heroHtml =
-'<div class="welcome-hero">' +
-'<div class="welcome-hero-pali">Namo tassa bhagavato arahato sammāsambuddhassa</div>' +
-'<h1 class="welcome-hero-title">Tạng <em>Kinh</em><br>Nikāya</h1>' +
-'<div class="welcome-hero-sub">' + escapeHtml(heroSub) + '</div>' +
-'<div class="welcome-hero-langs">' + heroLangsHtml + '</div>' +
-'</div>';
-var quotes = [
-{
-pali: 'Namo tassa bhagavato arahato sammāsambuddhassa',
-vi:   'Kính lễ Đức Thế Tôn, bậc A-la-hán, Chánh Đẳng Giác',
-en:   'Homage to the Blessed One, the Worthy, the Perfectly Self-Enlightened',
-note: isEn ? 'Traditional homage recited before reading the suttas' : 'Câu cung kính truyền thống trước khi đọc Kinh'
-},
-{
-pali: 'Vayadhammā saṅkhārā, appamādena sampādetha',
-vi:   'Các pháp hữu vi đều vô thường, hãy tinh tấn chớ có buông lung',
-en:   'All conditioned things are subject to decay. Strive on with diligence',
-note: isEn ? 'The Buddha\'s last words — Mahāparinibbāna Sutta (DN 16)'
-: 'Lời dạy cuối cùng của Đức Phật trước khi nhập Niết-bàn — Kinh Đại Bát Niết-bàn (DN 16)'
-},
-{
-pali: 'Attadīpā viharatha, attasaraṇā, anaññasaraṇā',
-vi:   'Hãy tự mình làm hòn đảo cho chính mình, hãy tự mình nương tựa chính mình, không nương tựa ai khác',
-en:   'Dwell as your own island, your own refuge, with no other refuge',
-note: isEn ? 'Mahāparinibbāna Sutta (DN 16)' : 'Kinh Đại Bát Niết-bàn (DN 16)'
-}
+? 'Reverently saluting the Blessed One, the Worthy One, the Perfectly Self-Awakened.<br>A library of canonical suttas for practitioners and scholars.'
+: 'Cung kính đảnh lễ Đức Thế Tôn, bậc A-la-hán, Chánh Đẳng Giác.<br>Một thư viện kinh điển dành cho người tu học và nghiên cứu Phật pháp.';
+var mandalaSvg = '<svg viewBox="0 0 120 120" fill="none" stroke="currentColor" aria-hidden="true">' +
+'<g class="welcome-ring r1"><circle cx="60" cy="60" r="54" stroke-width=".7" opacity=".55"/><circle cx="60" cy="60" r="54" stroke-width=".7" stroke-dasharray="1 6" opacity=".8"/></g>' +
+'<g class="welcome-ring r2"><circle cx="60" cy="60" r="42" stroke-width=".6" stroke-dasharray="2 4" opacity=".6"/></g>' +
+'<g class="welcome-core" stroke-width=".9"><g opacity=".95">' +
+'<path d="M60 30 C 70 42, 70 52, 60 60 C 50 52, 50 42, 60 30 Z"/>' +
+'<path d="M60 30 C 70 42, 70 52, 60 60 C 50 52, 50 42, 60 30 Z" transform="rotate(45 60 60)"/>' +
+'<path d="M60 30 C 70 42, 70 52, 60 60 C 50 52, 50 42, 60 30 Z" transform="rotate(90 60 60)"/>' +
+'<path d="M60 30 C 70 42, 70 52, 60 60 C 50 52, 50 42, 60 30 Z" transform="rotate(135 60 60)"/>' +
+'<path d="M60 30 C 70 42, 70 52, 60 60 C 50 52, 50 42, 60 30 Z" transform="rotate(180 60 60)"/>' +
+'<path d="M60 30 C 70 42, 70 52, 60 60 C 50 52, 50 42, 60 30 Z" transform="rotate(225 60 60)"/>' +
+'<path d="M60 30 C 70 42, 70 52, 60 60 C 50 52, 50 42, 60 30 Z" transform="rotate(270 60 60)"/>' +
+'<path d="M60 30 C 70 42, 70 52, 60 60 C 50 52, 50 42, 60 30 Z" transform="rotate(315 60 60)"/>' +
+'</g><circle cx="60" cy="60" r="4" fill="currentColor" stroke="none"/></g></svg>';
+var verses = [
+{ pali: 'Vayadhammā saṅkhārā, appamādena sampādetha',
+  tr: isEn ? 'All conditioned things are subject to decay. Strive on with diligence' : 'Các pháp hữu vi đều vô thường, hãy tinh tấn chớ có buông lung',
+  src: isEn ? "The Buddha's last words — Mahāparinibbāna Sutta (DN 16)" : 'Lời dạy cuối cùng của Đức Phật trước khi nhập Niết-bàn — Kinh Đại Bát Niết-bàn (DN 16)',
+  segKey: 'dn16:3.51.4' },
+{ pali: 'Attadīpā viharatha, attasaraṇā, anaññasaraṇā',
+  tr: isEn ? 'Dwell as your own island, your own refuge, with no other refuge' : 'Hãy tự mình làm hòn đảo cho chính mình, hãy tự mình nương tựa chính mình, không nương tựa ai khác',
+  src: isEn ? 'Mahāparinibbāna Sutta (DN 16)' : 'Kinh Đại Bát Niết-bàn (DN 16)',
+  segKey: 'dn16:2.26.1' }
 ];
-var quotesHtml = quotes.map(function (q) {
-var tr = isEn ? q.en : q.vi;
-return '<div class="welcome-quote">' +
-'<div class="wq-pali">' + escapeHtml(q.pali) + '</div>' +
-'<div class="wq-tr">' + escapeHtml(tr) + '</div>' +
-'<div class="wq-note">' + escapeHtml(q.note) + '</div>' +
-'</div>';
-}).join('<div class="wq-sep" aria-hidden="true">❧</div>');
-var hintLines = isEn
-? ['Open the <strong>Library</strong> to browse all suttas',
-   'Use <strong>⚙ Settings</strong> to customize the display',
-   'Tap <strong>?</strong> to view the guide']
-: ['Vào <strong>Thư viện</strong> để xem danh sách bài kinh',
-   'Bấm <strong>⚙ Cài đặt</strong> để tùy chỉnh hiển thị',
-   'Chọn <strong>?</strong> để xem hướng dẫn'];
-var hintHtml = hintLines.map(function (l) { return '<div class="hint-line">' + l + '</div>'; }).join('');
+var versesHtml = verses.map(function (v) {
+return '<article class="welcome-verse">' +
+'<p class="welcome-verse-pali">' + escapeHtml(v.pali) + '</p>' +
+'<p class="welcome-verse-tr">' + escapeHtml(v.tr) + '</p>' +
+'<p class="welcome-verse-source">' + escapeHtml(v.src) + '</p>' +
+'</article>';
+}).join('');
+var iconLib  = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><path d="M2 3v10M5 3v10M8 3v10M12 4l3 9M11 13h5"/></svg>';
+var iconCog  = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M3 13l1.4-1.4M11.6 4.4L13 3"/></svg>';
+var iconHelp = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.4-.9 2-1.6 2.4-.7.4-1.1.7-1.1 1.6v.4"/><path d="M12 16.2h.01"/></svg>';
+var helperRows = isEn
+? [{action:'guide', text: '<em>Help</em> — view the guide', icon: iconHelp},
+   {action:'library', text: '<em>Library</em> — browse suttas', icon: iconLib}]
+: [{action:'guide', text: '<em>Trợ giúp</em> — xem hướng dẫn', icon: iconHelp},
+   {action:'library', text: '<em>Thư viện</em> — chọn bài kinh', icon: iconLib}];
+var helperHtml = helperRows.map(function (r) {
+return '<button type="button" class="welcome-help-row" data-action="' + r.action + '">' +
+'<span class="welcome-help-text">' + r.text + '</span>' +
+'<span class="welcome-help-key">' + r.icon + '</span>' +
+'</button>';
+}).join('');
 grid.innerHTML =
 '<div class="welcome-screen">' +
-heroHtml +
-'<div class="welcome-quotes">' + quotesHtml + '</div>' +
-'<div class="welcome-box">' + hintHtml + '</div>' +
+'<div class="welcome-mandala">' + mandalaSvg + '</div>' +
+'<h1 class="welcome-hero-title" data-action="library" tabindex="0" role="button" aria-label="' + (isEn ? 'Open library' : 'Mở thư viện') + '" title="' + (isEn ? 'Open library' : 'Mở thư viện') + '">' + (isEn ? 'The <em>Sutta</em><br>Nikāya' : 'Tạng <em>Kinh</em><br>Nikāya') + '</h1>' +
+'<p class="welcome-hero-sub">' + heroSub + '</p>' +
+'<div class="welcome-hero-langs" role="tablist" aria-label="' + (isEn ? 'Interface language' : 'Ngôn ngữ giao diện') + '">' +
+'<button type="button" class="welcome-lang-btn' + (uiLang === 'vi' ? ' active' : '') + '" data-ui-lang="vi" role="tab" aria-selected="' + (uiLang === 'vi' ? 'true' : 'false') + '">Việt</button>' +
+'<span class="dot" aria-hidden="true"></span>' +
+'<button type="button" class="welcome-lang-btn' + (uiLang === 'en' ? ' active' : '') + '" data-ui-lang="en" role="tab" aria-selected="' + (uiLang === 'en' ? 'true' : 'false') + '">English</button>' +
+'</div>' +
+'<section class="welcome-verses">' + versesHtml + '</section>' +
+'<div class="welcome-helper">' + helperHtml + '</div>' +
 '</div>';
+grid.querySelectorAll('.welcome-help-row[data-action], .welcome-hero-title[data-action]').forEach(function (el) {
+el.addEventListener('click', function (e) {
+e.stopPropagation();
+var action = el.getAttribute('data-action');
+if (action === 'library' && btnSutraMenu) btnSutraMenu.click();
+else if (action === 'guide' && btnGuide) btnGuide.click();
+});
+});
+var heroTitleEl = grid.querySelector('.welcome-hero-title[data-action]');
+if (heroTitleEl) {
+heroTitleEl.addEventListener('keydown', function (e) {
+if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); heroTitleEl.click(); }
+});
+}
+grid.querySelectorAll('.welcome-lang-btn[data-ui-lang]').forEach(function (el) {
+el.addEventListener('click', function (e) {
+e.stopPropagation();
+var chosen = el.getAttribute('data-ui-lang');
+if (chosen === uiLang) return;
+if (btnUiLang) btnUiLang.click();
+});
+});
 }
 function materializeChunk(chunkInfo) {
 if (!chunkInfo || chunkInfo.materialized) return;
@@ -2731,6 +2761,7 @@ function openSutra(id) {
 // Self-heal: nếu caller truyền segment prefix (vd "dn1") thay vì sutta file id ("dn01"),
 // resolve qua SUTRA_INDEX. Bảo vệ khỏi LS bị pollute, hash, legacy bookmarks.
 if (id) id = _resolveSegPrefixToSuttaId(id);
+document.documentElement.classList.remove('is-welcome');
 renderSutra(id);
 }
 (function wireBookmarkCurrent() {
