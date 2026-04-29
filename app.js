@@ -799,15 +799,23 @@ panel.setAttribute('inert', '');
 if (panel === settingsPanel && btnSettings) {
 btnSettings.setAttribute('aria-expanded', String(isOpen));
 btnSettings.classList.toggle('active', isOpen);
-// Mobile: blur khi đóng để clear sticky :focus / :hover ghost state
-if (!isOpen) try { btnSettings.blur(); } catch(_){}
+if (!isOpen) _clearStickyHover(btnSettings);
 }
 if (panel === sutraMenuPanel && btnSutraMenu) {
 btnSutraMenu.setAttribute('aria-expanded', String(isOpen));
 btnSutraMenu.classList.toggle('is-open', isOpen);
-if (!isOpen) try { btnSutraMenu.blur(); } catch(_){}
+if (!isOpen) _clearStickyHover(btnSutraMenu);
 }
 }
+}
+/* Touch device fix: khi user tap nút để đóng panel, browser giữ :hover/:active
+   trên element vừa touch → ghost background quanh nút. Blur + force "no-hover"
+   class trong 280ms → CSS sẽ override mọi state về transparent → hết ghost. */
+function _clearStickyHover(btn) {
+if (!btn) return;
+try { btn.blur(); } catch(_){}
+btn.classList.add('no-hover');
+setTimeout(function () { btn.classList.remove('no-hover'); }, 280);
 }
 function positionSettingsPanel() {
 if (!settingsPanel || !btnSutraMenu || !card) return;
