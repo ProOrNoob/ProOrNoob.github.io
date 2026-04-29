@@ -141,7 +141,11 @@
 .sutra-col-copy:hover{color:var(--accent);background:color-mix(in oklab,var(--accent) 12%,transparent);opacity:1}
 .sutra-col-copy:focus-visible{outline:2px solid var(--accent);outline-offset:1px;opacity:1}
 .sutra-col-copy svg{width:12px;height:12px}
-@media (hover:none){.sutra-col-copy{opacity:0.55}}
+/* Touch devices (iPad / mobile): hiện luôn copy + share buttons. Desktop giữ hover-reveal. */
+@media (hover:none){
+.sutra-col-copy{opacity:0.55 !important}
+.sutra-seg-share{opacity:0.7 !important}
+}
 /* Subtitle rows (AN/SN có :0.1 Nikaya · :0.2 Vagga · :0.3 Sutta title) — chỉ giữ 1 nút share ở row :0.3 để tránh rối */
 .sutra-row-wrap.is-subtitle[data-key$=":0.1"] .sutra-seg-share,
 .sutra-row-wrap.is-subtitle[data-key$=":0.2"] .sutra-seg-share{display:none !important}
