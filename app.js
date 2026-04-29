@@ -1510,9 +1510,14 @@ fill.style.transform = 'translateY(8px)';
 wrap.classList.remove('visible');
 return;
 }
+// Match wrap bounds với grid scroll area → dot chỉ di chuyển trong vùng nội dung,
+// không trồi lên header hay xuống footer.
+var gridRect = scrollEl.getBoundingClientRect();
+wrap.style.top = gridRect.top + 'px';
+wrap.style.bottom = Math.max(0, window.innerHeight - gridRect.bottom) + 'px';
 var pct = Math.min(1, Math.max(0, scrollEl.scrollTop / max));
-// Dot di chuyển dọc viewport: 8px (top margin) → viewport_h - 16 (bottom margin) - 8 (dot height)
-var travelY = window.innerHeight - 8 - 16 - 8;
+var wrapH = gridRect.height;
+var travelY = wrapH - 8 - 16 - 8;  // grid height - margins - dot
 var dotY = 8 + pct * Math.max(0, travelY);
 fill.style.transform = 'translateY(' + dotY.toFixed(1) + 'px)';
 if (pctEl) pctEl.textContent = Math.round(pct * 100) + '%';
