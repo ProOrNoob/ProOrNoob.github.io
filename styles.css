@@ -185,11 +185,39 @@ html.hide-reading-progress #readingProgress,html.is-welcome #readingProgress{dis
 @media (max-width:720px){#btnBackTop{width:34px;height:34px;right:8px;bottom:60px}#btnBackTop .back-top-arrow{width:13px;height:13px}}
 html.is-welcome #btnSettings,html.is-welcome #btnPrev,html.is-welcome #btnNext{display:none}
 html.is-welcome .status-in{grid-template-columns:1fr auto 1fr}
-/* Touch device focus/active visual reset. Cần vì base @media (hover:none) section
-   trong file gốc đã có — phải match để override ổn định. */
+/* Touch device: NUKE toàn bộ hover/active/focus visual feedback — Chrome Android hay giữ
+   :hover state sau touch tap → button stuck với accent color. Chỉ giữ class-based toggle
+   states (.active/.is-open/[aria-pressed=true]) qua các rule riêng. */
 @media (hover:none){
-button:focus:not(:focus-visible),a:focus:not(:focus-visible),[tabindex]:focus:not(:focus-visible),input:focus:not(:focus-visible){outline:0;box-shadow:none}
-button:active,a:active,.pill:active,.nav-pill:active,.bar-pill:active,.nikaya-tile:active,.menu-sutta-link:active,.tts-btn:active,.set-hdr-btn:active,.title-bookmark-btn:active,.title-share-btn:active,#btnBackTop:active{transform:none;box-shadow:none}
+/* (1) Disable focus outline/shadow trên mọi element */
+*:focus,*:focus-visible{outline:0;box-shadow:none}
+/* (2) Reset hover/active/focus visuals về base values cho tất cả button types.
+   `:not(.active):not(.is-open):not([aria-pressed="true"])` để toggle state vẫn highlight. */
+.bar-pill:not(.active):not(.is-open):hover,.bar-pill:not(.active):not(.is-open):active,.bar-pill:not(.active):not(.is-open):focus{background:transparent;color:var(--ink-3)}
+.bar-pill:not(.active):not(.is-open):hover svg,.bar-pill:not(.active):not(.is-open):active svg,.bar-pill:not(.active):not(.is-open):focus svg{color:var(--ink-3);opacity:.9}
+.nav-pill:not(:disabled):hover,.nav-pill:not(:disabled):active,.nav-pill:not(:disabled):focus{background:transparent;color:var(--ink-3);transform:none}
+.nav-pill:hover svg,.nav-pill:active svg,.nav-pill:focus svg{color:var(--ink-3);transform:none}
+.pill:not(.active):not([aria-pressed="true"]):hover,.pill:not(.active):not([aria-pressed="true"]):active,.pill:not(.active):not([aria-pressed="true"]):focus{background:transparent;color:var(--ink-3)}
+.menu-sutta-link:not(.active):hover,.menu-sutta-link:not(.active):active,.menu-sutta-link:not(.active):focus{background:transparent}
+.nikaya-tile:not(.active):hover,.nikaya-tile:not(.active):active,.nikaya-tile:not(.active):focus{background:var(--bg-2);color:var(--ink-2);border-color:var(--rule);transform:none}
+.tts-btn:not(:disabled):hover,.tts-btn:not(:disabled):active,.tts-btn:not(:disabled):focus{background:var(--bg-2);color:var(--ink-3);border-color:var(--rule)}
+.menu-close:hover,.menu-close:active,.menu-close:focus{background:var(--bg-2);color:var(--ink-3);border-color:var(--rule)}
+.set-hdr-btn:hover,.set-hdr-btn:active,.set-hdr-btn:focus{background:transparent;color:var(--ink-3)}
+.slider-reset-btn:hover,.slider-reset-btn:active,.slider-reset-btn:focus{background:transparent;color:var(--ink-3);border-color:var(--rule)}
+.title-bookmark-btn:not(.is-on):hover,.title-bookmark-btn:not(.is-on):active,.title-bookmark-btn:not(.is-on):focus{background:transparent;color:var(--ink-4);opacity:.55}
+.title-share-btn:hover,.title-share-btn:active,.title-share-btn:focus{background:transparent;color:var(--ink-4);opacity:.65}
+.menu-bookmark-btn:not(.is-on):hover,.menu-bookmark-btn:not(.is-on):active,.menu-bookmark-btn:not(.is-on):focus{background:transparent;color:var(--ink-4);opacity:.55}
+.sutra-seg-share:hover,.sutra-seg-share:active,.sutra-seg-share:focus{background:transparent;color:var(--ink-4);opacity:0}
+.sutra-col-copy:hover,.sutra-col-copy:active,.sutra-col-copy:focus{background:transparent;color:var(--ink-4);opacity:0}
+.menu-toggle:hover,.menu-toggle:active,.menu-toggle:focus{background:transparent}
+.share-menu-item:hover,.share-menu-item:active,.share-menu-item:focus{background:transparent;color:var(--ink-2)}
+#btnBackTop:hover,#btnBackTop:active,#btnBackTop:focus{color:var(--ink-3);border-color:color-mix(in oklab,var(--ink-3) 30%,transparent)}
+.welcome-help-row:hover,.welcome-help-row:active,.welcome-help-row:focus{background:transparent;color:var(--ink-2);padding-left:8px}
+.rec-card:hover,.rec-card:active,.rec-card:focus{background:var(--panel);border-color:var(--rule);transform:none}
+.guide-dialog button:hover,.guide-dialog button:active,.guide-dialog button:focus{background:var(--bg-2);color:var(--ink-2);border-color:var(--rule)}
+.debug-action-btn:hover,.debug-action-btn:active,.debug-action-btn:focus{background:rgba(244,67,54,0.15);color:#ff7970}
+/* (3) Disable :active transform/scale animation trên mọi button */
+button:active,a:active,[role="button"]:active{transform:none;box-shadow:none}
 }
 #btnProgressToggle[aria-pressed="false"]{opacity:0.5;text-decoration:line-through}
 /* iOS/iPad Safari fix: chống auto-zoom khi tap input (font ≥ 16px) + chống double-tap zoom (touch-action:manipulation) */
