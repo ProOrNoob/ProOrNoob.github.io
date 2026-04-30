@@ -100,6 +100,26 @@ function sortBilaraKeys(keys) {
 if (_BILARA_COLLATOR) return keys.sort(_BILARA_COLLATOR.compare);
 return keys.sort(function (x, y) { return x.localeCompare(y, 'en', { numeric: true }); });
 }
+function _cmpBilaraKey(a, b) {
+if (_BILARA_COLLATOR) return _BILARA_COLLATOR.compare(a, b);
+return String(a).localeCompare(String(b), 'en', { numeric: true });
+}
+// Khi anchor key không tồn tại trong virtAllRows hiện tại (vd cross multi ↔ single-lang
+// vì single-lang merge nhiều segment thành 1 paragraph row có key = first segment),
+// trả về idx của row có key LỚN NHẤT ≤ anchorKey.
+// Ý nghĩa: row đó là paragraph CHỨA segment user đang đọc (vì paragraph absorb forward).
+// Yêu cầu: rows phải sorted by Bilara key (đúng vì sortBilaraKeys + getViewData luôn sort).
+function findClosestPrecedingRow(anchorKey, rows) {
+if (!anchorKey || !rows || !rows.length) return -1;
+var bestIdx = -1;
+for (var i = 0; i < rows.length; i++) {
+var rkey = String(rows[i].key || '');
+if (!rkey) continue;
+if (_cmpBilaraKey(rkey, anchorKey) <= 0) bestIdx = i;
+else break; // sorted ascending → sau đây toàn key > anchor
+}
+return bestIdx;
+}
 function getCommentPack(lang, id) {
 // lang: 'pli' | 'en' | 'vi'  →  ./sutta/comment/<id>_<lang>
 if (!id || !/^[A-Za-z0-9_-]+$/.test(id)) return null;
@@ -1401,22 +1421,18 @@ for (var j = 0; j < virtAllRows.length; j++) {
 if (String(virtAllRows[j].key || '') === key) { foundIdx = j; break; }
 }
 if (foundIdx < 0) {
-var savedScopeMatch = String(key).match(/^(.+):(\d+)/);
-if (savedScopeMatch) {
-var savedScope = savedScopeMatch[1] + ':' + savedScopeMatch[2];
-for (var sk = 0; sk < virtAllRows.length; sk++) {
-var curKey = String(virtAllRows[sk].key || '');
-var m = curKey.match(/^(.+):(\d+)/);
-if (m && (m[1] + ':' + m[2]) === savedScope) {
-foundIdx = sk;
-if (window.DEBUG_ANCHOR) console.log('[ANCHOR RESTORE] fallback matched scope "' + savedScope + '" at idx=' + sk + ' key=' + curKey);
-break;
-}
-}
+// Cross-mode fallback: key cụ thể không tồn tại (vd single-lang merge segments).
+// Tìm paragraph row chứa hoặc gần nhất TRƯỚC anchor (largest key ≤ anchorKey).
+foundIdx = findClosestPrecedingRow(key, virtAllRows);
+if (window.DEBUG_ANCHOR && foundIdx >= 0) {
+console.log('[ANCHOR RESTORE] cross-mode fallback to closest preceding idx=' + foundIdx + ' key=' + virtAllRows[foundIdx].key);
 }
 }
 if (window.DEBUG_ANCHOR) console.log('[ANCHOR RESTORE] foundIdx=' + foundIdx + ' in virtAllRows.length=' + virtAllRows.length);
 if (foundIdx < 0) return false;
+// Sau cross-mode fallback, key thực tế của row trong DOM có thể khác key gốc.
+// Phải dùng key của ROW TÌM ĐƯỢC để query DOM, không phải key gốc.
+var resolvedKey = String(virtAllRows[foundIdx].key || key);
 // Chỉ materialize chunk chứa anchor (eager-around-anchor đã render ±1 chunks).
 // IntersectionObserver sẽ tự materialize neighbors khi user scroll. Tránh render
 // hàng nghìn row sync khi anchor ở cuối file dài.
@@ -1424,9 +1440,9 @@ ensureRowRendered(foundIdx);
 if (window.DEBUG_ANCHOR) {
 var matCnt = 0;
 for (var mc = 0; mc < virtChunks.length; mc++) if (virtChunks[mc].materialized) matCnt++;
-console.log('[ANCHOR RESTORE] chunks materialized after ensureRowRendered: ' + matCnt + '/' + virtChunks.length);
+console.log('[ANCHOR RESTORE] chunks materialized after ensureRowRendered: ' + matCnt + '/' + virtChunks.length + ' resolvedKey=' + resolvedKey);
 }
-var safeKey = safeCssEscape(key);
+var safeKey = safeCssEscape(resolvedKey);
 var row = scrollRoot.querySelector('.sutra-row[data-key="' + safeKey + '"]');
 if (window.DEBUG_ANCHOR) console.log('[ANCHOR RESTORE] DOM row found:', !!row);
 if (!row) return false;
@@ -1507,6 +1523,18 @@ var gridRect = scrollEl.getBoundingClientRect();
 wrap.style.top = gridRect.top + 'px';
 wrap.style.bottom = Math.max(0, window.innerHeight - gridRect.bottom) + 'px';
 var pct = Math.min(1, Math.max(0, scrollEl.scrollTop / max));
+// Snap to 100% khi row cuối cùng đã visible trong viewport: chunk materialize có thể làm
+// scrollHeight grow → maxScrollTop xa thêm → user bị "stuck" ở 95-99% dù visible đã hết content.
+// Check trực tiếp last row's bottom thay vì tolerance pixel — chính xác bất kể delta.
+try {
+var lastRow = scrollEl.querySelector('.sutra-row-wrap:last-of-type');
+if (lastRow) {
+var lr = lastRow.getBoundingClientRect();
+var rr = scrollEl.getBoundingClientRect();
+// Last row fully visible (bottom ≤ viewport bottom + 4px tol) → user thực sự ở cuối.
+if (lr.bottom <= rr.bottom + 4) pct = 1;
+}
+} catch(_) {}
 var wrapH = gridRect.height;
 var BAR_HEIGHT = 48;
 var DOT_SIZE = 4;
@@ -1563,6 +1591,15 @@ op = dotAppearOp * (1 - (pct - fw[0]) / (fw[1] - fw[0]));
 dot.style.opacity = Math.max(0, Math.min(1, op)).toFixed(2);
 }
 if (pctEl) pctEl.textContent = Math.round(pct * 100) + '%';
+// Sync progress vào nút back-to-top: ring + % text bên trong button.
+if (btnBackTop) {
+var pctRound = Math.round(pct * 100);
+var ringFill = btnBackTop.querySelector('.ring-fill');
+// Circle r=16 → circumference 2π*16 = 100.53. Set offset = (1 - pct) * C để đoạn fill đúng % perimeter.
+if (ringFill) ringFill.style.strokeDashoffset = (100.53 * (1 - pct)).toFixed(2);
+var btPctEl = btnBackTop.querySelector('.back-top-pct');
+if (btPctEl) btPctEl.textContent = pctRound + '%';
+}
 wrap.classList.add('visible');
 wrap.classList.remove('idle');
 clearTimeout(_progressIdleTimer);
@@ -2396,6 +2433,16 @@ var heroSub = isEn
 var mandalaSvg = '<svg viewBox="0 0 120 120" fill="none" stroke="currentColor" aria-hidden="true">' +
 '<g class="welcome-ring r1"><circle cx="60" cy="60" r="54" stroke-width=".7" opacity=".55"/><circle cx="60" cy="60" r="54" stroke-width=".7" stroke-dasharray="1 6" opacity=".8"/></g>' +
 '<g class="welcome-ring r2"><circle cx="60" cy="60" r="42" stroke-width=".6" stroke-dasharray="2 4" opacity=".6"/></g>' +
+'<g class="welcome-particles" fill="currentColor" stroke="none">' +
+'<g class="welcome-dot-wrap" transform="rotate(0 60 60)"><circle class="welcome-dot d1" cx="60" cy="12" r="2.2"/></g>' +
+'<g class="welcome-dot-wrap" transform="rotate(45 60 60)"><circle class="welcome-dot d2" cx="60" cy="12" r="2.2"/></g>' +
+'<g class="welcome-dot-wrap" transform="rotate(90 60 60)"><circle class="welcome-dot d3" cx="60" cy="12" r="2.2"/></g>' +
+'<g class="welcome-dot-wrap" transform="rotate(135 60 60)"><circle class="welcome-dot d4" cx="60" cy="12" r="2.2"/></g>' +
+'<g class="welcome-dot-wrap" transform="rotate(180 60 60)"><circle class="welcome-dot d5" cx="60" cy="12" r="2.2"/></g>' +
+'<g class="welcome-dot-wrap" transform="rotate(225 60 60)"><circle class="welcome-dot d6" cx="60" cy="12" r="2.2"/></g>' +
+'<g class="welcome-dot-wrap" transform="rotate(270 60 60)"><circle class="welcome-dot d7" cx="60" cy="12" r="2.2"/></g>' +
+'<g class="welcome-dot-wrap" transform="rotate(315 60 60)"><circle class="welcome-dot d8" cx="60" cy="12" r="2.2"/></g>' +
+'</g>' +
 '<g class="welcome-core" stroke-width=".9"><g opacity=".95">' +
 '<path d="M60 30 C 70 42, 70 52, 60 60 C 50 52, 50 42, 60 30 Z"/>' +
 '<path d="M60 30 C 70 42, 70 52, 60 60 C 50 52, 50 42, 60 30 Z" transform="rotate(45 60 60)"/>' +
@@ -2476,10 +2523,12 @@ if (btnUiLang) btnUiLang.click();
 function materializeChunk(chunkInfo) {
 if (!chunkInfo || chunkInfo.materialized) return;
 // Capture chunk position trước khi materialize để bù scroll nếu chunk nằm TRƯỚC viewport.
+// Skip compensation trong programmatic scroll window (preserveTopAndSave, anchor restore...)
+// để không đè lên adjustments của các code path đó.
 var scroller = scrollEl;
 var needsCompensation = false;
 var oldChunkBottom = 0;
-if (scroller && chunkInfo.div.parentNode === scroller) {
+if (scroller && chunkInfo.div.parentNode === scroller && Date.now() >= _progScrollUntil) {
 var preRect = chunkInfo.div.getBoundingClientRect();
 var preRootRect = scroller.getBoundingClientRect();
 oldChunkBottom = preRect.bottom - preRootRect.top + scroller.scrollTop;
@@ -2529,7 +2578,7 @@ else if (!chunkInfo.measuredH) chunkInfo.measuredH = (chunkInfo.rowEnd - chunkIn
 var scroller = scrollEl;
 var needsCompensation = false;
 var oldChunkBottom = 0;
-if (scroller && chunkInfo.div.parentNode === scroller) {
+if (scroller && chunkInfo.div.parentNode === scroller && Date.now() >= _progScrollUntil) {
 var chunkRect = chunkInfo.div.getBoundingClientRect();
 var rootRect  = scroller.getBoundingClientRect();
 oldChunkBottom = chunkRect.bottom - rootRect.top + scroller.scrollTop;
@@ -2770,16 +2819,10 @@ var anchorIdx = -1;
 if (anchorKey && keyToRowIdx[anchorKey] != null) {
 anchorIdx = keyToRowIdx[anchorKey];
 } else if (anchorKey) {
-// Scope fallback: 'mn70:13.4' → match key bắt đầu 'mn70:13.' nếu format đổi giữa modes.
-var sm = String(anchorKey).match(/^(.+):(\d+)/);
-if (sm) {
-var scope = sm[1] + ':' + sm[2];
-for (var rk = 0; rk < virtAllRows.length; rk++) {
-var k0 = String(virtAllRows[rk].key || '');
-var m2 = k0.match(/^(.+):(\d+)/);
-if (m2 && (m2[1] + ':' + m2[2]) === scope) { anchorIdx = rk; break; }
-}
-}
+// Cross-mode fallback: anchor key không tồn tại trong mode hiện tại (vd single-lang
+// merge segments → key cụ thể như 'mn70:10.9' không còn). Tìm paragraph row chứa
+// hoặc gần nhất TRƯỚC anchor (largest key ≤ anchorKey).
+anchorIdx = findClosestPrecedingRow(anchorKey, virtAllRows);
 }
 if (anchorIdx < 0) anchorIdx = 0;
 var anchorChunkIdx = Math.floor(anchorIdx / CHUNK_SIZE);
@@ -3341,8 +3384,8 @@ mode: { pali: showPali, eng: showEng, vie: showVie, stack: card?.classList.conta
 zoom: zoomLevel
 };
 }
-// Tick detector — chạy nền 1s/lần ngay cả khi panel đóng → bắt được void xảy ra
-// trước khi user kịp mở debug panel.
+// Tick detector — chỉ chạy khi user tick checkbox trong debug panel.
+// Default OFF để tiết kiệm performance. Khi bật, chạy nền 1s/lần (kể cả khi panel đóng).
 function tickVoidDetector() {
 var d = checkBlackVoid();
 if (!d) return;
@@ -3355,7 +3398,17 @@ if (voidLog.length > VOID_LOG_MAX) voidLog.pop();
 // Console hint nếu user đang xem console
 if (window.console && console.warn) console.warn('[VOID DETECTED]', voidLog[0]);
 }
-setInterval(tickVoidDetector, 1000);
+var _voidDetectorInterval = null;
+var VOID_DETECTOR_KEY = 'sutra_debug_void_detector';
+function startVoidDetector() {
+if (_voidDetectorInterval) return;
+_voidDetectorInterval = setInterval(tickVoidDetector, 1000);
+}
+function stopVoidDetector() {
+if (_voidDetectorInterval) { clearInterval(_voidDetectorInterval); _voidDetectorInterval = null; }
+}
+window.startVoidDetector = startVoidDetector;
+window.stopVoidDetector = stopVoidDetector;
 function fmtBytes(n) {
 if (!Number.isFinite(n)) return '-';
 if (n > 1024*1024) return (n / (1024*1024)).toFixed(1) + ' MB';
@@ -3364,7 +3417,6 @@ return n + ' B';
 }
 function update() {
 if (!visible) return;
-tickVoidDetector();
 var allDom = document.getElementsByTagName('*').length;
 var wraps = grid ? grid.querySelectorAll('.sutra-row-wrap') : [];
 var sc = grid;
@@ -3377,15 +3429,6 @@ var lsKey = currentSutraId ? ('scroll_anchor_key_' + currentSutraId) : '';
 var lsRaw = null;
 try { lsRaw = lsKey ? localStorage.getItem(lsKey) : null; } catch(e) {}
 var anchorKey = currentSutraId ? storage.get(KEY_ANCHOR_K(currentSutraId)) : null;
-var allAnchors = [];
-try {
-for (var lsi = 0; lsi < localStorage.length; lsi++) {
-var k = localStorage.key(lsi);
-if (k && k.indexOf('scroll_anchor_key_') === 0) {
-allAnchors.push(k.replace('scroll_anchor_key_', '') + ' → ' + localStorage.getItem(k));
-}
-}
-} catch(e) {}
 var matChunks = 0, totalChunks = virtChunks ? virtChunks.length : 0;
 if (virtChunks) {
 for (var vc = 0; vc < virtChunks.length; vc++) {
@@ -3421,9 +3464,6 @@ var lines = [
 'Saved idx:        ' + (anchorIdx >= 0 ? anchorIdx : 'not-found in virtAllRows'),
 'Match chunk:      ' + (anchorIdx >= 0 ? Math.floor(anchorIdx / 50) : '-'),
 '',
-'── ALL anchors in storage ──',
-].concat(allAnchors.length ? allAnchors : ['(none)']).concat([
-'',
 '── Scroll ──',
 'scrollTop:        ' + st + ' px',
 'scrollHeight:     ' + sh + ' px',
@@ -3437,7 +3477,7 @@ var lines = [
 '',
 '── TTS ──',
 'Module loaded:    ' + (_ttsApi ? 'yes' : 'no'),
-]);
+];
 if (mem) {
 lines.push('');
 lines.push('── Memory (JS heap) ──');
@@ -3449,7 +3489,9 @@ lines.push('limit:  ' + fmtBytes(mem.jsHeapSizeLimit));
 lines.push('');
 lines.push('── ⚠ VÙNG ĐEN log (' + voidLog.length + '/' + VOID_LOG_MAX + ') ──');
 if (!voidLog.length) {
-lines.push('(chưa phát hiện. Detector chạy nền 1s/lần — bắt được void cả khi panel đóng)');
+lines.push(_voidDetectorInterval
+? '(đang chạy. Chưa phát hiện void.)'
+: '(detector ĐANG TẮT. Tick checkbox bên dưới để bật.)');
 } else {
 for (var vi = 0; vi < voidLog.length; vi++) {
 var entry = voidLog[vi];
@@ -3488,6 +3530,23 @@ e.stopPropagation();
 if (visible) hide(); else show();
 });
 if (btnDebugClose) btnDebugClose.addEventListener('click', hide);
+var chkVoidDetector = $('chkVoidDetector');
+if (chkVoidDetector) {
+var saved = null;
+try { saved = localStorage.getItem(VOID_DETECTOR_KEY); } catch(_){}
+chkVoidDetector.checked = saved === '1';
+if (chkVoidDetector.checked) startVoidDetector();
+chkVoidDetector.addEventListener('change', function () {
+try { localStorage.setItem(VOID_DETECTOR_KEY, chkVoidDetector.checked ? '1' : '0'); } catch(_){}
+if (chkVoidDetector.checked) startVoidDetector(); else stopVoidDetector();
+if (visible) update();
+});
+}
+var btnClearVoidLog = $('btnClearVoidLog');
+if (btnClearVoidLog) btnClearVoidLog.addEventListener('click', function (e) {
+e.stopPropagation();
+window.clearVoidLog && window.clearVoidLog();
+});
 var btnClearStorage = $('btnClearStorage');
 if (btnClearStorage) btnClearStorage.addEventListener('click', function (e) {
 e.stopPropagation();
