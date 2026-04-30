@@ -38,14 +38,34 @@ return;
 var gridRect = scrollEl.getBoundingClientRect();
 wrap.style.top = gridRect.top + 'px';
 wrap.style.bottom = Math.max(0, window.innerHeight - gridRect.bottom) + 'px';
-var pct = Math.min(1, Math.max(0, scrollEl.scrollTop / max));
-// Snap to 100% chỉ khi scroll thực sự chạm đáy. Trước đây dùng
-// `.sutra-row-wrap:last-of-type` nhưng selector này match row cuối của MỌI chunk
-// (mỗi `.row-chunk` có toàn con là `.sutra-row-wrap` nên :last-of-type khớp last row
-// của từng chunk), querySelector trả về match đầu tiên = row cuối của chunk-materialized
-// đầu tiên ≠ row cuối sutta → snap 100% sớm rồi tụt lại khi chunk kế materialize.
-// Geometry-based check không phụ thuộc virtualization state, tolerance 2px cho sub-pixel rounding.
-if (scrollEl.scrollHeight - (scrollEl.scrollTop + scrollEl.clientHeight) <= 2) pct = 1;
+// Tính pct theo row-index (stable) thay vì scrollTop/scrollHeight (drift theo virtual scroll
+// materialize/dematerialize → scrolling lên xuống cùng vị trí ra số khác). Row index không
+// đổi theo virtualization state → cuộn về cùng vị trí luôn ra cùng %.
+var pct;
+var topKey = (typeof computeTopVisibleKey === 'function') ? computeTopVisibleKey() : null;
+if (topKey && keyToRowIdx && keyToRowIdx[topKey] != null && virtAllRows && virtAllRows.length > 1) {
+pct = keyToRowIdx[topKey] / (virtAllRows.length - 1);
+pct = Math.min(1, Math.max(0, pct));
+} else {
+pct = Math.min(1, Math.max(0, scrollEl.scrollTop / max));
+}
+// Snap 100% khi thực sự chạm đáy (geometry check không phụ thuộc virtualization).
+// Snap 100% khi LAST row thực sự visible trong viewport. Query trực tiếp theo data-key
+// của virtAllRows[last] (tránh `:last-of-type` match nhầm last row của chunk-đầu-tiên).
+// Nếu chunk cuối chưa materialize → row không có trong DOM → không snap (user chưa tới đáy).
+if (virtAllRows && virtAllRows.length) {
+var lastKey = String(virtAllRows[virtAllRows.length - 1].key || '');
+if (lastKey) {
+try {
+var lastRow = scrollEl.querySelector('[data-key="' + safeCssEscape(lastKey) + '"]');
+if (lastRow) {
+var lr = lastRow.getBoundingClientRect();
+var rr = scrollEl.getBoundingClientRect();
+if (lr.bottom <= rr.bottom + 4) pct = 1;
+}
+} catch(_) {}
+}
+}
 var wrapH = gridRect.height;
 var BAR_HEIGHT = 48;
 var DOT_SIZE = 4;
@@ -102,15 +122,6 @@ op = dotAppearOp * (1 - (pct - fw[0]) / (fw[1] - fw[0]));
 dot.style.opacity = Math.max(0, Math.min(1, op)).toFixed(2);
 }
 if (pctEl) pctEl.textContent = Math.round(pct * 100) + '%';
-// Sync progress vào nút back-to-top: ring + % text bên trong button.
-if (btnBackTop) {
-var pctRound = Math.round(pct * 100);
-var ringFill = btnBackTop.querySelector('.ring-fill');
-// Circle r=16 → circumference 2π*16 = 100.53. Set offset = (1 - pct) * C để đoạn fill đúng % perimeter.
-if (ringFill) ringFill.style.strokeDashoffset = (100.53 * (1 - pct)).toFixed(2);
-var btPctEl = btnBackTop.querySelector('.back-top-pct');
-if (btPctEl) btPctEl.textContent = pctRound + '%';
-}
 wrap.classList.add('visible');
 wrap.classList.remove('idle');
 clearTimeout(_progressIdleTimer);
@@ -134,7 +145,10 @@ toggleBackTop(false);
 // done() sẽ clear sớm khi scroll kết thúc; 8s là upper-bound safe cho sutta dài nhất.
 _progScrollUntil = Date.now() + 8000;
 scrollEl.scrollTo({ top: 0, behavior: 'smooth' });
+var doneCalled = false;
 var done = function () {
+if (doneCalled) return;
+doneCalled = true;
 _progScrollUntil = 0;
 suppressBackTop = false;
 toggleBackTop(false);
@@ -154,4 +168,7 @@ requestAnimationFrame(poll);
 };
 requestAnimationFrame(poll);
 }
+// Fallback timer: nếu scrollend không fire (browser bug, scroll bị huỷ giữa chừng,
+// scrollTo không scroll vì đã ở top, …) → vẫn unstick nút sau 2s.
+setTimeout(done, 2000);
 };
