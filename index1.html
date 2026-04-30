@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page</title>
+    <style>
+        /* CSS Thuần */
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .content-box {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Nút bấm hiện thông báo */
+        #action-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        #action-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* Nút Scroll to Top */
+        #scrollToTopBtn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: none; /* Ẩn khi ở trên đầu trang */
+            padding: 10px 15px;
+            font-size: 18px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        #scrollToTopBtn:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="content-box">
+        <h1>Trang Test Tính Năng</h1>
+        
+        <!-- Nút bấm hiện thông báo -->
+        <button id="action-btn">Bấm vào đây!</button>
+
+        <div id="test-content">
+            <h3>Nội dung giả để test cuộn (Scroll):</h3>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+            <p>(Dưới đây là nội dung lặp lại để tạo độ dài cho trang...)</p>
+            <!-- Tạo khoảng trống -->
+            <div style="height: 2000px; background: linear-gradient(#eee, #fff); margin: 20px 0;">
+                <p style="padding: 20px;">Đang cuộn xuống... Bạn sẽ thấy nút "↑" hiện ra ở góc dưới bên phải khi cuộn qua một khoảng nhất định.</p>
+            </div>
+            <p>Kết thúc nội dung test.</p>
+        </div>
+    </div>
+
+    <!-- Nút Scroll to Top -->
+    <button id="scrollToTopBtn" title="Lên đầu trang">↑</button>
+
+    <script>
+        // JS Thuần
+        const actionBtn = document.getElementById('action-btn');
+        const scrollBtn = document.getElementById('scrollToTopBtn');
+
+        // 1. Xử lý nút bấm hiện thông báo
+        actionBtn.addEventListener('click', () => {
+            alert('Chào bạn! Nút này đã hoạt động bình thường.');
+        });
+
+        // 2. Xử lý hiện/ẩn nút Scroll to Top khi cuộn chuột
+        window.onscroll = function() {
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                scrollBtn.style.display = "block";
+            } else {
+                scrollBtn.style.display = "none";
+            }
+        };
+
+        // 3. Xử lý khi bấm nút Scroll to Top
+        scrollBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth' // Cuộn mượt mà
+            });
+        });
+    </script>
+
+</body>
+</html>

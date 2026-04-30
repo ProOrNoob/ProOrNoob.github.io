@@ -1481,7 +1481,21 @@ document.addEventListener('visibilitychange', function () {
 if (document.visibilityState === 'hidden') saveScrollAnchorNow();
 });
 var suppressBackTop = false;
-function toggleBackTop(show) { if (!btnBackTop) return; btnBackTop.classList.toggle('visible', show); }
+function toggleBackTop(show) {
+if (!btnBackTop) return;
+btnBackTop.classList.toggle('visible', show);
+// Android Chrome bug: sau tap, :hover/:focus sticky → CSS opacity:.92 từ override hover
+// vẫn thắng dù .visible đã gỡ. Inline style + !important là cách DUY NHẤT đảm bảo
+// thắng mọi sticky state. Khi show=true thì gỡ inline để CSS .visible kiểm soát lại.
+if (show) {
+btnBackTop.style.removeProperty('opacity');
+btnBackTop.style.removeProperty('pointer-events');
+} else {
+btnBackTop.style.setProperty('opacity', '0', 'important');
+btnBackTop.style.setProperty('pointer-events', 'none', 'important');
+try { btnBackTop.blur(); } catch(_) {}
+}
+}
 // Throttle save (leading-edge) + debounce (trailing-edge) cho final stable top sau khi user dừng scroll.
 // `pagehide` + `visibilitychange` đã đảm bảo save lúc rời trang nên debounce ngắn là đủ.
 // Skip nếu _progScrollUntil > now (suppress window cho programmatic scroll).
