@@ -3461,3 +3461,37 @@ clickableTarget.blur();
 }, 200);
 }
 }, { passive: true });
+/* ============================================================
+   Nuclear sticky-hover fix: trên touch device, xoá luôn mọi `:hover`
+   rule khỏi stylesheet runtime. CSS @media (hover:hover) wrapping chỉ
+   gate được 35/116 :hover rules — 80+ rule "naked" còn lại vẫn fire
+   trên touch gây sticky. Xoá thẳng = đảm bảo 100% không còn rule
+   nào response sticky :hover từ browser.
+   - Chỉ chạy khi (hover: none) match → desktop chuột không bị ảnh hưởng.
+   - :focus-visible / :focus-within giữ nguyên (cần cho keyboard nav).
+   ============================================================ */
+(function () {
+function stripHoverRules() {
+if (!window.matchMedia('(hover: none)').matches) return;
+var REGEX = /:hover\b|:focus(?!-)/;
+function walk(parentRule, rules) {
+if (!rules) return;
+for (var i = rules.length - 1; i >= 0; i--) {
+var r = rules[i];
+if (r.cssRules && r.cssRules.length) walk(r, r.cssRules);
+if (r.selectorText && REGEX.test(r.selectorText)) {
+try { (parentRule || r.parentStyleSheet).deleteRule(i); } catch(e) {}
+}
+}
+}
+var sheets = document.styleSheets;
+for (var s = 0; s < sheets.length; s++) {
+try { walk(null, sheets[s].cssRules); } catch(e) { /* cross-origin */ }
+}
+}
+if (document.readyState === 'loading') {
+document.addEventListener('DOMContentLoaded', stripHoverRules);
+} else {
+stripHoverRules();
+}
+})();
