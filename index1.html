@@ -3,180 +3,334 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sticky Hover Isolation Test — Chrome Android Debug</title>
+<title>Sticky Hover Test — Auto Detect</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
     font-family: system-ui, -apple-system, sans-serif;
-    margin: 0; padding: 16px;
+    margin: 0; padding: 16px 16px 100px;
     background: #f1f5f9; color: #1e293b;
     line-height: 1.5;
   }
-  h1 { font-size: 18px; margin: 16px 0 8px; }
-  h2 { font-size: 15px; margin: 24px 0 6px; color: #2563eb; }
+  h1 { font-size: 17px; margin: 16px 0 8px; }
+  h2 { font-size: 15px; margin: 20px 0 6px; color: #2563eb; }
   p  { font-size: 14px; margin: 6px 0; }
   code { background: #e2e8f0; padding: 1px 6px; border-radius: 3px; font-size: 13px; }
 
-  .info {
-    background: #fff; padding: 12px; border-radius: 6px;
-    border: 1px solid #cbd5e1; margin-bottom: 16px; font-size: 13px;
+  .panel {
+    background: #fff; padding: 12px; border-radius: 8px;
+    border: 1px solid #cbd5e1; margin: 12px 0; font-size: 13px;
   }
-  .info b { color: #16a34a; }
+  .panel.summary {
+    border: 2px solid #2563eb; background: #eff6ff;
+  }
+  .step {
+    display: grid; grid-template-columns: 32px 1fr; gap: 10px;
+    align-items: start; margin: 8px 0; padding: 8px;
+    background: #f8fafc; border-radius: 6px;
+  }
+  .step-num {
+    background: #2563eb; color: #fff; border-radius: 50%;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 14px;
+  }
+  .step.done .step-num { background: #16a34a; }
 
-  /* ===== BUTTON A — :hover NAKED (giống .bar-pill hiện tại app dùng) ===== */
+  .test-row {
+    display: grid; grid-template-columns: 1fr auto; gap: 12px;
+    align-items: center; padding: 12px;
+    background: #fff; border-radius: 8px; margin: 8px 0;
+    border: 1px solid #e2e8f0;
+  }
+  .result {
+    font-size: 12px; padding: 4px 10px; border-radius: 4px;
+    background: #e2e8f0; color: #64748b; white-space: nowrap;
+    font-family: 'Courier New', monospace;
+    min-width: 90px; text-align: center;
+  }
+  .result.pass { background: #dcfce7; color: #166534; }
+  .result.fail { background: #fee2e2; color: #991b1b; }
+
+  /* ===== BUTTON A — :hover NAKED (như app .bar-pill cũ) ===== */
   .btn-a {
     background: #fff; border: 2px solid #888; border-radius: 6px;
-    padding: 14px 28px; margin: 6px 0; font-size: 15px; cursor: pointer;
-    color: #333; min-width: 280px;
-    transition: background .15s, color .15s;
+    padding: 12px 24px; font-size: 14px; cursor: pointer;
+    color: #333; min-width: 150px;
+    transition: background .15s, color .15s, border-color .15s;
   }
   .btn-a:hover {
-    background: #d4a354;
-    color: #fff;
-    border-color: #d4a354;
+    background: #d4a354; color: #fff; border-color: #d4a354;
   }
   .btn-a:active { transform: scale(0.97); }
 
-  /* ===== BUTTON B — :hover trong @media (hover: hover) ===== */
+  /* ===== BUTTON B — :hover GATED ===== */
   .btn-b {
     background: #fff; border: 2px solid #888; border-radius: 6px;
-    padding: 14px 28px; margin: 6px 0; font-size: 15px; cursor: pointer;
-    color: #333; min-width: 280px;
-    transition: background .15s, color .15s;
+    padding: 12px 24px; font-size: 14px; cursor: pointer;
+    color: #333; min-width: 150px;
+    transition: background .15s, color .15s, border-color .15s;
   }
   @media (hover: hover) {
     .btn-b:hover {
-      background: #16a34a;
-      color: #fff;
-      border-color: #16a34a;
+      background: #16a34a; color: #fff; border-color: #16a34a;
     }
   }
   .btn-b:active { transform: scale(0.97); }
 
-  /* ===== Scroll content ===== */
   .filler {
-    height: 100vh;
-    background: linear-gradient(180deg, #fff, #e2e8f0);
-    border-radius: 8px;
-    margin: 12px 0;
+    height: 60vh; background: linear-gradient(180deg, #fff, #e2e8f0);
+    border-radius: 8px; margin: 16px 0;
     display: flex; align-items: center; justify-content: center;
-    color: #64748b; font-style: italic;
+    color: #64748b; font-size: 13px;
   }
 
-  /* ===== BACK-TO-TOP C — opacity transition (giống btnBackTop cũ) ===== */
+  /* ===== SCROLL-TO-TOP C — opacity hide + :hover naked ===== */
   .btn-c {
-    position: fixed; right: 12px; bottom: 80px;
+    position: fixed; right: 12px; bottom: 130px;
     width: 48px; height: 48px; border-radius: 50%;
     background: #1e293b; color: #fff; border: 0;
     font-size: 22px; cursor: pointer;
     opacity: 0; pointer-events: none;
     transition: opacity .25s;
     display: flex; align-items: center; justify-content: center;
-    z-index: 100;
+    z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   }
   .btn-c.visible { opacity: 0.92; pointer-events: auto; }
   .btn-c:hover { opacity: 1; background: #d4a354; }
 
-  /* ===== BACK-TO-TOP D — display:none (fix mới của app) ===== */
+  /* ===== SCROLL-TO-TOP D — display:none hide + :hover gated ===== */
   .btn-d {
-    position: fixed; right: 12px; bottom: 16px;
+    position: fixed; right: 12px; bottom: 70px;
     width: 48px; height: 48px; border-radius: 50%;
     background: #2563eb; color: #fff; border: 0;
     font-size: 22px; cursor: pointer;
     display: none;
     align-items: center; justify-content: center;
-    z-index: 100;
+    z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   }
   .btn-d.visible { display: flex; }
-  .btn-d:hover { background: #d4a354; }
-
-  /* ===== BACK-TO-TOP E — display:none + @media (hover:hover) trên :hover ===== */
-  .btn-e {
-    position: fixed; right: 70px; bottom: 16px;
-    width: 48px; height: 48px; border-radius: 50%;
-    background: #16a34a; color: #fff; border: 0;
-    font-size: 22px; cursor: pointer;
-    display: none;
-    align-items: center; justify-content: center;
-    z-index: 100;
-  }
-  .btn-e.visible { display: flex; }
   @media (hover: hover) {
-    .btn-e:hover { background: #d4a354; }
+    .btn-d:hover { background: #d4a354; }
   }
+
+  /* Floating result for back-to-top tests */
+  .floating-results {
+    position: fixed; left: 12px; bottom: 16px;
+    background: rgba(255,255,255,0.95); backdrop-filter: blur(4px);
+    border: 1px solid #cbd5e1; border-radius: 8px;
+    padding: 8px 12px; font-size: 12px;
+    z-index: 100; max-width: calc(100vw - 80px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .floating-results > div { margin: 4px 0; }
 </style>
 </head>
 <body>
 
-<h1>Sticky Hover Isolation Test</h1>
+<h1>🔬 Sticky Hover Auto-Detect Test</h1>
 
-<div class="info">
-  <p><b>Detect:</b>
+<div class="panel summary" id="summary">
+  <p><b>📊 Browser detect:</b>
     <code>(hover: <span id="dHover">?</span>)</code>
     <code>(pointer: <span id="dPointer">?</span>)</code>
     <code>touch: <span id="dTouch">?</span></code>
   </p>
-  <p><b>Mục đích:</b> tap từng nút, xem highlight có dính sau khi nhấc tay ra không. Kết quả sẽ trả lời được do code app hay do Chrome Android.</p>
+  <p style="margin-top:8px"><b>📋 Cách test:</b> tap từng nút theo thứ tự dưới. Kết quả PASS/FAIL hiện ra ngay bên cạnh sau 1 giây. Xong tất cả → kéo xuống cuối xem <b>VERDICT</b>.</p>
 </div>
 
-<h2>TEST 1 — `:hover` không gate</h2>
-<p>Tap nút này. Highlight vàng <b>nên dính</b> trên Chrome Android (vì :hover sticky):</p>
-<button class="btn-a">Nút A — :hover naked</button>
+<div class="step" id="step1">
+  <div class="step-num">1</div>
+  <div>
+    <p><b>Tap nút A</b> (vàng — `:hover` không gate). Kết quả mong đợi: <b>FAIL</b> (sticky highlight) trên Chrome Android.</p>
+  </div>
+</div>
+<div class="test-row">
+  <button class="btn-a" data-test="A">Nút A — naked</button>
+  <span class="result" id="resA">Chưa tap</span>
+</div>
 
-<h2>TEST 2 — `:hover` gate `@media (hover: hover)`</h2>
-<p>Tap nút này. Highlight xanh <b>không nên dính</b> trên touch (rule không match):</p>
-<button class="btn-b">Nút B — :hover gated</button>
+<div class="step" id="step2">
+  <div class="step-num">2</div>
+  <div>
+    <p><b>Tap nút B</b> (xanh lá — `:hover` gate `@media (hover: hover)`). Kết quả mong đợi: <b>PASS</b> (không sticky).</p>
+  </div>
+</div>
+<div class="test-row">
+  <button class="btn-b" data-test="B">Nút B — gated</button>
+  <span class="result" id="resB">Chưa tap</span>
+</div>
 
-<div class="filler">Cuộn xuống tiếp...</div>
-<div class="filler">Còn nữa...</div>
-<div class="filler">Gần xong rồi...</div>
+<div class="step" id="step3">
+  <div class="step-num">3</div>
+  <div>
+    <p><b>Cuộn xuống dưới</b> đến khi 2 nút floating ↑ (đen + xanh dương) hiện bên phải.</p>
+  </div>
+</div>
 
-<h2>TEST 3 — Scroll-to-top buttons (góc dưới phải)</h2>
-<p>Khi cuộn xuống đây, 3 nút floating sẽ hiện. Tap mỗi nút → cuộn lên top → quan sát:</p>
-<ul style="font-size:14px">
-  <li><b style="color:#1e293b">Nút C (đen)</b> — opacity hide, :hover naked. <b>Có thể dính</b></li>
-  <li><b style="color:#2563eb">Nút D (xanh dương)</b> — display:none hide, :hover naked. Display:none xoá khỏi render → không dính</li>
-  <li><b style="color:#16a34a">Nút E (xanh lá)</b> — display:none hide, :hover gated. Lý tưởng nhất, chắc chắn không dính</li>
-</ul>
+<div class="filler">⬇️ Cuộn xuống tiếp ⬇️</div>
+<div class="filler">⬇️ Còn nữa ⬇️</div>
 
-<div class="filler">Cuộn lên đầu để hide buttons</div>
-<div class="filler">Cuộn xuống lại để show buttons</div>
+<div class="step" id="step4">
+  <div class="step-num">4</div>
+  <div>
+    <p><b>Tap nút C (đen, dưới)</b> — opacity hide. Sau khi cuộn lên top: nếu vẫn thấy nút đen = <b>FAIL</b>. Kết quả ở khung floating bên trái.</p>
+  </div>
+</div>
 
-<button class="btn-c" id="btnC" title="opacity hide, hover naked">↑</button>
-<button class="btn-d" id="btnD" title="display hide, hover naked">↑</button>
-<button class="btn-e" id="btnE" title="display hide, hover gated">↑</button>
+<div class="step" id="step5">
+  <div class="step-num">5</div>
+  <div>
+    <p><b>Cuộn xuống lại</b> đến khi nút floating hiện. Tap nút D (xanh dương) — display:none hide. Nếu nút biến mất ngay = <b>PASS</b>. Đây là fix mới của app.</p>
+  </div>
+</div>
+
+<div class="filler">⬇️ Vùng cuộn dài ⬇️</div>
+<div class="filler">⬇️ Vùng cuộn dài ⬇️</div>
+<div class="filler">⬇️ Vùng cuộn dài ⬇️</div>
+
+<div class="panel summary" id="verdict">
+  <h2 style="margin-top:0">📊 VERDICT — Final Result</h2>
+  <div id="verdictContent">
+    <p>Chưa đủ data. Tap đủ 4 nút (A, B, C, D) để có verdict.</p>
+  </div>
+</div>
+
+<button class="btn-c" id="btnC" title="opacity + :hover naked">↑</button>
+<button class="btn-d" id="btnD" title="display:none + :hover gated">↑</button>
+
+<div class="floating-results" id="floatingResults" style="display:none">
+  <div><b>C (đen):</b> <span id="resC">--</span></div>
+  <div><b>D (xanh):</b> <span id="resD">--</span></div>
+</div>
 
 <script>
-// Detection
-document.getElementById('dHover').textContent = window.matchMedia('(hover: hover)').matches ? 'hover' : 'none';
-document.getElementById('dPointer').textContent = window.matchMedia('(pointer: fine)').matches ? 'fine' : 'coarse';
-document.getElementById('dTouch').textContent = (('ontouchstart' in window) || navigator.maxTouchPoints > 0) ? 'YES' : 'NO';
+// ============ Browser detection ============
+var isHover = window.matchMedia('(hover: hover)').matches;
+var isFinePointer = window.matchMedia('(pointer: fine)').matches;
+var isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+document.getElementById('dHover').textContent = isHover ? 'hover' : 'none';
+document.getElementById('dPointer').textContent = isFinePointer ? 'fine' : 'coarse';
+document.getElementById('dTouch').textContent = isTouch ? 'YES' : 'NO';
 
-var btnC = document.getElementById('btnC');
-var btnD = document.getElementById('btnD');
-var btnE = document.getElementById('btnE');
+// ============ Auto-detect sticky :hover ============
+var results = { A: null, B: null, C: null, D: null };
 
-// Show/hide based on scroll
-window.addEventListener('scroll', function() {
-  var show = window.scrollY > 200;
-  btnC.classList.toggle('visible', show);
-  btnD.classList.toggle('visible', show);
-  btnE.classList.toggle('visible', show);
+function setResult(id, pass, msg) {
+  results[id] = pass;
+  var el = document.getElementById('res' + id);
+  if (!el) return;
+  el.className = 'result ' + (pass ? 'pass' : 'fail');
+  el.textContent = (pass ? '✅ PASS ' : '❌ FAIL ') + msg;
+  // Mark step done
+  var stepNum = id === 'A' ? 1 : id === 'B' ? 2 : id === 'C' ? 4 : 5;
+  var step = document.getElementById('step' + stepNum);
+  if (step) step.classList.add('done');
+  updateVerdict();
+}
+
+function checkStickyHover(btn, id) {
+  // 800ms delay để :active animation xong + browser sticky kịp set
+  setTimeout(function() {
+    try {
+      var matchesHover = btn.matches(':hover');
+      if (matchesHover) {
+        setResult(id, false, 'sticky :hover detected');
+      } else {
+        setResult(id, true, 'no sticky');
+      }
+    } catch(e) {
+      setResult(id, false, 'check error');
+    }
+  }, 800);
+}
+
+// ============ Test buttons A, B ============
+document.querySelectorAll('button[data-test]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var id = btn.getAttribute('data-test');
+    checkStickyHover(btn, id);
+  });
 });
 
-// Click → scroll to top
+// ============ Scroll-to-top buttons C, D ============
+var btnC = document.getElementById('btnC');
+var btnD = document.getElementById('btnD');
+var floatingResults = document.getElementById('floatingResults');
+
+window.addEventListener('scroll', function() {
+  var show = window.scrollY > 300;
+  btnC.classList.toggle('visible', show);
+  btnD.classList.toggle('visible', show);
+  floatingResults.style.display = show ? 'block' : 'none';
+});
+
 btnC.onclick = function() {
   btnC.classList.remove('visible');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Check 1.5s sau (đủ thời gian smooth scroll xong)
+  setTimeout(function() {
+    var stillVisible = window.getComputedStyle(btnC).opacity > 0;
+    var matchesHover = btnC.matches(':hover');
+    var pass = !stillVisible && !matchesHover;
+    document.getElementById('resC').textContent = pass ? '✅ PASS' : '❌ FAIL (opacity=' + window.getComputedStyle(btnC).opacity + ', hover=' + matchesHover + ')';
+    document.getElementById('resC').style.color = pass ? '#166534' : '#991b1b';
+    results.C = pass;
+    var step = document.getElementById('step4');
+    if (step) step.classList.add('done');
+    updateVerdict();
+  }, 1500);
 };
+
 btnD.onclick = function() {
   btnD.classList.remove('visible');
+  // Force display:none with !important (fix mới của app btnBackTop)
+  btnD.style.setProperty('display', 'none', 'important');
+  setTimeout(function() {
+    btnD.style.removeProperty('display');
+  }, 1200);
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  setTimeout(function() {
+    var displayVal = window.getComputedStyle(btnD).display;
+    var pass = displayVal === 'none';
+    document.getElementById('resD').textContent = pass ? '✅ PASS' : '❌ FAIL (display=' + displayVal + ')';
+    document.getElementById('resD').style.color = pass ? '#166534' : '#991b1b';
+    results.D = pass;
+    var step = document.getElementById('step5');
+    if (step) step.classList.add('done');
+    updateVerdict();
+  }, 1000);
 };
-btnE.onclick = function() {
-  btnE.classList.remove('visible');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+
+// ============ Final verdict ============
+function updateVerdict() {
+  var done = Object.values(results).filter(function(v) { return v !== null; }).length;
+  if (done < 4) {
+    document.getElementById('verdictContent').innerHTML =
+      '<p>Đã test ' + done + '/4 nút. Tap đủ A, B, C, D để có verdict.</p>';
+    return;
+  }
+  var verdict = '';
+  // A: naked → expect fail on touch
+  // B: gated → expect pass on touch
+  // C: opacity → expect fail (sticky keeps visible)
+  // D: display:none → expect pass
+  var aFail = results.A === false;
+  var bPass = results.B === true;
+  var cFail = results.C === false;
+  var dPass = results.D === true;
+
+  if (aFail && bPass && cFail && dPass) {
+    verdict = '<p style="color:#16a34a;font-weight:bold">✅ Browser hành xử CHUẨN. Chrome Android có sticky :hover bug (A fail), nhưng <code>@media (hover: hover)</code> + <code>display:none</code> đã fix triệt để (B & D pass). → App của bạn cần wrap NỐT các :hover còn naked + dùng display:none cho btnBackTop. Tôi đã làm 2 việc này, refresh bằng cache buster v=39 sẽ hết.</p>';
+  } else if (aFail && !bPass) {
+    verdict = '<p style="color:#dc2626;font-weight:bold">❌ <code>@media (hover: hover)</code> KHÔNG hiệu quả trên thiết bị này (B vẫn fail). Cần dùng JS strip hover rules — đã có trong app code mới.</p>';
+  } else if (!aFail) {
+    verdict = '<p style="color:#16a34a;font-weight:bold">✅ Chrome Android trên máy này KHÔNG có sticky bug (A pass). Vấn đề có thể do JS app — không phải CSS.</p>';
+  } else {
+    verdict = '<p>Kết quả mixed. A=' + (aFail?'fail':'pass') + ', B=' + (bPass?'pass':'fail') + ', C=' + (cFail?'fail':'pass') + ', D=' + (dPass?'pass':'fail') + '. Báo cho dev xem.</p>';
+  }
+  document.getElementById('verdictContent').innerHTML = verdict;
+}
 </script>
 
 </body>
