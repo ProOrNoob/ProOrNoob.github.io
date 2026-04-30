@@ -1523,18 +1523,13 @@ var gridRect = scrollEl.getBoundingClientRect();
 wrap.style.top = gridRect.top + 'px';
 wrap.style.bottom = Math.max(0, window.innerHeight - gridRect.bottom) + 'px';
 var pct = Math.min(1, Math.max(0, scrollEl.scrollTop / max));
-// Snap to 100% khi row cuối cùng đã visible trong viewport: chunk materialize có thể làm
-// scrollHeight grow → maxScrollTop xa thêm → user bị "stuck" ở 95-99% dù visible đã hết content.
-// Check trực tiếp last row's bottom thay vì tolerance pixel — chính xác bất kể delta.
-try {
-var lastRow = scrollEl.querySelector('.sutra-row-wrap:last-of-type');
-if (lastRow) {
-var lr = lastRow.getBoundingClientRect();
-var rr = scrollEl.getBoundingClientRect();
-// Last row fully visible (bottom ≤ viewport bottom + 4px tol) → user thực sự ở cuối.
-if (lr.bottom <= rr.bottom + 4) pct = 1;
-}
-} catch(_) {}
+// Snap to 100% chỉ khi scroll thực sự chạm đáy. Trước đây dùng
+// `.sutra-row-wrap:last-of-type` nhưng selector này match row cuối của MỌI chunk
+// (mỗi `.row-chunk` có toàn con là `.sutra-row-wrap` nên :last-of-type khớp last row
+// của từng chunk), querySelector trả về match đầu tiên = row cuối của chunk-materialized
+// đầu tiên ≠ row cuối sutta → snap 100% sớm rồi tụt lại khi chunk kế materialize.
+// Geometry-based check không phụ thuộc virtualization state, tolerance 2px cho sub-pixel rounding.
+if (scrollEl.scrollHeight - (scrollEl.scrollTop + scrollEl.clientHeight) <= 2) pct = 1;
 var wrapH = gridRect.height;
 var BAR_HEIGHT = 48;
 var DOT_SIZE = 4;
@@ -1618,8 +1613,13 @@ window.addEventListener('resize', updateReadingProgress);
 if (btnBackTop && scrollEl) btnBackTop.onclick = function () {
 suppressBackTop = true;
 toggleBackTop(false);
+// Suppress chunk scroll-compensation trong suốt animation. Nếu materialize/dematerialize
+// mutate scrollTop trong lúc smooth-scroll chạy, browser huỷ animation → kẹt giữa đường.
+// done() sẽ clear sớm khi scroll kết thúc; 8s là upper-bound safe cho sutta dài nhất.
+_progScrollUntil = Date.now() + 8000;
 scrollEl.scrollTo({ top: 0, behavior: 'smooth' });
 var done = function () {
+_progScrollUntil = 0;
 suppressBackTop = false;
 toggleBackTop(false);
 if (currentSutraId) {
