@@ -173,9 +173,28 @@ html.is-touch .bar-pill.active,
 html.is-touch .bar-pill.active:hover{background:color-mix(in oklab,var(--accent) 10%,transparent) !important}
 html.hide-reading-progress #readingProgress,html.is-welcome #readingProgress{display:none !important}
 #btnBackTop .back-top-arrow{top:50%;left:50%;width:18px;height:18px;transform:translate(-50%,-50%)}
+/* Override: bỏ transform animation (scale+slide) → chỉ fade opacity. Giảm cảm giác "flicker"
+   khi click vì transform + opacity transition đồng thời nhìn giật. */
+#btnBackTop{transform:none !important;transition:opacity .15s ease,color .15s,background .15s,border-color .15s !important}
+#btnBackTop.visible{transform:none !important}
+/* Touch device: :hover sticks sau khi tap. Rule cũ `#btnBackTop:hover{opacity:.92!important}`
+   force btn visible kể cả khi `.visible` class bị remove → nút kẹt cho tới khi user tap chỗ khác.
+   Override: khi không có `.visible`, opacity:0 thắng cả :hover. */
+#btnBackTop:not(.visible):hover{opacity:0 !important}
 @media (max-width:720px){#btnBackTop{width:34px !important;height:34px !important;right:8px !important;bottom:48px !important}#btnBackTop .back-top-arrow{width:13px;height:13px}}
 html.is-welcome #btnSettings,html.is-welcome #btnPrev,html.is-welcome #btnNext{display:none !important}
 html.is-welcome .status-in{grid-template-columns:1fr auto 1fr !important}
+/* Touch device: nuke ALL :focus/:active visual feedback (sticky shadow/transform sau khi tap).
+   :focus-visible (keyboard nav) vẫn được giữ cho accessibility. */
+@media (hover:none){
+button:focus:not(:focus-visible),a:focus:not(:focus-visible),[tabindex]:focus:not(:focus-visible),input:focus:not(:focus-visible){outline:0 !important;box-shadow:none !important}
+button:active,a:active,.pill:active,.nav-pill:active,.bar-pill:active,.nikaya-tile:active,.menu-sutta-link:active,.tts-btn:active,.set-hdr-btn:active,.title-bookmark-btn:active,.title-share-btn:active,#btnBackTop:active{transform:none !important;box-shadow:none !important}
+/* JS pointerup handler add `.no-hover` 350ms sau touch tap → block ALL :hover-induced visual
+   changes. Toggle states (.active/.is-open/[aria-pressed=true]) vẫn được giữ vì :hover combo
+   với .no-hover không thắng class-based active state. */
+.no-hover:hover,.no-hover:focus,.no-hover:focus-visible,.no-hover:active{background:transparent !important;color:var(--ink-3) !important;border-color:var(--rule) !important;box-shadow:none !important;transform:none !important;opacity:initial !important}
+.no-hover.active:hover,.no-hover.is-open:hover,.no-hover[aria-pressed="true"]:hover{background:color-mix(in oklab,var(--accent) 10%,transparent) !important;color:var(--accent) !important}
+}
 #btnProgressToggle[aria-pressed="false"]{opacity:0.5;text-decoration:line-through}
 /* iOS/iPad Safari fix: chống auto-zoom khi tap input (font ≥ 16px) + chống double-tap zoom (touch-action:manipulation) */
 input[type="search"],input[type="text"],input[type="email"],input[type="number"],input[type="tel"],input[type="url"],input[type="password"],textarea,select{font-size:16px !important}

@@ -33,5 +33,19 @@ setTtsUiState('idle');
 }
 updateMenuPanelTop();
 initDebugPanel();
+// Touch device: sau khi tap vào button/link, focus + active state stick → shadow/highlight
+// kẹt cho tới khi user tap chỗ khác. Listen pointerup với pointerType='touch' và blur
+// ngay (chỉ khi không phải keyboard focus) để clear sticky shadow.
+document.addEventListener('pointerup', function (e) {
+if (e.pointerType !== 'touch') return;
+var t = e.target.closest('button, a');
+if (!t) return;
+try { if (!t.matches(':focus-visible')) t.blur(); } catch(_) {}
+// Add `.no-hover` class tạm thời để CSS override sticky :hover state. CSS rule
+// `.no-hover:hover{...transparent...}` clear visual feedback ngay khi user nhấc tay,
+// không cần tap chỗ khác để mất state.
+t.classList.add('no-hover');
+setTimeout(function () { t.classList.remove('no-hover'); }, 350);
+}, { passive: true, capture: true });
 }
 init();

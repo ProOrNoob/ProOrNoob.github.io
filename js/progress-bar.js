@@ -139,6 +139,9 @@ _readingProgressThrottled();
 }, { passive: true });
 window.addEventListener('resize', updateReadingProgress);
 if (btnBackTop && scrollEl) btnBackTop.onclick = function () {
+// Touch tap giữ :focus + :active sticky trên mobile → user phải tap chỗ khác
+// để clear shadow. Blur ngay (chỉ khi không phải keyboard focus) để hết kẹt.
+try { if (!btnBackTop.matches(':focus-visible')) btnBackTop.blur(); } catch(_){}
 suppressBackTop = true;
 toggleBackTop(false);
 // Suppress chunk scroll-compensation trong suốt animation. Nếu materialize/dematerialize
