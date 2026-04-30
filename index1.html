@@ -229,18 +229,27 @@ function setResult(id, pass, msg) {
   updateVerdict();
 }
 
+// Capture baseline backgroundColor BEFORE any tap, để so sánh sau click
+var baselines = {};
+document.querySelectorAll('button[data-test]').forEach(function(btn) {
+  baselines[btn.getAttribute('data-test')] = window.getComputedStyle(btn).backgroundColor;
+});
+
 function checkStickyHover(btn, id) {
   // 800ms delay để :active animation xong + browser sticky kịp set
   setTimeout(function() {
     try {
+      var currentColor = window.getComputedStyle(btn).backgroundColor;
       var matchesHover = btn.matches(':hover');
-      if (matchesHover) {
-        setResult(id, false, 'sticky :hover detected');
+      var visualSticky = currentColor !== baselines[id];
+      // PASS = không có visual sticky (màu giữ baseline). matches(':hover') chỉ là info.
+      if (visualSticky) {
+        setResult(id, false, 'visual sticky! bg=' + currentColor);
       } else {
-        setResult(id, true, 'no sticky');
+        setResult(id, true, matchesHover ? 'no visual (matches:hover but rule không apply ✓)' : 'no sticky');
       }
     } catch(e) {
-      setResult(id, false, 'check error');
+      setResult(id, false, 'check error: ' + e.message);
     }
   }, 800);
 }
