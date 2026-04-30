@@ -3,158 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Debug Tool</title>
+    <title>Ultimate Debug & Scroll Test</title>
     <style>
+        :root {
+            --primary: #2563eb;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --dark: #1e293b;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #e9ecef;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            background-color: #f1f5f9;
+            color: var(--dark);
+        }
+
+        /* Header cố định để chứa bảng Debug */
+        .debug-header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #ddd;
+            z-index: 1000;
+            padding: 15px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .container {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            max-width: 600px;
-            width: 100%;
-        }
-
-        button {
-            width: 100%;
-            padding: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            background-color: #20c997;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            transition: 0.2s;
-        }
-
-        button:active {
-            transform: scale(0.98);
-            background-color: #1aa179;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
 
         .debug-grid {
-            margin-top: 20px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 10px;
         }
 
-        .card {
-            background: #f8f9fa;
-            padding: 10px;
-            border-left: 4px solid #20c997;
-            border-radius: 4px;
+        .debug-card {
+            background: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            font-size: 13px;
         }
 
-        .label {
-            font-size: 12px;
-            color: #6c757d;
-            display: block;
-            margin-bottom: 5px;
-        }
+        .label { color: #64748b; font-weight: bold; display: block; font-size: 11px; text-transform: uppercase; }
+        .value { color: var(--dark); font-family: 'Courier New', monospace; font-weight: bold; }
 
-        .value {
-            font-family: monospace;
+        /* Nút bấm chính */
+        #check-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
             font-weight: bold;
-            color: #333;
+            width: 100%;
+            margin-top: 10px;
         }
 
-        #hover-zone {
-            margin-top: 15px;
-            padding: 10px;
+        /* Vùng nội dung dài */
+        .content-dump {
+            margin-top: 280px; /* Chừa chỗ cho header cố định */
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Nút Scroll to Top */
+        #scrollTopBtn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--dark);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: none; /* Ẩn mặc định */
+            font-size: 24px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+            z-index: 999;
+        }
+
+        #scrollTopBtn:hover { transform: translateY(-5px); background: #000; }
+
+        h2 { color: var(--primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        .hover-box {
+            padding: 20px;
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
             text-align: center;
-            border: 2px dashed #ccc;
-            color: #999;
+            margin: 20px 0;
+            transition: 0.3s;
         }
-
-        #hover-zone.active {
-            background: #fff3cd;
-            border-color: #ffc107;
-            color: #856404;
-        }
+        .hover-box.active { background: #dcfce7; border-color: var(--success); }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Debug Console</h2>
-    
-    <button id="check-btn">CLICK TO INSPECT</button>
-
-    <div id="hover-zone">Rê chuột vào vùng này để test Hover</div>
-
-    <div class="debug-grid">
-        <div class="card">
-            <span class="label">SỬ DỤNG CHUỘT?</span>
-            <span id="mouse-true" class="value">--</span>
+<div class="debug-header">
+    <div class="container">
+        <div class="debug-grid">
+            <div class="debug-card"><span class="label">Mouse</span><span id="res-mouse" class="value">--</span></div>
+            <div class="debug-card"><span class="label">Device</span><span id="res-device" class="value">--</span></div>
+            <div class="debug-card"><span class="label">Pointer</span><span id="res-pointer" class="value">--</span></div>
+            <div class="debug-card"><span class="label">Resolution</span><span id="res-screen" class="value">--</span></div>
+            <div class="debug-card"><span class="label">Viewport</span><span id="res-viewport" class="value">--</span></div>
         </div>
-        <div class="card">
-            <span class="label">THIẾT BỊ (DETECT)</span>
-            <span id="device-type" class="value">--</span>
-        </div>
-        <div class="card">
-            <span class="label">MÀN HÌNH (RES)</span>
-            <span id="screen-res" class="value">--</span>
-        </div>
-        <div class="card">
-            <span class="label">TRÌNH DUYỆT (VIEWPORT)</span>
-            <span id="viewport-res" class="value">--</span>
-        </div>
-        <div class="card" style="grid-column: span 2;">
-            <span class="label">POINTER TYPE (LẦN CLICK CUỐI)</span>
-            <span id="pointer-type" class="value">--</span>
-        </div>
+        <button id="check-btn">CLICK TO INSPECT ALL</button>
     </div>
 </div>
 
+<div class="container">
+    <div class="content-dump">
+        <h2>Bắt đầu Test Content</h2>
+        <div id="hover-target" class="hover-box">Rê chuột vào đây để test trạng thái Hover</div>
+
+        <!-- Dữ liệu lặp lại cực dài -->
+        <div id="dynamic-content"></div>
+    </div>
+</div>
+
+<button id="scrollTopBtn">↑</button>
+
 <script>
-    const btn = document.getElementById('check-btn');
-    const hoverZone = document.getElementById('hover-zone');
+    // 1. Tạo Content Dump tự động để trang cực dài
+    const contentContainer = document.getElementById('dynamic-content');
+    let longText = "";
+    for(let i = 1; i <= 50; i++) {
+        longText += `
+            <h3>Mục kiểm tra số ${i}</h3>
+            <p>Đây là nội dung giả lập để test tính năng cuộn trang. Trong thực tế, bạn có thể thay thế vùng này bằng các tài liệu kỹ thuật, log hệ thống hoặc dữ liệu JSON. Khi cuộn xuống dưới, nút "Lên đầu trang" sẽ xuất hiện ở góc phải.</p>
+            <p style="color:#64748b">Thông số kỹ thuật giả định: VRAM 24GB, CUDA Cores: 16384, Tensor Cores: 512. Trình trạng hệ thống: Ổn định.</p>
+            <hr>
+        `;
+    }
+    contentContainer.innerHTML = longText;
 
-    // 1. Theo dõi Hover mượt mà
-    hoverZone.addEventListener('mouseenter', () => hoverZone.classList.add('active'));
-    hoverZone.addEventListener('mouseleave', () => hoverZone.classList.remove('active'));
+    // 2. Logic Debug & Detection
+    const checkBtn = document.getElementById('check-btn');
+    const hoverTarget = document.getElementById('hover-target');
+    const scrollBtn = document.getElementById('scrollTopBtn');
 
-    // 2. Xử lý chính khi Click
-    btn.addEventListener('click', (event) => {
-        // A. Kiểm tra pointer (Chuột hay Tay chạm)
-        // event.pointerType sẽ trả về 'mouse', 'touch', hoặc 'pen'
-        const pType = event.pointerType || "N/A";
+    // Hover detection
+    hoverTarget.addEventListener('mouseenter', () => hoverTarget.classList.add('active'));
+    hoverTarget.addEventListener('mouseleave', () => hoverTarget.classList.remove('active'));
+
+    // Click inspection
+    checkBtn.addEventListener('click', (e) => {
+        const pType = e.pointerType || "n/a";
         const isMouse = (pType === 'mouse');
-
-        // B. Detect thiết bị
         const ua = navigator.userAgent;
-        let device = "Desktop";
-        if (/Android|iPhone|iPad/i.test(ua)) device = "Mobile/Tablet";
-
-        // C. Độ phân giải
-        const screenWidth = window.screen.width;
-        const screenHeight = window.screen.height;
-        const viewWidth = window.innerWidth;
-        const viewHeight = window.innerHeight;
-
-        // D. Hiển thị lên giao diện
-        document.getElementById('mouse-true').innerText = isMouse ? "TRUE" : "FALSE";
-        document.getElementById('mouse-true').style.color = isMouse ? "green" : "red";
         
-        document.getElementById('device-type').innerText = device;
-        document.getElementById('pointer-type').innerText = pType.toUpperCase();
-        document.getElementById('screen-res').innerText = `${screenWidth} x ${screenHeight}`;
-        document.getElementById('viewport-res').innerText = `${viewWidth} x ${viewHeight}`;
+        document.getElementById('res-mouse').innerText = isMouse ? "TRUE" : "FALSE";
+        document.getElementById('res-mouse').style.color = isMouse ? "#16a34a" : "#dc2626";
+        document.getElementById('res-pointer').innerText = pType.toUpperCase();
+        document.getElementById('res-device').innerText = /Android|iPhone|iPad/i.test(ua) ? "MOBILE" : "DESKTOP";
+        document.getElementById('res-screen').innerText = `${screen.width}x${screen.height}`;
+        document.getElementById('res-viewport').innerText = `${window.innerWidth}x${window.innerHeight}`;
+        
+        console.log("Full User Agent:", ua);
+    });
 
-        console.log("--- Debug Info ---");
-        console.log("Is Mouse:", isMouse);
-        console.log("Pointer Type:", pType);
-        console.log("User Agent:", ua);
+    // 3. Logic Scroll to Top
+    window.onscroll = function() {
+        if (document.body.scrollTop > 500 || document.documentElement.scrollTop > 500) {
+            scrollBtn.style.display = "block";
+        } else {
+            scrollBtn.style.display = "none";
+        }
+    };
+
+    scrollBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 </script>
 
