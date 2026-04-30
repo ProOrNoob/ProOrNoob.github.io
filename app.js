@@ -127,12 +127,12 @@ loadPackIfNeeded(getBilaraPack('pli', id)),
 loadPackIfNeeded(getBilaraPack('en', id)),
 loadPackIfNeeded(getBilaraPack('vi', id))
 ];
-// Chỉ load comment packs nếu manifest cho phép (hoặc không có manifest)
-if (shouldLoadCommentPack('pli', id)) tasks.push(loadPackIfNeeded(getCommentPack('pli', id)).catch(swallow));
-if (shouldLoadCommentPack('en', id))  tasks.push(loadPackIfNeeded(getCommentPack('en', id)).catch(swallow));
-if (shouldLoadCommentPack('vi', id))  tasks.push(loadPackIfNeeded(getCommentPack('vi', id)).catch(swallow));
-// Legacy single-file comment — only try if no manifest or explicitly allowed
-if (!window.COMMENT_INDEX) tasks.push(loadPackIfNeeded(getBilaraPack('comment', id)).catch(swallow));
+// Commentary disabled tạm thời — UI section đã ẩn (#commentRow display:none).
+// Bỏ comment 4 dòng dưới khi muốn bật lại để tiết kiệm bandwidth + render.
+// if (shouldLoadCommentPack('pli', id)) tasks.push(loadPackIfNeeded(getCommentPack('pli', id)).catch(swallow));
+// if (shouldLoadCommentPack('en', id))  tasks.push(loadPackIfNeeded(getCommentPack('en', id)).catch(swallow));
+// if (shouldLoadCommentPack('vi', id))  tasks.push(loadPackIfNeeded(getCommentPack('vi', id)).catch(swallow));
+// if (!window.COMMENT_INDEX) tasks.push(loadPackIfNeeded(getBilaraPack('comment', id)).catch(swallow));
 await Promise.all(tasks);
 var entry = window.BILARA[id] || {};
 var paliMap = entry.pli || {};
@@ -3429,3 +3429,21 @@ if (mql.addEventListener) mql.addEventListener('change', apply);
 else if (mql.addListener) mql.addListener(apply);
 } catch(e) {}
 })();
+// Fix lỗi Sticky Hover / Sticky Focus trên Mobile.
+// Layer JS bổ sung cho CSS @media (hover:hover) wrapping — sau click 200ms
+// programmatically blur element → browser release :focus state → hết dính.
+document.addEventListener('click', function(e) {
+// 1. Nhận diện thiết bị có cảm ứng (Mobile/Tablet)
+var isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+if (!isTouchDevice) return;
+// 2. Bắt các phần tử có tính tương tác (Button, thẻ A, các tile...)
+var clickableTarget = e.target.closest('button, a, [role="button"], [role="tab"], [role="menuitem"], .menu-sutta-link, .nikaya-tile, .pill, .sutra-col-copy, .sutra-seg-share');
+if (clickableTarget) {
+// 3. Delay 200ms để hiệu ứng nhấp nháy (active) kịp diễn ra cho mượt mắt, sau đó ép gỡ focus
+setTimeout(function() {
+try {
+clickableTarget.blur();
+} catch(err) {}
+}, 200);
+}
+}, { passive: true });
