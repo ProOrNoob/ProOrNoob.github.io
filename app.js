@@ -3436,8 +3436,14 @@ try { localStorage.setItem(STORAGE_KEY, 'dark'); } catch(e){}
    ============================================================ */
 (function () {
 try {
-var mql = window.matchMedia('(hover: none)');
-var apply = function (m) { document.documentElement.classList.toggle('is-touch', !!m.matches); };
+// Dùng (pointer: coarse) thay (hover: none) vì Chrome Android nhiều máy
+// report (hover: hover)=true do hỗ trợ stylus → (hover: none) không match
+// → is-touch class không được set → CSS protection vô dụng.
+var mql = window.matchMedia('(pointer: coarse)');
+var apply = function (m) {
+var isTouch = !!m.matches || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+document.documentElement.classList.toggle('is-touch', isTouch);
+};
 apply(mql);
 if (mql.addEventListener) mql.addEventListener('change', apply);
 else if (mql.addListener) mql.addListener(apply);
@@ -3467,12 +3473,22 @@ clickableTarget.blur();
    gate được 35/116 :hover rules — 80+ rule "naked" còn lại vẫn fire
    trên touch gây sticky. Xoá thẳng = đảm bảo 100% không còn rule
    nào response sticky :hover từ browser.
-   - Chỉ chạy khi (hover: none) match → desktop chuột không bị ảnh hưởng.
-   - :focus-visible / :focus-within giữ nguyên (cần cho keyboard nav).
+
+   QUAN TRỌNG: detect bằng (pointer: coarse) HOẶC touch API thay vì
+   (hover: none). Lý do: Chrome Android nhiều máy report (hover: hover)
+   match true (do hỗ trợ stylus/foldable) → (hover: none) không match →
+   strip không chạy → bug. (pointer: coarse) đáng tin hơn cho touch device.
+   :focus-visible / :focus-within giữ nguyên (cần cho keyboard nav).
    ============================================================ */
 (function () {
+function isTouchPrimary() {
+// Combined detect: coarse pointer (touch) OR touchstart event support OR maxTouchPoints
+return window.matchMedia('(pointer: coarse)').matches
+    || ('ontouchstart' in window)
+    || (navigator.maxTouchPoints > 0);
+}
 function stripHoverRules() {
-if (!window.matchMedia('(hover: none)').matches) return;
+if (!isTouchPrimary()) return;
 var REGEX = /:hover\b|:focus(?!-)/;
 function walk(parentRule, rules) {
 if (!rules) return;
