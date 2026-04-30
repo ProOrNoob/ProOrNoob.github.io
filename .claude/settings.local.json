@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C C:/ProOrNoob.github.io diff --stat HEAD)",
+      "Bash(git -C C:/ProOrNoob.github.io ls-tree -r HEAD --name-only)",
+      "Bash(git -C C:/ProOrNoob.github.io status --short)",
+      "Bash(git -C C:/ProOrNoob.github.io diff styles.css)",
+      "Bash(grep -oE \"[^,{}]*:hover\\\\b[^,{}]*\" C:/ProOrNoob.github.io/styles.css)",
+      "Bash(grep -v \"//\")",
+      "Bash(grep -oE \"[^,{}]*:focus\\(?!-\\)[^,{}]*\" C:/ProOrNoob.github.io/styles.css)",
+      "Bash(git -C C:/ProOrNoob.github.io diff app.js)"
+    ]
+  }
+}

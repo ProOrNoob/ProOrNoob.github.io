@@ -380,7 +380,14 @@ detach chunk DIVs hiện tại, attach chunks đã cache → swap ~10ms thay vì
 Lần đầu mỗi mode vẫn full build; lần 2+ instant.
 ============================================================ */
 var DOM_MODE_CACHE = new Map();           // 'id|mode' → snapshot
-var DOM_MODE_CACHE_MAX = 6;               // ~1.5 sutta × 4 mode
+// Adaptive cache size: bài DN dài ~3000 segments → ~60 chunks × DOM materialized → có thể nuốt
+// hàng chục MB RAM nếu giữ 6 snapshot trên phone cấu hình thấp. Scale theo navigator.deviceMemory.
+var DOM_MODE_CACHE_MAX = (function () {
+var mem = navigator.deviceMemory;
+if (mem && mem < 2) return 2;       // 1GB phones: chỉ giữ 2 mode gần nhất
+if (mem && mem < 4) return 3;       // 2GB phones: 3 mode
+return 6;                           // 4GB+ hoặc unknown: full cache (~1.5 sutta × 4 mode)
+})();
 function _dmCacheKey(id, mode) { return id + '|' + (mode || 'multi'); }
 function _dmSnapshotCurrent() {
 if (!currentSutraId || !virtChunks || !virtChunks.length) return null;
@@ -2393,6 +2400,19 @@ applyTitleBookmarkState();
 var heroSub = isEn
 ? 'Reverently saluting the Blessed One, the Worthy One, the Perfectly Self-Awakened.<br>A library of canonical suttas for practitioners and scholars.'
 : 'Cung kính đảnh lễ Đức Thế Tôn, bậc A-la-hán, Chánh Đẳng Giác.<br>Một thư viện kinh điển dành cho người tu học và nghiên cứu Phật pháp.';
+// Petal dots: 8 chấm tại radius=46 quanh center (60,60), animate về (60,60).
+// Stagger delay 3s/8 = 0.375s mỗi dot → wave xoay liên tục.
+var R = 46, CX = 60, CY = 60;
+var petalDots = '';
+for (var pd = 0; pd < 8; pd++) {
+var ang = pd * 45 * Math.PI / 180;
+var x = (CX + R * Math.sin(ang)).toFixed(1);
+var y = (CY - R * Math.cos(ang)).toFixed(1);
+var dx = (CX - x).toFixed(1);
+var dy = (CY - y).toFixed(1);
+var delay = (pd * 0.375).toFixed(3);
+petalDots += '<circle class="welcome-petal-dot" cx="' + x + '" cy="' + y + '" r="1.6" style="--dx:' + dx + 'px;--dy:' + dy + 'px;--delay:' + delay + 's"/>';
+}
 var mandalaSvg = '<svg viewBox="0 0 120 120" fill="none" stroke="currentColor" aria-hidden="true">' +
 '<g class="welcome-ring r1"><circle cx="60" cy="60" r="54" stroke-width=".7" opacity=".55"/><circle cx="60" cy="60" r="54" stroke-width=".7" stroke-dasharray="1 6" opacity=".8"/></g>' +
 '<g class="welcome-ring r2"><circle cx="60" cy="60" r="42" stroke-width=".6" stroke-dasharray="2 4" opacity=".6"/></g>' +
@@ -2405,7 +2425,9 @@ var mandalaSvg = '<svg viewBox="0 0 120 120" fill="none" stroke="currentColor" a
 '<path d="M60 30 C 70 42, 70 52, 60 60 C 50 52, 50 42, 60 30 Z" transform="rotate(225 60 60)"/>' +
 '<path d="M60 30 C 70 42, 70 52, 60 60 C 50 52, 50 42, 60 30 Z" transform="rotate(270 60 60)"/>' +
 '<path d="M60 30 C 70 42, 70 52, 60 60 C 50 52, 50 42, 60 30 Z" transform="rotate(315 60 60)"/>' +
-'</g><circle cx="60" cy="60" r="4" fill="currentColor" stroke="none"/></g></svg>';
+'</g><circle cx="60" cy="60" r="4" fill="currentColor" stroke="none"/></g>' +
+'<g class="welcome-petals">' + petalDots + '</g>' +
+'</svg>';
 var verses = [
 { pali: 'Vayadhammā saṅkhārā, appamādena sampādetha',
   tr: isEn ? 'All conditioned things are subject to decay. Strive on with diligence' : 'Các pháp hữu vi đều vô thường, hãy tinh tấn chớ có buông lung',
@@ -2475,6 +2497,19 @@ if (btnUiLang) btnUiLang.click();
 }
 function materializeChunk(chunkInfo) {
 if (!chunkInfo || chunkInfo.materialized) return;
+// Capture chunk bottom TRƯỚC khi materialize. Nếu chunk nằm hoàn toàn TRÊN viewport
+// và height thực ≠ EST_ROW_H placeholder → content dưới shift → user thấy giật.
+// Skip compensation trong programmatic scroll window (anchor restore, eager pre-scroll...)
+// để không đè lên scroll adjustments của các code path đó.
+var scroller = scrollEl;
+var needsCompensation = false;
+var oldChunkBottom = 0;
+if (scroller && chunkInfo.div.parentNode === scroller && Date.now() >= _progScrollUntil) {
+var preRect = chunkInfo.div.getBoundingClientRect();
+var preRootRect = scroller.getBoundingClientRect();
+oldChunkBottom = preRect.bottom - preRootRect.top + scroller.scrollTop;
+if (oldChunkBottom <= scroller.scrollTop) needsCompensation = true;
+}
 var frag = document.createDocumentFragment();
 for (var i = chunkInfo.rowStart; i < chunkInfo.rowEnd; i++) {
 var rowData = virtAllRows[i];
@@ -2490,6 +2525,13 @@ chunkInfo.materialized = true;
 if (anchorObserver) {
 var newRows = chunkInfo.div.querySelectorAll('.sutra-row');
 for (var k = 0; k < newRows.length; k++) anchorObserver.observe(newRows[k]);
+}
+if (needsCompensation && scroller) {
+var newChunkRect = chunkInfo.div.getBoundingClientRect();
+var newRootRect  = scroller.getBoundingClientRect();
+var newChunkBottom = newChunkRect.bottom - newRootRect.top + scroller.scrollTop;
+var delta = newChunkBottom - oldChunkBottom;
+if (Math.abs(delta) > 0.5) scroller.scrollTop += delta;
 }
 }
 function dematerializeChunk(chunkInfo) {
@@ -2727,11 +2769,19 @@ for (var eci = lo; eci <= hi; eci++) materializeChunk(virtChunks[eci]);
 // dark mode thấy body bg (#0b0c0e) → flash đen cho bài dài có anchor xa.
 var scroller = getScrollRoot() || scrollEl;
 if (anchorChunkIdx > 0 && scroller && virtChunks[anchorChunkIdx] && virtChunks[anchorChunkIdx].div) {
-var targetY = virtChunks[anchorChunkIdx].div.offsetTop;
+// `offsetTop` reference đến nearest positioned ancestor (.card có position:relative),
+// KHÔNG phải scroller. Dùng getBoundingClientRect math để lấy đúng vị trí trong scroller,
+// rồi clamp [0, maxScrollTop] để tránh over-scroll khi anchor chunk nằm cuối bài.
+var chunkRect = virtChunks[anchorChunkIdx].div.getBoundingClientRect();
+var rootRect  = scroller.getBoundingClientRect();
+var rawY = (chunkRect.top - rootRect.top) + scroller.scrollTop;
+var maxY = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+var targetY = Math.max(0, Math.min(rawY, maxY));
 scroller.scrollTop = targetY;
 if (window.DEBUG_ANCHOR) {
 console.log('[EAGER-FIX]', 'anchorKey=', anchorKey, 'anchorIdx=', anchorIdx,
-'chunkIdx=', anchorChunkIdx, 'targetY=', targetY,
+'chunkIdx=', anchorChunkIdx, 'rawY=', rawY.toFixed(0),
+'maxY=', maxY.toFixed(0), 'targetY=', targetY.toFixed(0),
 '→ actual=', scroller.scrollTop);
 }
 }
