@@ -5,7 +5,8 @@ function toggleBackTop(show) { if (!btnBackTop) return; btnBackTop.classList.tog
 // Skip nếu _progScrollUntil > now (suppress window cho programmatic scroll).
 var _saveAnchorThrottled = throttle(saveScrollAnchorNow, 250);
 var _saveAnchorDebounced = debounce(saveScrollAnchorNow, 200);
-var _backTopThrottled = throttle(function (v) { toggleBackTop(v); }, 120);
+// Không throttle: toggleBackTop chỉ là classList.toggle, gọi mỗi scroll event vẫn cheap.
+// Throttle leading-only trước đây drop event cuối → cuộn nhanh lên top, btn stuck visible.
 var _progressIdleTimer = null;
 function _ensureProgressElements(wrap) {
 var bar = wrap.querySelector('.rp-bar');
@@ -131,7 +132,7 @@ wrap.classList.add('idle');
 }
 var _readingProgressThrottled = throttle(updateReadingProgress, 80);
 if (scrollEl) scrollEl.addEventListener('scroll', function () {
-if (!suppressBackTop) _backTopThrottled(scrollEl.scrollTop > 0);
+if (!suppressBackTop) toggleBackTop(scrollEl.scrollTop > 0);
 _saveAnchorThrottled();
 _saveAnchorDebounced();
 _readingProgressThrottled();

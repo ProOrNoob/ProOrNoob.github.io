@@ -173,7 +173,7 @@ html.is-touch .bar-pill.active,
 html.is-touch .bar-pill.active:hover{background:color-mix(in oklab,var(--accent) 10%,transparent) !important}
 html.hide-reading-progress #readingProgress,html.is-welcome #readingProgress{display:none !important}
 #btnBackTop .back-top-arrow{top:50%;left:50%;width:18px;height:18px;transform:translate(-50%,-50%)}
-@media (max-width:720px){#btnBackTop .back-top-arrow{width:16px;height:16px}}
+@media (max-width:720px){#btnBackTop{width:34px !important;height:34px !important;right:8px !important;bottom:48px !important}#btnBackTop .back-top-arrow{width:13px;height:13px}}
 html.is-welcome #btnSettings,html.is-welcome #btnPrev,html.is-welcome #btnNext{display:none !important}
 html.is-welcome .status-in{grid-template-columns:1fr auto 1fr !important}
 #btnProgressToggle[aria-pressed="false"]{opacity:0.5;text-decoration:line-through}
