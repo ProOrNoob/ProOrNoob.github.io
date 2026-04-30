@@ -1,194 +1,182 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Debug & Scroll Test</title>
-    <style>
-        :root {
-            --primary: #2563eb;
-            --success: #16a34a;
-            --danger: #dc2626;
-            --dark: #1e293b;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sticky Hover Isolation Test — Chrome Android Debug</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    margin: 0; padding: 16px;
+    background: #f1f5f9; color: #1e293b;
+    line-height: 1.5;
+  }
+  h1 { font-size: 18px; margin: 16px 0 8px; }
+  h2 { font-size: 15px; margin: 24px 0 6px; color: #2563eb; }
+  p  { font-size: 14px; margin: 6px 0; }
+  code { background: #e2e8f0; padding: 1px 6px; border-radius: 3px; font-size: 13px; }
 
-        body {
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            background-color: #f1f5f9;
-            color: var(--dark);
-        }
+  .info {
+    background: #fff; padding: 12px; border-radius: 6px;
+    border: 1px solid #cbd5e1; margin-bottom: 16px; font-size: 13px;
+  }
+  .info b { color: #16a34a; }
 
-        /* Header cố định để chứa bảng Debug */
-        .debug-header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 2px solid #ddd;
-            z-index: 1000;
-            padding: 15px 0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
+  /* ===== BUTTON A — :hover NAKED (giống .bar-pill hiện tại app dùng) ===== */
+  .btn-a {
+    background: #fff; border: 2px solid #888; border-radius: 6px;
+    padding: 14px 28px; margin: 6px 0; font-size: 15px; cursor: pointer;
+    color: #333; min-width: 280px;
+    transition: background .15s, color .15s;
+  }
+  .btn-a:hover {
+    background: #d4a354;
+    color: #fff;
+    border-color: #d4a354;
+  }
+  .btn-a:active { transform: scale(0.97); }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
+  /* ===== BUTTON B — :hover trong @media (hover: hover) ===== */
+  .btn-b {
+    background: #fff; border: 2px solid #888; border-radius: 6px;
+    padding: 14px 28px; margin: 6px 0; font-size: 15px; cursor: pointer;
+    color: #333; min-width: 280px;
+    transition: background .15s, color .15s;
+  }
+  @media (hover: hover) {
+    .btn-b:hover {
+      background: #16a34a;
+      color: #fff;
+      border-color: #16a34a;
+    }
+  }
+  .btn-b:active { transform: scale(0.97); }
 
-        .debug-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-        }
+  /* ===== Scroll content ===== */
+  .filler {
+    height: 100vh;
+    background: linear-gradient(180deg, #fff, #e2e8f0);
+    border-radius: 8px;
+    margin: 12px 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #64748b; font-style: italic;
+  }
 
-        .debug-card {
-            background: #fff;
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
-            font-size: 13px;
-        }
+  /* ===== BACK-TO-TOP C — opacity transition (giống btnBackTop cũ) ===== */
+  .btn-c {
+    position: fixed; right: 12px; bottom: 80px;
+    width: 48px; height: 48px; border-radius: 50%;
+    background: #1e293b; color: #fff; border: 0;
+    font-size: 22px; cursor: pointer;
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+  }
+  .btn-c.visible { opacity: 0.92; pointer-events: auto; }
+  .btn-c:hover { opacity: 1; background: #d4a354; }
 
-        .label { color: #64748b; font-weight: bold; display: block; font-size: 11px; text-transform: uppercase; }
-        .value { color: var(--dark); font-family: 'Courier New', monospace; font-weight: bold; }
+  /* ===== BACK-TO-TOP D — display:none (fix mới của app) ===== */
+  .btn-d {
+    position: fixed; right: 12px; bottom: 16px;
+    width: 48px; height: 48px; border-radius: 50%;
+    background: #2563eb; color: #fff; border: 0;
+    font-size: 22px; cursor: pointer;
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 100;
+  }
+  .btn-d.visible { display: flex; }
+  .btn-d:hover { background: #d4a354; }
 
-        /* Nút bấm chính */
-        #check-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        /* Vùng nội dung dài */
-        .content-dump {
-            margin-top: 280px; /* Chừa chỗ cho header cố định */
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        /* Nút Scroll to Top */
-        #scrollTopBtn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--dark);
-            color: white;
-            border: none;
-            cursor: pointer;
-            display: none; /* Ẩn mặc định */
-            font-size: 24px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            transition: transform 0.2s;
-            z-index: 999;
-        }
-
-        #scrollTopBtn:hover { transform: translateY(-5px); background: #000; }
-
-        h2 { color: var(--primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-        .hover-box {
-            padding: 20px;
-            background: #f8fafc;
-            border: 2px dashed #cbd5e1;
-            text-align: center;
-            margin: 20px 0;
-            transition: 0.3s;
-        }
-        .hover-box.active { background: #dcfce7; border-color: var(--success); }
-    </style>
+  /* ===== BACK-TO-TOP E — display:none + @media (hover:hover) trên :hover ===== */
+  .btn-e {
+    position: fixed; right: 70px; bottom: 16px;
+    width: 48px; height: 48px; border-radius: 50%;
+    background: #16a34a; color: #fff; border: 0;
+    font-size: 22px; cursor: pointer;
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 100;
+  }
+  .btn-e.visible { display: flex; }
+  @media (hover: hover) {
+    .btn-e:hover { background: #d4a354; }
+  }
+</style>
 </head>
 <body>
 
-<div class="debug-header">
-    <div class="container">
-        <div class="debug-grid">
-            <div class="debug-card"><span class="label">Mouse</span><span id="res-mouse" class="value">--</span></div>
-            <div class="debug-card"><span class="label">Device</span><span id="res-device" class="value">--</span></div>
-            <div class="debug-card"><span class="label">Pointer</span><span id="res-pointer" class="value">--</span></div>
-            <div class="debug-card"><span class="label">Resolution</span><span id="res-screen" class="value">--</span></div>
-            <div class="debug-card"><span class="label">Viewport</span><span id="res-viewport" class="value">--</span></div>
-        </div>
-        <button id="check-btn">CLICK TO INSPECT ALL</button>
-    </div>
+<h1>Sticky Hover Isolation Test</h1>
+
+<div class="info">
+  <p><b>Detect:</b>
+    <code>(hover: <span id="dHover">?</span>)</code>
+    <code>(pointer: <span id="dPointer">?</span>)</code>
+    <code>touch: <span id="dTouch">?</span></code>
+  </p>
+  <p><b>Mục đích:</b> tap từng nút, xem highlight có dính sau khi nhấc tay ra không. Kết quả sẽ trả lời được do code app hay do Chrome Android.</p>
 </div>
 
-<div class="container">
-    <div class="content-dump">
-        <h2>Bắt đầu Test Content</h2>
-        <div id="hover-target" class="hover-box">Rê chuột vào đây để test trạng thái Hover</div>
+<h2>TEST 1 — `:hover` không gate</h2>
+<p>Tap nút này. Highlight vàng <b>nên dính</b> trên Chrome Android (vì :hover sticky):</p>
+<button class="btn-a">Nút A — :hover naked</button>
 
-        <!-- Dữ liệu lặp lại cực dài -->
-        <div id="dynamic-content"></div>
-    </div>
-</div>
+<h2>TEST 2 — `:hover` gate `@media (hover: hover)`</h2>
+<p>Tap nút này. Highlight xanh <b>không nên dính</b> trên touch (rule không match):</p>
+<button class="btn-b">Nút B — :hover gated</button>
 
-<button id="scrollTopBtn">↑</button>
+<div class="filler">Cuộn xuống tiếp...</div>
+<div class="filler">Còn nữa...</div>
+<div class="filler">Gần xong rồi...</div>
+
+<h2>TEST 3 — Scroll-to-top buttons (góc dưới phải)</h2>
+<p>Khi cuộn xuống đây, 3 nút floating sẽ hiện. Tap mỗi nút → cuộn lên top → quan sát:</p>
+<ul style="font-size:14px">
+  <li><b style="color:#1e293b">Nút C (đen)</b> — opacity hide, :hover naked. <b>Có thể dính</b></li>
+  <li><b style="color:#2563eb">Nút D (xanh dương)</b> — display:none hide, :hover naked. Display:none xoá khỏi render → không dính</li>
+  <li><b style="color:#16a34a">Nút E (xanh lá)</b> — display:none hide, :hover gated. Lý tưởng nhất, chắc chắn không dính</li>
+</ul>
+
+<div class="filler">Cuộn lên đầu để hide buttons</div>
+<div class="filler">Cuộn xuống lại để show buttons</div>
+
+<button class="btn-c" id="btnC" title="opacity hide, hover naked">↑</button>
+<button class="btn-d" id="btnD" title="display hide, hover naked">↑</button>
+<button class="btn-e" id="btnE" title="display hide, hover gated">↑</button>
 
 <script>
-    // 1. Tạo Content Dump tự động để trang cực dài
-    const contentContainer = document.getElementById('dynamic-content');
-    let longText = "";
-    for(let i = 1; i <= 50; i++) {
-        longText += `
-            <h3>Mục kiểm tra số ${i}</h3>
-            <p>Đây là nội dung giả lập để test tính năng cuộn trang. Trong thực tế, bạn có thể thay thế vùng này bằng các tài liệu kỹ thuật, log hệ thống hoặc dữ liệu JSON. Khi cuộn xuống dưới, nút "Lên đầu trang" sẽ xuất hiện ở góc phải.</p>
-            <p style="color:#64748b">Thông số kỹ thuật giả định: VRAM 24GB, CUDA Cores: 16384, Tensor Cores: 512. Trình trạng hệ thống: Ổn định.</p>
-            <hr>
-        `;
-    }
-    contentContainer.innerHTML = longText;
+// Detection
+document.getElementById('dHover').textContent = window.matchMedia('(hover: hover)').matches ? 'hover' : 'none';
+document.getElementById('dPointer').textContent = window.matchMedia('(pointer: fine)').matches ? 'fine' : 'coarse';
+document.getElementById('dTouch').textContent = (('ontouchstart' in window) || navigator.maxTouchPoints > 0) ? 'YES' : 'NO';
 
-    // 2. Logic Debug & Detection
-    const checkBtn = document.getElementById('check-btn');
-    const hoverTarget = document.getElementById('hover-target');
-    const scrollBtn = document.getElementById('scrollTopBtn');
+var btnC = document.getElementById('btnC');
+var btnD = document.getElementById('btnD');
+var btnE = document.getElementById('btnE');
 
-    // Hover detection
-    hoverTarget.addEventListener('mouseenter', () => hoverTarget.classList.add('active'));
-    hoverTarget.addEventListener('mouseleave', () => hoverTarget.classList.remove('active'));
+// Show/hide based on scroll
+window.addEventListener('scroll', function() {
+  var show = window.scrollY > 200;
+  btnC.classList.toggle('visible', show);
+  btnD.classList.toggle('visible', show);
+  btnE.classList.toggle('visible', show);
+});
 
-    // Click inspection
-    checkBtn.addEventListener('click', (e) => {
-        const pType = e.pointerType || "n/a";
-        const isMouse = (pType === 'mouse');
-        const ua = navigator.userAgent;
-        
-        document.getElementById('res-mouse').innerText = isMouse ? "TRUE" : "FALSE";
-        document.getElementById('res-mouse').style.color = isMouse ? "#16a34a" : "#dc2626";
-        document.getElementById('res-pointer').innerText = pType.toUpperCase();
-        document.getElementById('res-device').innerText = /Android|iPhone|iPad/i.test(ua) ? "MOBILE" : "DESKTOP";
-        document.getElementById('res-screen').innerText = `${screen.width}x${screen.height}`;
-        document.getElementById('res-viewport').innerText = `${window.innerWidth}x${window.innerHeight}`;
-        
-        console.log("Full User Agent:", ua);
-    });
-
-    // 3. Logic Scroll to Top
-    window.onscroll = function() {
-        if (document.body.scrollTop > 500 || document.documentElement.scrollTop > 500) {
-            scrollBtn.style.display = "block";
-        } else {
-            scrollBtn.style.display = "none";
-        }
-    };
-
-    scrollBtn.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+// Click → scroll to top
+btnC.onclick = function() {
+  btnC.classList.remove('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+btnD.onclick = function() {
+  btnD.classList.remove('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+btnE.onclick = function() {
+  btnE.classList.remove('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 </script>
 
 </body>

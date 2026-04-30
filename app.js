@@ -1484,15 +1484,15 @@ var suppressBackTop = false;
 function toggleBackTop(show) {
 if (!btnBackTop) return;
 btnBackTop.classList.toggle('visible', show);
-// Android Chrome bug: sau tap, :hover/:focus sticky → CSS opacity:.92 từ override hover
-// vẫn thắng dù .visible đã gỡ. Inline style + !important là cách DUY NHẤT đảm bảo
-// thắng mọi sticky state. Khi show=true thì gỡ inline để CSS .visible kiểm soát lại.
+// Android Chrome bug: opacity-based hide có thể bị sticky :hover/:focus thắng dù
+// inline !important. display:none là KHÔNG THỂ override — element bị remove khỏi
+// render tree hoàn toàn → browser không thể keep :hover state.
 if (show) {
+btnBackTop.style.removeProperty('display');
 btnBackTop.style.removeProperty('opacity');
 btnBackTop.style.removeProperty('pointer-events');
 } else {
-btnBackTop.style.setProperty('opacity', '0', 'important');
-btnBackTop.style.setProperty('pointer-events', 'none', 'important');
+btnBackTop.style.setProperty('display', 'none', 'important');
 try { btnBackTop.blur(); } catch(_) {}
 }
 }
@@ -3489,9 +3489,12 @@ for (var s = 0; s < sheets.length; s++) {
 try { walk(null, sheets[s].cssRules); } catch(e) { /* cross-origin */ }
 }
 }
+// Chạy 3 lần để đảm bảo: ngay (nếu DOM đã ready), sau DOMContentLoaded,
+// và sau window.load (cho trường hợp stylesheet load chậm / async).
 if (document.readyState === 'loading') {
 document.addEventListener('DOMContentLoaded', stripHoverRules);
 } else {
 stripHoverRules();
 }
+window.addEventListener('load', stripHoverRules);
 })();
