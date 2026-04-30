@@ -174,7 +174,8 @@ html.is-touch .bar-pill.active:hover{background:color-mix(in oklab,var(--accent)
 html.hide-reading-progress #readingProgress,html.is-welcome #readingProgress{display:none !important}
 #btnBackTop .back-top-arrow{top:50%;left:50%;width:18px;height:18px;transform:translate(-50%,-50%)}
 @media (max-width:720px){#btnBackTop .back-top-arrow{width:16px;height:16px}}
-html.is-welcome #btnSettings{display:none !important}
+html.is-welcome #btnSettings,html.is-welcome #btnPrev,html.is-welcome #btnNext{display:none !important}
+html.is-welcome .status-in{grid-template-columns:1fr auto 1fr !important}
 #btnProgressToggle[aria-pressed="false"]{opacity:0.5;text-decoration:line-through}
 /* iOS/iPad Safari fix: chống auto-zoom khi tap input (font ≥ 16px) + chống double-tap zoom (touch-action:manipulation) */
 input[type="search"],input[type="text"],input[type="email"],input[type="number"],input[type="tel"],input[type="url"],input[type="password"],textarea,select{font-size:16px !important}
