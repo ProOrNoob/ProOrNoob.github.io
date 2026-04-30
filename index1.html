@@ -3,112 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Page</title>
+    <title>Advanced Debug Tool</title>
     <style>
-        /* CSS Thuần */
         body {
-            font-family: sans-serif;
-            line-height: 1.6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e9ecef;
             padding: 20px;
-            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .content-box {
-            max-width: 800px;
-            margin: auto;
+        .container {
             background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
         }
 
-        /* Nút bấm hiện thông báo */
-        #action-btn {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-
-        #action-btn:hover {
-            background-color: #0056b3;
-        }
-
-        /* Nút Scroll to Top */
-        #scrollToTopBtn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            display: none; /* Ẩn khi ở trên đầu trang */
-            padding: 10px 15px;
+        button {
+            width: 100%;
+            padding: 15px;
             font-size: 18px;
-            background-color: #333;
+            font-weight: bold;
+            cursor: pointer;
+            background-color: #20c997;
             color: white;
             border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border-radius: 8px;
+            transition: 0.2s;
         }
 
-        #scrollToTopBtn:hover {
-            background-color: #555;
+        button:active {
+            transform: scale(0.98);
+            background-color: #1aa179;
+        }
+
+        .debug-grid {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .card {
+            background: #f8f9fa;
+            padding: 10px;
+            border-left: 4px solid #20c997;
+            border-radius: 4px;
+        }
+
+        .label {
+            font-size: 12px;
+            color: #6c757d;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .value {
+            font-family: monospace;
+            font-weight: bold;
+            color: #333;
+        }
+
+        #hover-zone {
+            margin-top: 15px;
+            padding: 10px;
+            text-align: center;
+            border: 2px dashed #ccc;
+            color: #999;
+        }
+
+        #hover-zone.active {
+            background: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
         }
     </style>
 </head>
 <body>
 
-    <div class="content-box">
-        <h1>Trang Test Tính Năng</h1>
-        
-        <!-- Nút bấm hiện thông báo -->
-        <button id="action-btn">Bấm vào đây!</button>
+<div class="container">
+    <h2>Debug Console</h2>
+    
+    <button id="check-btn">CLICK TO INSPECT</button>
 
-        <div id="test-content">
-            <h3>Nội dung giả để test cuộn (Scroll):</h3>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-            <p>(Dưới đây là nội dung lặp lại để tạo độ dài cho trang...)</p>
-            <!-- Tạo khoảng trống -->
-            <div style="height: 2000px; background: linear-gradient(#eee, #fff); margin: 20px 0;">
-                <p style="padding: 20px;">Đang cuộn xuống... Bạn sẽ thấy nút "↑" hiện ra ở góc dưới bên phải khi cuộn qua một khoảng nhất định.</p>
-            </div>
-            <p>Kết thúc nội dung test.</p>
+    <div id="hover-zone">Rê chuột vào vùng này để test Hover</div>
+
+    <div class="debug-grid">
+        <div class="card">
+            <span class="label">SỬ DỤNG CHUỘT?</span>
+            <span id="mouse-true" class="value">--</span>
+        </div>
+        <div class="card">
+            <span class="label">THIẾT BỊ (DETECT)</span>
+            <span id="device-type" class="value">--</span>
+        </div>
+        <div class="card">
+            <span class="label">MÀN HÌNH (RES)</span>
+            <span id="screen-res" class="value">--</span>
+        </div>
+        <div class="card">
+            <span class="label">TRÌNH DUYỆT (VIEWPORT)</span>
+            <span id="viewport-res" class="value">--</span>
+        </div>
+        <div class="card" style="grid-column: span 2;">
+            <span class="label">POINTER TYPE (LẦN CLICK CUỐI)</span>
+            <span id="pointer-type" class="value">--</span>
         </div>
     </div>
+</div>
 
-    <!-- Nút Scroll to Top -->
-    <button id="scrollToTopBtn" title="Lên đầu trang">↑</button>
+<script>
+    const btn = document.getElementById('check-btn');
+    const hoverZone = document.getElementById('hover-zone');
 
-    <script>
-        // JS Thuần
-        const actionBtn = document.getElementById('action-btn');
-        const scrollBtn = document.getElementById('scrollToTopBtn');
+    // 1. Theo dõi Hover mượt mà
+    hoverZone.addEventListener('mouseenter', () => hoverZone.classList.add('active'));
+    hoverZone.addEventListener('mouseleave', () => hoverZone.classList.remove('active'));
 
-        // 1. Xử lý nút bấm hiện thông báo
-        actionBtn.addEventListener('click', () => {
-            alert('Chào bạn! Nút này đã hoạt động bình thường.');
-        });
+    // 2. Xử lý chính khi Click
+    btn.addEventListener('click', (event) => {
+        // A. Kiểm tra pointer (Chuột hay Tay chạm)
+        // event.pointerType sẽ trả về 'mouse', 'touch', hoặc 'pen'
+        const pType = event.pointerType || "N/A";
+        const isMouse = (pType === 'mouse');
 
-        // 2. Xử lý hiện/ẩn nút Scroll to Top khi cuộn chuột
-        window.onscroll = function() {
-            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
-                scrollBtn.style.display = "block";
-            } else {
-                scrollBtn.style.display = "none";
-            }
-        };
+        // B. Detect thiết bị
+        const ua = navigator.userAgent;
+        let device = "Desktop";
+        if (/Android|iPhone|iPad/i.test(ua)) device = "Mobile/Tablet";
 
-        // 3. Xử lý khi bấm nút Scroll to Top
-        scrollBtn.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth' // Cuộn mượt mà
-            });
-        });
-    </script>
+        // C. Độ phân giải
+        const screenWidth = window.screen.width;
+        const screenHeight = window.screen.height;
+        const viewWidth = window.innerWidth;
+        const viewHeight = window.innerHeight;
+
+        // D. Hiển thị lên giao diện
+        document.getElementById('mouse-true').innerText = isMouse ? "TRUE" : "FALSE";
+        document.getElementById('mouse-true').style.color = isMouse ? "green" : "red";
+        
+        document.getElementById('device-type').innerText = device;
+        document.getElementById('pointer-type').innerText = pType.toUpperCase();
+        document.getElementById('screen-res').innerText = `${screenWidth} x ${screenHeight}`;
+        document.getElementById('viewport-res').innerText = `${viewWidth} x ${viewHeight}`;
+
+        console.log("--- Debug Info ---");
+        console.log("Is Mouse:", isMouse);
+        console.log("Pointer Type:", pType);
+        console.log("User Agent:", ua);
+    });
+</script>
 
 </body>
 </html>
