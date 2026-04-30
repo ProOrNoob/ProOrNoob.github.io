@@ -603,6 +603,9 @@ if (btnPauseTts)  btnPauseTts.setAttribute('aria-label',
 isEn ? 'Pause (current sentence will restart)' : 'Tạm dừng (câu hiện tại sẽ đọc lại từ đầu)');
 var sideLabel = document.querySelector('#sidebar-btn .sidebar-label');
 if (sideLabel) sideLabel.textContent = isEn ? 'Library' : 'Thư viện';
+// Footer button text labels (.label-full): hiện cạnh icon trên desktop ≥960px
+setText('btnSettingsLabel', isEn ? 'Settings' : 'Cài đặt');
+setText('btnGuideLabel',    isEn ? 'Guide'    : 'Hướng dẫn');
 }
 function renderGuideDialog() {
 if (!guideOverlay) return;
@@ -747,7 +750,12 @@ if (!panel) return;
 var isOpen = typeof force === 'boolean' ? force : !panel.classList.contains('open');
 if (!isOpen && panel.contains(document.activeElement)) {
 try {
-if (btnSutraMenu) btnSutraMenu.focus();
+// Trả focus về đúng nút trigger của panel đang đóng (settings → btnSettings,
+// library → btnSutraMenu). Trước đây hardcode btnSutraMenu cho mọi panel.
+var triggerBtn = (panel === settingsPanel) ? btnSettings
+              : (panel === sutraMenuPanel) ? btnSutraMenu
+              : null;
+if (triggerBtn) triggerBtn.focus();
 else document.activeElement.blur();
 } catch(_){}
 }
@@ -1220,7 +1228,6 @@ if (isOn) try { updateReadingProgress(); } catch(_){}
 })();
 var anchorObserver = null;
 var firstVisibleKey = null;
-var firstVisibleOffsetFromGrid = 0;
 var vaggaMarkers = [];
 var suttaMarkers = [];
 var keyToRowIdx = Object.create(null);
@@ -2596,7 +2603,6 @@ teardownChunkObservers();
 virtChunks = [];
 virtAllRows = [];
 firstVisibleKey = null;
-firstVisibleOffsetFromGrid = 0;
 cachedRows = [];
 var token = ++renderToken;
 isRendering = true;
@@ -3405,4 +3411,21 @@ btn.textContent = '☀️'; btn.title = 'Chế độ sáng';
 try { localStorage.setItem(STORAGE_KEY, 'dark'); } catch(e){}
 }
 });
+})();
+/* ============================================================
+   Touch device detection — activate html.is-touch class.
+   Block CSS rules `html.is-touch .bar-pill:hover...` (lines 162-174 styles.css)
+   trước đây dead code vì class không bao giờ set. Giờ kích hoạt lớp bảo vệ
+   thứ 2 chống sticky :hover/:focus sau tap trên Chrome Android, iOS Safari.
+   Match (hover:none) thay vì 'ontouchstart' vì laptop có touchscreen + chuột
+   sẽ report (hover:hover) → giữ hover effect cho user dùng chuột chính.
+   ============================================================ */
+(function () {
+try {
+var mql = window.matchMedia('(hover: none)');
+var apply = function (m) { document.documentElement.classList.toggle('is-touch', !!m.matches); };
+apply(mql);
+if (mql.addEventListener) mql.addEventListener('change', apply);
+else if (mql.addListener) mql.addListener(apply);
+} catch(e) {}
 })();

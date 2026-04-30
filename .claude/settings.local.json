@@ -8,7 +8,8 @@
       "Bash(grep -oE \"[^,{}]*:hover\\\\b[^,{}]*\" C:/ProOrNoob.github.io/styles.css)",
       "Bash(grep -v \"//\")",
       "Bash(grep -oE \"[^,{}]*:focus\\(?!-\\)[^,{}]*\" C:/ProOrNoob.github.io/styles.css)",
-      "Bash(git -C C:/ProOrNoob.github.io diff app.js)"
+      "Bash(git -C C:/ProOrNoob.github.io diff app.js)",
+      "Bash(grep -oE \"[^,{}]*\\\\.sutra-row[^,{}]*\\\\{[^}]*grid-template-columns[^}]*\\\\}\" C:/ProOrNoob.github.io/styles.css)"
     ]
   }
 }
