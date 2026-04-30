@@ -2475,6 +2475,16 @@ if (btnUiLang) btnUiLang.click();
 }
 function materializeChunk(chunkInfo) {
 if (!chunkInfo || chunkInfo.materialized) return;
+// Capture chunk position trước khi materialize để bù scroll nếu chunk nằm TRƯỚC viewport.
+var scroller = scrollEl;
+var needsCompensation = false;
+var oldChunkBottom = 0;
+if (scroller && chunkInfo.div.parentNode === scroller) {
+var preRect = chunkInfo.div.getBoundingClientRect();
+var preRootRect = scroller.getBoundingClientRect();
+oldChunkBottom = preRect.bottom - preRootRect.top + scroller.scrollTop;
+if (oldChunkBottom <= scroller.scrollTop) needsCompensation = true;
+}
 var frag = document.createDocumentFragment();
 for (var i = chunkInfo.rowStart; i < chunkInfo.rowEnd; i++) {
 var rowData = virtAllRows[i];
@@ -2491,6 +2501,13 @@ if (anchorObserver) {
 var newRows = chunkInfo.div.querySelectorAll('.sutra-row');
 for (var k = 0; k < newRows.length; k++) anchorObserver.observe(newRows[k]);
 }
+if (needsCompensation && scroller) {
+var newChunkRect = chunkInfo.div.getBoundingClientRect();
+var newRootRect  = scroller.getBoundingClientRect();
+var newChunkBottom = newChunkRect.bottom - newRootRect.top + scroller.scrollTop;
+var delta = newChunkBottom - oldChunkBottom;
+if (Math.abs(delta) > 0.5) scroller.scrollTop += delta;
+}
 }
 function dematerializeChunk(chunkInfo) {
 if (!chunkInfo || !chunkInfo.materialized) return;
@@ -2498,12 +2515,39 @@ if (anchorObserver) {
 var oldRows = chunkInfo.div.querySelectorAll('.sutra-row');
 for (var k = 0; k < oldRows.length; k++) anchorObserver.unobserve(oldRows[k]);
 }
-if (!chunkInfo.measuredH) chunkInfo.measuredH = chunkInfo.div.offsetHeight || ((chunkInfo.rowEnd - chunkInfo.rowStart) * 120);
+// LUÔN re-measure trước khi dematerialize. Nếu chỉ set một lần (như cũ), giá trị sẽ
+// stale khi user đổi zoom/line-height/dark-mode/font sau khi chunk đã được dematerialize
+// một lần → placeholder height sai → scroll position drift sau nhiều lần dematerialize.
+var realH = chunkInfo.div.offsetHeight;
+if (realH > 0) chunkInfo.measuredH = realH;
+else if (!chunkInfo.measuredH) chunkInfo.measuredH = (chunkInfo.rowEnd - chunkInfo.rowStart) * 120;
+// Compensate scroll: nếu chunk này nằm TRƯỚC viewport hiện tại, sau khi shrink/grow
+// (do measuredH khác height thật) sẽ đẩy content phía dưới trượt lên/xuống.
+// `overflow-anchor: none` (đặt trên #sutraGrid trong CSS) khiến browser KHÔNG tự bù.
+// Ta bù tay: trước khi sửa minHeight, lưu chunk's bottom relative to scroll. Sau khi sửa,
+// adjust scrollTop để giữ vị trí viewport ổn định.
+var scroller = scrollEl;
+var needsCompensation = false;
+var oldChunkBottom = 0;
+if (scroller && chunkInfo.div.parentNode === scroller) {
+var chunkRect = chunkInfo.div.getBoundingClientRect();
+var rootRect  = scroller.getBoundingClientRect();
+oldChunkBottom = chunkRect.bottom - rootRect.top + scroller.scrollTop;
+// Chỉ compensate nếu chunk nằm hoàn toàn TRƯỚC viewport (bottom < scrollTop).
+if (oldChunkBottom <= scroller.scrollTop) needsCompensation = true;
+}
 while (chunkInfo.div.firstChild) chunkInfo.div.removeChild(chunkInfo.div.firstChild);
 chunkInfo.div.style.minHeight = chunkInfo.measuredH + 'px';
 chunkInfo.materialized = false;
 for (var i = chunkInfo.rowStart; i < chunkInfo.rowEnd; i++) {
 cachedRows[i] = null;
+}
+if (needsCompensation && scroller) {
+var newChunkRect = chunkInfo.div.getBoundingClientRect();
+var newRootRect  = scroller.getBoundingClientRect();
+var newChunkBottom = newChunkRect.bottom - newRootRect.top + scroller.scrollTop;
+var delta = newChunkBottom - oldChunkBottom;
+if (Math.abs(delta) > 0.5) scroller.scrollTop += delta;
 }
 }
 function teardownChunkObservers() {
@@ -2692,7 +2736,12 @@ applyVisibility();
 var CHUNK_SIZE = 50;
 // Heuristic chiều cao placeholder. Over-estimate tốt hơn under-estimate
 // (tránh scrollbar nhảy khi chunk materialize từ 120 → ~200 trong layout thật).
-var EST_ROW_H = singleLang ? 130 : (card && card.classList.contains('stack') ? 220 : 180);
+// Trên iPad/3-cols rows ngắn hơn nhiều so với 2-cols default → cần estimate riêng.
+var EST_ROW_H;
+if (singleLang) EST_ROW_H = 130;
+else if (card && card.classList.contains('stack')) EST_ROW_H = 220;
+else if (card && card.classList.contains('grid-3cols')) EST_ROW_H = 110;
+else EST_ROW_H = 180;
 virtChunks = [];
 virtAllRows = rowsForView;
 keyToRowIdx = viewData.keyToRowIdx;
@@ -2717,7 +2766,22 @@ sẽ scroll đúng vị trí vì chunk chứa anchor đã render sẵn. */
 (function eagerAroundAnchor() {
 try {
 var anchorKey = getAnchorKeyFor(id);
-var anchorIdx = (anchorKey && keyToRowIdx[anchorKey] != null) ? keyToRowIdx[anchorKey] : 0;
+var anchorIdx = -1;
+if (anchorKey && keyToRowIdx[anchorKey] != null) {
+anchorIdx = keyToRowIdx[anchorKey];
+} else if (anchorKey) {
+// Scope fallback: 'mn70:13.4' → match key bắt đầu 'mn70:13.' nếu format đổi giữa modes.
+var sm = String(anchorKey).match(/^(.+):(\d+)/);
+if (sm) {
+var scope = sm[1] + ':' + sm[2];
+for (var rk = 0; rk < virtAllRows.length; rk++) {
+var k0 = String(virtAllRows[rk].key || '');
+var m2 = k0.match(/^(.+):(\d+)/);
+if (m2 && (m2[1] + ':' + m2[2]) === scope) { anchorIdx = rk; break; }
+}
+}
+}
+if (anchorIdx < 0) anchorIdx = 0;
 var anchorChunkIdx = Math.floor(anchorIdx / CHUNK_SIZE);
 var lo = Math.max(0, anchorChunkIdx - 1);
 var hi = Math.min(virtChunks.length - 1, anchorChunkIdx + 1);
@@ -2727,11 +2791,19 @@ for (var eci = lo; eci <= hi; eci++) materializeChunk(virtChunks[eci]);
 // dark mode thấy body bg (#0b0c0e) → flash đen cho bài dài có anchor xa.
 var scroller = getScrollRoot() || scrollEl;
 if (anchorChunkIdx > 0 && scroller && virtChunks[anchorChunkIdx] && virtChunks[anchorChunkIdx].div) {
-var targetY = virtChunks[anchorChunkIdx].div.offsetTop;
+// `offsetTop` reference đến nearest positioned ancestor (.card có position:relative),
+// KHÔNG phải scroller. Dùng getBoundingClientRect math để lấy đúng vị trí trong scroller,
+// rồi clamp [0, maxScrollTop] để tránh scroll quá nội dung gây bottom-clamp.
+var chunkRect = virtChunks[anchorChunkIdx].div.getBoundingClientRect();
+var rootRect  = scroller.getBoundingClientRect();
+var rawY = (chunkRect.top - rootRect.top) + scroller.scrollTop;
+var maxY = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+var targetY = Math.max(0, Math.min(rawY, maxY));
 scroller.scrollTop = targetY;
 if (window.DEBUG_ANCHOR) {
 console.log('[EAGER-FIX]', 'anchorKey=', anchorKey, 'anchorIdx=', anchorIdx,
-'chunkIdx=', anchorChunkIdx, 'targetY=', targetY,
+'chunkIdx=', anchorChunkIdx, 'rawY=', rawY.toFixed(0),
+'maxY=', maxY.toFixed(0), 'targetY=', targetY.toFixed(0),
 '→ actual=', scroller.scrollTop);
 }
 }
@@ -3203,6 +3275,87 @@ lastFrameT = now;
 if (dt > 0) fps = Math.round(1000 / dt);
 requestAnimationFrame(tickFps);
 })();
+// "Vùng đen" detector: periodic check for empty space at top of viewport while we have content.
+// Khi phát hiện, log lại state để user chụp screenshot. Không tự xóa — chỉ giữ 5 entry mới nhất.
+var voidLog = [];
+var VOID_LOG_MAX = 5;
+var VOID_TOP_THRESHOLD = 60;  // px empty above first visible row → coi là void
+var lastVoidTs = 0;
+function checkBlackVoid() {
+if (!grid || !virtChunks || !virtChunks.length) return null;
+var rootRect = grid.getBoundingClientRect();
+var st = grid.scrollTop;
+var sh = grid.scrollHeight;
+var ch = grid.clientHeight;
+// Bỏ qua nếu đang ở edge (top hoặc bottom) — natural empty space.
+if (st < 50) return null;
+if (st >= sh - ch - 50) return null;
+// Tìm row đầu tiên giao với viewport.
+var rows = grid.querySelectorAll('.sutra-row-wrap');
+var firstVisible = null;
+for (var i = 0; i < rows.length; i++) {
+var rr = rows[i].getBoundingClientRect();
+if (rr.bottom > rootRect.top && rr.top < rootRect.bottom) { firstVisible = rows[i]; break; }
+}
+if (!firstVisible) {
+// Không có row nào trong viewport — chắc chắn void.
+return { reason: 'no row in viewport', emptyAbovePx: ch, firstKey: null };
+}
+var fr = firstVisible.getBoundingClientRect();
+var emptyAbove = Math.round(fr.top - rootRect.top);
+if (emptyAbove > VOID_TOP_THRESHOLD) {
+return { reason: 'empty above first row', emptyAbovePx: emptyAbove, firstKey: firstVisible.querySelector('.sutra-row')?.getAttribute('data-key') || null };
+}
+return null;
+}
+function snapshotState(detection) {
+var st = grid.scrollTop, sh = grid.scrollHeight, ch = grid.clientHeight;
+var matCnt = 0;
+var chunkSummary = [];
+var rootRect = grid.getBoundingClientRect();
+for (var ci = 0; ci < virtChunks.length; ci++) {
+var c = virtChunks[ci];
+if (c.materialized) matCnt++;
+var cr = c.div.getBoundingClientRect();
+var topRel = Math.round(cr.top - rootRect.top);
+var bottomRel = Math.round(cr.bottom - rootRect.top);
+var inView = (cr.bottom > rootRect.top && cr.top < rootRect.bottom);
+chunkSummary.push(
+'  #' + ci + (c.materialized ? ' [M]' : ' [.]') +
+' rows ' + c.rowStart + '-' + c.rowEnd +
+' h=' + Math.round(cr.height) +
+' rel=[' + topRel + ',' + bottomRel + ']' +
+' measH=' + (c.measuredH || 0) +
+(inView ? ' ←view' : '')
+);
+}
+return {
+ts: new Date().toISOString().slice(11, 19),
+sutta: currentSutraId,
+detection: detection,
+scroll: { top: st, height: sh, client: ch, pct: sh > ch ? Math.round(st/(sh-ch)*100) : 0 },
+chunks: 'Total ' + virtChunks.length + ', Materialized ' + matCnt,
+chunkDetail: chunkSummary,
+firstVisKey: firstVisibleKey,
+mode: { pali: showPali, eng: showEng, vie: showVie, stack: card?.classList.contains('stack'), col3: card?.classList.contains('grid-3cols') },
+zoom: zoomLevel
+};
+}
+// Tick detector — chạy nền 1s/lần ngay cả khi panel đóng → bắt được void xảy ra
+// trước khi user kịp mở debug panel.
+function tickVoidDetector() {
+var d = checkBlackVoid();
+if (!d) return;
+// Throttle: không log nếu cùng symptom < 2s (tránh spam khi giữ bug)
+var now = Date.now();
+if (now - lastVoidTs < 2000) return;
+lastVoidTs = now;
+voidLog.unshift(snapshotState(d));
+if (voidLog.length > VOID_LOG_MAX) voidLog.pop();
+// Console hint nếu user đang xem console
+if (window.console && console.warn) console.warn('[VOID DETECTED]', voidLog[0]);
+}
+setInterval(tickVoidDetector, 1000);
 function fmtBytes(n) {
 if (!Number.isFinite(n)) return '-';
 if (n > 1024*1024) return (n / (1024*1024)).toFixed(1) + ' MB';
@@ -3211,6 +3364,7 @@ return n + ' B';
 }
 function update() {
 if (!visible) return;
+tickVoidDetector();
 var allDom = document.getElementsByTagName('*').length;
 var wraps = grid ? grid.querySelectorAll('.sutra-row-wrap') : [];
 var sc = grid;
@@ -3291,8 +3445,30 @@ lines.push('used:   ' + fmtBytes(mem.usedJSHeapSize));
 lines.push('total:  ' + fmtBytes(mem.totalJSHeapSize));
 lines.push('limit:  ' + fmtBytes(mem.jsHeapSizeLimit));
 }
+// Vùng đen log — sticky để chụp screenshot.
+lines.push('');
+lines.push('── ⚠ VÙNG ĐEN log (' + voidLog.length + '/' + VOID_LOG_MAX + ') ──');
+if (!voidLog.length) {
+lines.push('(chưa phát hiện. Detector chạy nền 1s/lần — bắt được void cả khi panel đóng)');
+} else {
+for (var vi = 0; vi < voidLog.length; vi++) {
+var entry = voidLog[vi];
+lines.push('');
+lines.push('[' + entry.ts + '] ' + (entry.sutta || '?') + '  zoom=' + entry.zoom);
+lines.push('  reason: ' + entry.detection.reason + ' (' + entry.detection.emptyAbovePx + 'px empty)');
+lines.push('  firstKey: ' + (entry.detection.firstKey || 'NONE') + '  topInView: ' + (entry.firstVisKey || '-'));
+lines.push('  scroll: ' + entry.scroll.top + '/' + entry.scroll.height + ' (' + entry.scroll.pct + '%) ch=' + entry.scroll.client);
+lines.push('  mode: P=' + entry.mode.pali + ' E=' + entry.mode.eng + ' V=' + entry.mode.vie + ' col3=' + entry.mode.col3 + ' stack=' + entry.mode.stack);
+lines.push('  ' + entry.chunks);
+for (var ci2 = 0; ci2 < entry.chunkDetail.length; ci2++) lines.push(entry.chunkDetail[ci2]);
+}
+lines.push('');
+lines.push('(Tap nút Clear để xóa log. Tự động giữ 5 entry mới nhất.)');
+}
 debugBody.textContent = lines.join('\n');
 }
+// Expose clear function for user (Clear button trong debug panel hoặc qua console)
+window.clearVoidLog = function () { voidLog = []; lastVoidTs = 0; if (visible) update(); };
 function show() {
 visible = true;
 debugPanel.hidden = false;
