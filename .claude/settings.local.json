@@ -9,7 +9,11 @@
       "Bash(grep -v \"//\")",
       "Bash(grep -oE \"[^,{}]*:focus\\(?!-\\)[^,{}]*\" C:/ProOrNoob.github.io/styles.css)",
       "Bash(git -C C:/ProOrNoob.github.io diff app.js)",
-      "Bash(grep -oE \"[^,{}]*\\\\.sutra-row[^,{}]*\\\\{[^}]*grid-template-columns[^}]*\\\\}\" C:/ProOrNoob.github.io/styles.css)"
+      "Bash(grep -oE \"[^,{}]*\\\\.sutra-row[^,{}]*\\\\{[^}]*grid-template-columns[^}]*\\\\}\" C:/ProOrNoob.github.io/styles.css)",
+      "Bash(grep -oE \"[^@,{}]*#btnBackTop[^,{}]*\\\\{[^}]+\\\\}\" C:/ProOrNoob.github.io/styles.css)",
+      "Bash(grep -oE \"[^,{}]*\\\\.bar-pill[^,{}]*:hover[^,{}]*\\\\{[^}]+\\\\}\" C:/ProOrNoob.github.io/styles.css)",
+      "Bash(grep -oE \"\\\\.sutra-\\(col-copy|row-wrap:hover \\\\.sutra-col-copy\\)[^,{]*\\\\{[^}]+\\\\}\" C:/ProOrNoob.github.io/styles.css)",
+      "Bash(awk '{for\\(i=1;i<=length\\($0\\);i++\\){c=substr\\($0,i,1\\); if\\(c==\"{\"\\)o++; else if\\(c==\"}\"\\)cl++}} END{print \"open:\",o,\"close:\",cl,\"diff:\",o-cl}' C:/ProOrNoob.github.io/styles.css)"
     ]
   }
 }
