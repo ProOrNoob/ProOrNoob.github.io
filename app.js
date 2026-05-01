@@ -1478,7 +1478,18 @@ if (anchorObserver) { anchorObserver.disconnect(); anchorObserver = null; }
 teardownChunkObservers();
 });
 document.addEventListener('visibilitychange', function () {
-if (document.visibilityState === 'hidden') saveScrollAnchorNow();
+if (document.visibilityState === 'hidden') {
+saveScrollAnchorNow();
+} else if (document.visibilityState === 'visible' && currentSutraId) {
+// Tab return: IntersectionObserver fire backlog → layout shift → scroll drift.
+// Re-anchor về vị trí đã save lúc hidden để bù đắp drift.
+// Delay 1 RAF để layout shift settle trước khi restore.
+requestAnimationFrame(function () {
+requestAnimationFrame(function () {
+if (!isRendering) restoreScrollByAnchor(currentSutraId);
+});
+});
+}
 });
 var suppressBackTop = false;
 function toggleBackTop(show) {
@@ -2561,12 +2572,37 @@ if (anchorObserver) {
 var oldRows = chunkInfo.div.querySelectorAll('.sutra-row');
 for (var k = 0; k < oldRows.length; k++) anchorObserver.unobserve(oldRows[k]);
 }
-if (!chunkInfo.measuredH) chunkInfo.measuredH = chunkInfo.div.offsetHeight || ((chunkInfo.rowEnd - chunkInfo.rowStart) * 120);
+// LUÔN re-measure trước khi dematerialize. Nếu chỉ set một lần (như cũ), giá trị stale
+// khi user đổi zoom/line-height/dark-mode/font sau khi chunk đã được dematerialize 1 lần
+// → placeholder height sai → scroll position drift sau nhiều lần dematerialize.
+var realH = chunkInfo.div.offsetHeight;
+if (realH > 0) chunkInfo.measuredH = realH;
+else if (!chunkInfo.measuredH) chunkInfo.measuredH = (chunkInfo.rowEnd - chunkInfo.rowStart) * 120;
+// Compensate scroll: nếu chunk này nằm TRƯỚC viewport hiện tại, sau khi shrink/grow
+// (do measuredH khác height thật) sẽ đẩy content phía dưới trượt lên/xuống.
+// `overflow-anchor: none` (đặt trên #sutraGrid trong CSS) khiến browser KHÔNG tự bù.
+// Mirror logic của materializeChunk — đo bottom trước/sau, adjust scrollTop.
+var scroller = scrollEl;
+var needsCompensation = false;
+var oldChunkBottom = 0;
+if (scroller && chunkInfo.div.parentNode === scroller && Date.now() >= _progScrollUntil) {
+var preRect = chunkInfo.div.getBoundingClientRect();
+var preRootRect = scroller.getBoundingClientRect();
+oldChunkBottom = preRect.bottom - preRootRect.top + scroller.scrollTop;
+if (oldChunkBottom <= scroller.scrollTop) needsCompensation = true;
+}
 while (chunkInfo.div.firstChild) chunkInfo.div.removeChild(chunkInfo.div.firstChild);
 chunkInfo.div.style.minHeight = chunkInfo.measuredH + 'px';
 chunkInfo.materialized = false;
 for (var i = chunkInfo.rowStart; i < chunkInfo.rowEnd; i++) {
 cachedRows[i] = null;
+}
+if (needsCompensation && scroller) {
+var newChunkRect = chunkInfo.div.getBoundingClientRect();
+var newRootRect  = scroller.getBoundingClientRect();
+var newChunkBottom = newChunkRect.bottom - newRootRect.top + scroller.scrollTop;
+var delta = newChunkBottom - oldChunkBottom;
+if (Math.abs(delta) > 0.5) scroller.scrollTop += delta;
 }
 }
 function teardownChunkObservers() {
