@@ -404,6 +404,18 @@ scrollTop: grid ? grid.scrollTop : 0,
 scrollKey: firstVisibleKey
 };
 }
+// Cleanup chunk DOM khỏi snapshot khi evict — tránh memory leak từ materialized chunks
+// giữ tham chiếu DOM tree (~50 chunks × ~50 rows × 10 nodes/row = thousands of nodes/snapshot).
+function _dmReleaseSnap(snap) {
+if (!snap || !snap.chunks) return;
+for (var ci = 0; ci < snap.chunks.length; ci++) {
+var c = snap.chunks[ci];
+if (c && c.div && c.materialized) {
+while (c.div.firstChild) c.div.removeChild(c.div.firstChild);
+c.materialized = false;
+}
+}
+}
 function _dmSaveCurrent() {
 if (!currentSutraId) return;
 var mode = lastSingleLangMode || 'multi';
@@ -412,14 +424,17 @@ if (!snap) return;
 var k = _dmCacheKey(currentSutraId, mode);
 DOM_MODE_CACHE.delete(k); DOM_MODE_CACHE.set(k, snap);
 while (DOM_MODE_CACHE.size > DOM_MODE_CACHE_MAX) {
-DOM_MODE_CACHE.delete(DOM_MODE_CACHE.keys().next().value);
+var oldestKey = DOM_MODE_CACHE.keys().next().value;
+var evicted = DOM_MODE_CACHE.get(oldestKey);
+_dmReleaseSnap(evicted);
+DOM_MODE_CACHE.delete(oldestKey);
 }
 }
 function _dmInvalidateForSutta(id) {
 if (!id) return;
 var keys = [];
 DOM_MODE_CACHE.forEach(function (_v, k) { if (k.indexOf(id + '|') === 0) keys.push(k); });
-keys.forEach(function (k) { DOM_MODE_CACHE.delete(k); });
+keys.forEach(function (k) { _dmReleaseSnap(DOM_MODE_CACHE.get(k)); DOM_MODE_CACHE.delete(k); });
 }
 function _dmTryRestore(targetMode) {
 if (!currentSutraId || !grid) return false;
@@ -737,8 +752,10 @@ function updateMenuPanelTop() {
 if (!card) return;
 const topNote = card.querySelector('.top-note');
 if (topNote) {
-resizeObserver.observe(topNote); // Bắt đầu theo dõi phần tử này
-} else {
+// Disconnect cũ trước khi observe element mới — tránh leak khi gọi nhiều lần.
+resizeObserver.disconnect();
+resizeObserver.observe(topNote);
+} else if (sutraMenuPanel) {
 sutraMenuPanel.style.top = '0px';
 }
 }
@@ -1349,7 +1366,7 @@ if (typeof _saveAnchorDebounced !== 'undefined' && _saveAnchorDebounced && _save
 _saveAnchorDebounced.cancel();
 }
 if (topKey && currentSutraId) {
-_progScrollUntil = Date.now() + 800;  // suppress rộng hơn để cover reflow + correction
+_progScrollUntil = Date.now() + 1500;  // 1500ms cover smooth scroll + reflow trên low-end Android
 firstVisibleKey = topKey;
 storage.set(KEY_ANCHOR_K(currentSutraId), topKey);
 }
@@ -1368,7 +1385,7 @@ var y = tgtRect.top - rootRect.top + scrollRoot.scrollTop;
 var max = Math.max(0, scrollRoot.scrollHeight - scrollRoot.clientHeight);
 var targetY = Math.max(0, Math.min(y, max));
 if (Math.abs(targetY - scrollRoot.scrollTop) > 1) {
-_progScrollUntil = Date.now() + 800;
+_progScrollUntil = Date.now() + 1500;
 scrollRoot.scrollTop = targetY;
 }
 if (_saveAnchorDebounced && _saveAnchorDebounced.cancel) _saveAnchorDebounced.cancel();
@@ -1479,7 +1496,11 @@ teardownChunkObservers();
 });
 document.addEventListener('visibilitychange', function () {
 if (document.visibilityState === 'hidden') {
-saveScrollAnchorNow();
+// Force save bypass _progScrollUntil — đây là user-action (rời tab),
+// nếu skip thì anchor lưu là vị trí cũ → restore về sai vị trí.
+var prevProg = _progScrollUntil;
+_progScrollUntil = 0;
+try { saveScrollAnchorNow(); } finally { _progScrollUntil = prevProg; }
 } else if (document.visibilityState === 'visible' && currentSutraId) {
 // Tab return: IntersectionObserver fire backlog → layout shift → scroll drift.
 // Re-anchor về vị trí đã save lúc hidden để bù đắp drift.
@@ -1492,20 +1513,30 @@ if (!isRendering) restoreScrollByAnchor(currentSutraId);
 }
 });
 var suppressBackTop = false;
+var _backTopPendingState = null;
+var _backTopRAF = 0;
 function toggleBackTop(show) {
 if (!btnBackTop) return;
-btnBackTop.classList.toggle('visible', show);
+// Race fix: scroll fast → multi toggle false→true→false trong cùng frame có thể
+// gây nhấp nháy. Batch qua RAF — chỉ áp state CUỐI CÙNG mỗi frame.
+_backTopPendingState = !!show;
+if (_backTopRAF) return;
+_backTopRAF = requestAnimationFrame(function () {
+_backTopRAF = 0;
+var s = _backTopPendingState;
+_backTopPendingState = null;
+if (s === null) return;
+btnBackTop.classList.toggle('visible', s);
 // Android Chrome bug: opacity-based hide có thể bị sticky :hover/:focus thắng dù
 // inline !important. display:none là KHÔNG THỂ override — element bị remove khỏi
-// render tree hoàn toàn → browser không thể keep :hover state.
-if (show) {
+// render tree → browser không thể keep :hover state.
+if (s) {
 btnBackTop.style.removeProperty('display');
-btnBackTop.style.removeProperty('opacity');
-btnBackTop.style.removeProperty('pointer-events');
 } else {
 btnBackTop.style.setProperty('display', 'none', 'important');
 try { btnBackTop.blur(); } catch(_) {}
 }
+});
 }
 // Throttle save (leading-edge) + debounce (trailing-edge) cho final stable top sau khi user dừng scroll.
 // `pagehide` + `visibilitychange` đã đảm bảo save lúc rời trang nên debounce ngắn là đủ.
@@ -1621,18 +1652,25 @@ if (btnBackTop && scrollEl) btnBackTop.onclick = function () {
 suppressBackTop = true;
 toggleBackTop(false);
 scrollEl.scrollTo({ top: 0, behavior: 'smooth' });
+var doneCalled = false;
 var done = function () {
+if (doneCalled) return;
+doneCalled = true;
 suppressBackTop = false;
 toggleBackTop(false);
 if (currentSutraId) {
 storage.remove(KEY_ANCHOR_K(currentSutraId));
 }
 };
+// Safety timeout 2s — đảm bảo done() chạy ngay cả khi scrollend không fire
+// (browser cũ, page ngắn không scroll, scroll bị interrupt giữa chừng).
+setTimeout(done, 2000);
 if ('onscrollend' in scrollEl) {
 scrollEl.addEventListener('scrollend', done, { once: true });
 } else {
 var prev = -1;
 var poll = function () {
+if (doneCalled) return;
 var st = scrollEl.scrollTop;
 if (st === 0 && st === prev) { done(); return; }
 prev = st;
@@ -2824,7 +2862,10 @@ for (var eci = lo; eci <= hi; eci++) materializeChunk(virtChunks[eci]);
 // Không có dòng này → frame paint đầu tiên ở scrollTop=0 nơi chunk 0 là placeholder rỗng,
 // dark mode thấy body bg (#0b0c0e) → flash đen cho bài dài có anchor xa.
 var scroller = getScrollRoot() || scrollEl;
-if (anchorChunkIdx > 0 && scroller && virtChunks[anchorChunkIdx] && virtChunks[anchorChunkIdx].div) {
+// Skip eager pre-scroll khi page ngắn — không scrollable. Tránh set scrollTop về
+// giá trị nhỏ rồi RAF correction phải revert về 0, gây flash.
+var maxScrollY = scroller ? Math.max(0, scroller.scrollHeight - scroller.clientHeight) : 0;
+if (anchorChunkIdx > 0 && scroller && virtChunks[anchorChunkIdx] && virtChunks[anchorChunkIdx].div && maxScrollY > 10) {
 // `offsetTop` reference đến nearest positioned ancestor (.card có position:relative),
 // KHÔNG phải scroller. Dùng getBoundingClientRect math để lấy đúng vị trí trong scroller,
 // rồi clamp [0, maxScrollTop] để tránh over-scroll khi anchor chunk nằm cuối bài.
@@ -3518,16 +3559,26 @@ clickableTarget.blur();
    ============================================================ */
 (function () {
 function isTouchPrimary() {
-// Combined detect: coarse pointer (touch) OR touchstart event support OR maxTouchPoints
+// Detect TOUCH-CAPABLE device. User's Chrome Android có thể report (hover:hover)=true
+// (do stylus support hoặc Android version mới) → KHÔNG dùng được (hover:none) làm gate.
+// Dùng (pointer:coarse) — phản ánh chính xác primary input mode.
+// Trade-off: hybrid device (iPad + Magic Keyboard) có thể bị strip oan, nhưng đó là
+// minority case. Touch users là majority và sticky bug nghiêm trọng hơn.
 return window.matchMedia('(pointer: coarse)').matches
-    || ('ontouchstart' in window)
-    || (navigator.maxTouchPoints > 0);
+    || (('ontouchstart' in window) && navigator.maxTouchPoints > 0);
 }
 function stripHoverRules() {
 if (!isTouchPrimary()) return;
 var REGEX = /:hover\b|:focus(?!-)/;
 function walk(parentRule, rules) {
 if (!rules) return;
+// Skip @media (hover: hover) blocks — rules trong đó chủ ý chỉ apply cho mouse.
+// Nếu user kết nối Bluetooth mouse giữa session, browser update (hover:hover) match
+// → rule trong block này hoạt động bình thường. Xoá đi sẽ mất hover desktop forever.
+if (parentRule && parentRule.conditionText &&
+    /\(hover\s*:\s*hover\)/i.test(parentRule.conditionText)) {
+return;
+}
 for (var i = rules.length - 1; i >= 0; i--) {
 var r = rules[i];
 if (r.cssRules && r.cssRules.length) walk(r, r.cssRules);
