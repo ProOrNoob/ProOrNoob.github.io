@@ -1,5 +1,9 @@
 (function () {
 'use strict';
+// Tắt browser auto scroll-restore (back/forward, BFCache cho 1 số case Chrome).
+// Anchor logic của ta tự lo restore — để browser auto-restore nữa sẽ gây xung đột,
+// scroll bị "kéo" về vị trí browser-saved trước khi restoreScrollByAnchor kịp chạy.
+try { if (history.scrollRestoration) history.scrollRestoration = 'manual'; } catch(_) {}
 const DEBUG = true;
 const $ = (id) => document.getElementById(id);
 function escapeHtml(str) {
@@ -1462,6 +1466,10 @@ var row = scrollRoot.querySelector('.sutra-row[data-key="' + safeKey + '"]');
 if (window.DEBUG_ANCHOR) console.log('[ANCHOR RESTORE] DOM row found:', !!row);
 if (!row) return false;
 var scrollTarget = row.closest('.sutra-row-wrap') || row;
+// Suppress save-on-scroll trong toàn bộ correction window — tránh scroll listener fire
+// giữa correction steps rồi save anchor ở vị trí trung gian (chưa settle).
+// 1500ms khớp với window dùng ở chunk materialize/preserveTopAndSave.
+_progScrollUntil = Date.now() + 1500;
 function scrollToSegmentTop(label) {
 var rootRect = scrollRoot.getBoundingClientRect();
 var tgtRect  = scrollTarget.getBoundingClientRect();
@@ -1482,6 +1490,10 @@ toggleBackTop(scrollRoot.scrollTop > 0);
 requestAnimationFrame(function () { requestAnimationFrame(function () {
 scrollToSegmentTop('rAF-correction');
 setTimeout(function () { scrollToSegmentTop('timeout-correction'); }, 100);
+// Mobile Chrome: address bar collapse/expand transition ~300-500ms khi quay lại tab.
+// 100ms-correction có thể chạy giữa lúc layout còn đang shift → vị trí lệch.
+// Thêm settle-correction ở 500ms để bắt cuối transition.
+setTimeout(function () { scrollToSegmentTop('settle-correction'); }, 500);
 }); });
 return true;
 } catch(e) {
@@ -1489,28 +1501,41 @@ if (window.DEBUG_ANCHOR) console.error('[ANCHOR RESTORE] error:', e);
 return false;
 }
 }
-window.addEventListener('pagehide', function () {
+window.addEventListener('pagehide', function (e) {
+// Force fresh DOM scan — IO cache có thể stale nếu user vừa scroll xong rời trang ngay.
+// Anchor đúng được lưu ở đây phục vụ lần load LẦN SAU (renderSutra → restoreScrollByAnchor),
+// KHÔNG dùng cho tab-return (DOM ở memory thì browser tự giữ scrollTop).
+firstVisibleKey = null;
 saveScrollAnchorNow();
+// Chỉ teardown observers khi page thật sự unload. Nếu vào BFCache (e.persisted=true),
+// DOM được giữ nguyên → observers vẫn hữu ích khi pageshow restore.
+if (!e.persisted) {
 if (anchorObserver) { anchorObserver.disconnect(); anchorObserver = null; }
 teardownChunkObservers();
+}
+});
+window.addEventListener('pageshow', function (e) {
+// BFCache restore: DOM + scrollTop được browser giữ nguyên, KHÔNG forced re-anchor.
+// (Trước đây block visibilitychange→visible forced restore là nguyên nhân scroll
+// "nhảy" trên mobile Chrome — IO cache có lệch 1 segment thì restore kéo sai chỗ.
+// Giờ trust browser giữ scrollTop; chỉ re-setup observers nếu pagehide đã teardown.)
+if (!e.persisted || !currentSutraId) return;
+if (!anchorObserver) setupAnchorObserver();
+try { setupChunkObservers(); } catch(_) {}
 });
 document.addEventListener('visibilitychange', function () {
 if (document.visibilityState === 'hidden') {
-// Force save bypass _progScrollUntil — đây là user-action (rời tab),
-// nếu skip thì anchor lưu là vị trí cũ → restore về sai vị trí.
+// Force fresh DOM scan + bypass _progScrollUntil — user-action (rời tab),
+// nếu skip / dùng cache stale thì anchor lưu là vị trí cũ → khi reload restore sai.
+firstVisibleKey = null;
 var prevProg = _progScrollUntil;
 _progScrollUntil = 0;
 try { saveScrollAnchorNow(); } finally { _progScrollUntil = prevProg; }
-} else if (document.visibilityState === 'visible' && currentSutraId) {
-// Tab return: IntersectionObserver fire backlog → layout shift → scroll drift.
-// Re-anchor về vị trí đã save lúc hidden để bù đắp drift.
-// Delay 1 RAF để layout shift settle trước khi restore.
-requestAnimationFrame(function () {
-requestAnimationFrame(function () {
-if (!isRendering) restoreScrollByAnchor(currentSutraId);
-});
-});
 }
+// visibilitychange → visible: KHÔNG forced re-anchor.
+// Browser đã giữ nguyên scrollTop của DOM in-memory. Forced re-restore với cache có
+// thể stale 1 segment → kéo scroll sang chỗ sai → "nhảy" rõ trên mobile Chrome.
+// Tin tưởng browser. Drift IO backlog (nếu có) thường <vài px, ko đáng đánh đổi.
 });
 var suppressBackTop = false;
 var _backTopPendingState = null;
@@ -2419,15 +2444,6 @@ function resolveCommentLang(v) {
 if (!v) return '';
 if (typeof v === 'string') return v.trim();
 return '';
-}
-function shortenSegKey(raw) {
-var s = String(raw || '');
-if (s.indexOf(':') !== -1) {
-var parts = s.split(':');
-var prefix = parts[0].replace(/([a-zA-Z]+)(\d*)/, function (_, l, n) { return l.toUpperCase() + n; });
-return parts[1] ? prefix + '.' + parts[1] : prefix;
-}
-return s.toUpperCase();
 }
 function resolveCommentText(cmt) {
 if (!cmt) return '';

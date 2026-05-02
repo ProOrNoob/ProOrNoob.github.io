@@ -1,0 +1,9 @@
+# Capacitor native builds - chỉ build local, không push lên GitHub Pages
+android/
+ios/
+node_modules/
+package-lock.json
+.capacitor/
+
+# Backup files
+*.bak

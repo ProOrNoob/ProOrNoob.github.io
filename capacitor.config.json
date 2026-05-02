@@ -1,0 +1,8 @@
+{
+  "appId": "com.proornoob.sutta",
+  "appName": "Sutta Archive",
+  "webDir": ".",
+  "server": {
+    "androidScheme": "https"
+  }
+}

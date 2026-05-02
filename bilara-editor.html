@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bilara JSON Editor</title>
+<style>
+  :root {
+    --bg: #f1f5f9;
+    --surface: #ffffff;
+    --surface2: #f0f4f8;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --danger: #dc2626;
+    --success: #16a34a;
+    --warn: #d97706;
+    --ref-bg: #f8fafc;
+    --ref-text: #374151;
+    --edit-bg: #fffef5;
+    --highlight: #fef08a;
+    --row-hover: #f0f7ff;
+    --sticky-bg: #e8edf5;
+    --btn-bg: #e2e8f0;
+    --btn-hover: #cbd5e1;
+    --shadow: 0 1px 4px rgba(0,0,0,.1);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,.18);
+
+    /* status row colours */
+    --ok-bg: #f0fdf4; --ok-bar: #22c55e;
+    --missing-bg: #fff7ed; --missing-bar: #f97316;
+    --empty-bg: #fef2f2; --empty-bar: #ef4444;
+    --extra-bg: #eff6ff; --extra-bar: #3b82f6;
+    --active-bg: #eef2ff; --active-bar: #6366f1;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#0f172a;--surface:#1e293b;--surface2:#1e2d3e;--border:#334155;
+      --text:#e2e8f0;--text-muted:#94a3b8;--accent:#60a5fa;--accent-hover:#93c5fd;
+      --danger:#f87171;--success:#4ade80;--warn:#fbbf24;
+      --ref-bg:#172033;--ref-text:#cbd5e1;--edit-bg:#1a2a1a;--highlight:#713f12;
+      --row-hover:#1e3a5f;--sticky-bg:#0f172a;--btn-bg:#334155;--btn-hover:#475569;
+      --ok-bg:#14532d;--missing-bg:#431407;--empty-bg:#450a0a;--extra-bg:#1e3a8a;
+      --active-bg:#1e1b4b;
+    }
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:var(--bg);color:var(--text);min-height:100vh}
+
+  /* ── Drag overlay ─────────────────── */
+  #drag-overlay{
+    display:none;position:fixed;inset:0;z-index:9000;
+    background:rgba(15,23,42,.72);backdrop-filter:blur(4px);
+    flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  }
+  #drag-overlay.active{display:flex}
+  #drag-overlay h2{color:#fff;font-size:18px;margin-bottom:4px}
+  .drop-zones{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+  .dz{
+    width:220px;height:140px;border:2px dashed #64748b;border-radius:16px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:10px;color:#94a3b8;cursor:pointer;transition:all .15s;background:rgba(255,255,255,.06)
+  }
+  .dz svg{opacity:.6}
+  .dz span{font-size:13px;font-weight:600;text-align:center}
+  .dz small{font-size:11px;opacity:.7;text-align:center}
+  .dz.over{border-color:#60a5fa;background:rgba(96,165,250,.15);color:#93c5fd;transform:scale(1.04)}
+  .dz[data-slot="1"].over{border-color:#a3e635;background:rgba(163,230,53,.12);color:#bef264}
+  .dz[data-slot="2"].over{border-color:#60a5fa;background:rgba(96,165,250,.12);color:#93c5fd}
+  .dz[data-slot="g"].over {border-color:#4ade80;background:rgba(74,222,128,.12);color:#86efac}
+
+  /* ── Toolbar ──────────────────────── */
+  #toolbar{
+    position:sticky;top:0;z-index:200;
+    background:var(--surface);border-bottom:1px solid var(--border);
+    box-shadow:var(--shadow);padding:8px 14px;display:flex;flex-direction:column;gap:7px
+  }
+  .toolbar-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+
+  .file-slot{
+    display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);
+    border:1px solid var(--border);border-radius:6px;padding:3px 8px;
+    background:var(--surface2);cursor:pointer;transition:border-color .15s;
+    min-width:0;max-width:220px;
+  }
+  .file-slot:hover{border-color:var(--accent)}
+  .file-slot .fname{font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+  .file-slot .badge{
+    background:var(--btn-bg);border:1px solid var(--border);border-radius:10px;
+    padding:1px 6px;font-size:10px;color:var(--text-muted);white-space:nowrap;flex-shrink:0
+  }
+  .file-slot .badge.blue{background:#dbeafe;color:#1e40af;border-color:#93c5fd}
+  .file-slot .badge.green{background:#dcfce7;color:#166534;border-color:#86efac}
+  @media(prefers-color-scheme:dark){
+    .file-slot .badge.blue{background:#1e3a8a;color:#93c5fd;border-color:#1d4ed8}
+    .file-slot .badge.green{background:#14532d;color:#86efac;border-color:#166534}
+  }
+
+  .btn{
+    display:inline-flex;align-items:center;gap:5px;padding:5px 11px;
+    border:1px solid var(--border);border-radius:6px;background:var(--btn-bg);
+    color:var(--text);font-size:12px;cursor:pointer;white-space:nowrap;
+    transition:background .12s,border-color .12s
+  }
+  .btn:hover:not(:disabled){background:var(--btn-hover)}
+  .btn:disabled{opacity:.38;cursor:not-allowed}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn.primary:hover:not(:disabled){background:var(--accent-hover)}
+  .btn.success{background:var(--success);color:#fff;border-color:var(--success)}
+  .btn.warn   {background:var(--warn);   color:#fff;border-color:var(--warn)}
+  .btn.danger {background:var(--danger); color:#fff;border-color:var(--danger)}
+  .btn.active {background:var(--accent); color:#fff;border-color:var(--accent)}
+
+  .sep{width:1px;height:22px;background:var(--border);margin:0 2px;flex-shrink:0}
+
+  /* ── Diff legend ──────────────────── */
+  #legend-row{display:none;align-items:center;gap:10px;font-size:11px;color:var(--text-muted)}
+  #legend-row.visible{display:flex}
+  .leg{display:flex;align-items:center;gap:4px}
+  .leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+  .leg-ok      .leg-dot{background:var(--ok-bar)}
+  .leg-missing .leg-dot{background:var(--missing-bar)}
+  .leg-empty   .leg-dot{background:var(--empty-bar)}
+  .leg-extra   .leg-dot{background:var(--extra-bar)}
+
+  /* filter toggles */
+  .filter-chip{
+    display:inline-flex;align-items:center;gap:3px;padding:2px 8px;
+    border:1px solid var(--border);border-radius:10px;font-size:11px;
+    cursor:pointer;background:var(--btn-bg);color:var(--text-muted);transition:all .12s
+  }
+  .filter-chip.on{color:#fff}
+  .filter-chip.on.f-missing{background:var(--missing-bar);border-color:var(--missing-bar)}
+  .filter-chip.on.f-empty  {background:var(--empty-bar);  border-color:var(--empty-bar)}
+  .filter-chip.on.f-extra  {background:var(--extra-bar);  border-color:var(--extra-bar)}
+  .filter-chip.on.f-ok     {background:var(--ok-bar);     border-color:var(--ok-bar);color:#fff}
+
+  /* ── Search ──────────────────────── */
+  #search-input{
+    padding:4px 9px;border:1px solid var(--border);border-radius:6px;
+    background:var(--surface);color:var(--text);font-size:12px;width:170px
+  }
+  #search-input:focus{outline:none;border-color:var(--accent)}
+
+  /* ── Restore banner ───────────────── */
+  #restore-banner{
+    display:none;background:#fffbeb;border:1px solid #fcd34d;border-radius:7px;
+    padding:8px 12px;font-size:12px;color:#78350f;gap:8px;align-items:center;flex-wrap:wrap
+  }
+  #restore-banner.visible{display:flex}
+  @media(prefers-color-scheme:dark){#restore-banner{background:#292524;color:#fcd34d;border-color:#78350f}}
+  #restore-banner .rb-actions{display:flex;gap:5px;margin-left:auto}
+
+  /* ── Table wrapper ────────────────── */
+  #table-wrap{overflow:auto;height:calc(100vh - var(--toolbar-h, 130px))}
+  table{width:100%;border-collapse:collapse;table-layout:fixed}
+  colgroup .col-key {width:130px}
+  colgroup .col-file{width:calc((100% - 130px)/2)}
+
+  thead th{
+    position:sticky;top:0;background:var(--sticky-bg);
+    border:1px solid var(--border);padding:7px 10px;
+    font-weight:700;font-size:11px;text-transform:uppercase;
+    letter-spacing:.06em;color:var(--text-muted);z-index:10
+  }
+  thead th:first-child{position:sticky;left:0;z-index:20}
+
+  td{border:1px solid var(--border);vertical-align:top;padding:0;transition:background .15s}
+
+  td.key-cell{
+    position:sticky;left:0;background:var(--sticky-bg);z-index:5;
+    font-family:monospace;font-size:11px;color:var(--text-muted);
+    padding:7px 10px;white-space:nowrap;user-select:none;cursor:pointer
+  }
+  td.key-cell:hover{color:var(--accent)}
+  td.key-cell .copy-hint{display:none;font-size:10px;opacity:.6;margin-left:4px}
+  td.key-cell:hover .copy-hint{display:inline}
+
+  td.ref-cell{
+    background:var(--ref-bg);padding:6px 10px;font-size:13px;color:var(--ref-text);
+    line-height:1.55;white-space:pre-wrap;word-break:break-word
+  }
+  td.edit-cell{background:var(--edit-bg);padding:2px}
+  td.edit-cell textarea{
+    display:block;width:100%;min-height:34px;padding:6px 10px;
+    border:none;background:transparent;color:var(--text);
+    font-family:inherit;font-size:13px;line-height:1.55;resize:none;outline:none;overflow:hidden
+  }
+  td.edit-cell textarea:focus{background:var(--surface);box-shadow:inset 0 0 0 2px var(--accent)}
+  td.edit-cell textarea:disabled{color:var(--text-muted);background:var(--ref-bg);cursor:default}
+
+  /* ── Row status colours ─────────────── */
+  tr.row-ok      td.ref-cell,tr.row-ok      td.edit-cell{background:var(--ok-bg)}
+  tr.row-missing td.ref-cell,tr.row-missing td.edit-cell{background:var(--missing-bg)}
+  tr.row-empty   td.ref-cell,tr.row-empty   td.edit-cell{background:var(--empty-bg)}
+  tr.row-extra   td.ref-cell,tr.row-extra   td.edit-cell{background:var(--extra-bg)}
+
+  tr.row-ok      td.key-cell{border-left:3px solid var(--ok-bar)}
+  tr.row-missing td.key-cell{border-left:3px solid var(--missing-bar)}
+  tr.row-empty   td.key-cell{border-left:3px solid var(--empty-bar)}
+  tr.row-extra   td.key-cell{border-left:3px solid var(--extra-bar)}
+
+  /* active row */
+  tr.row-active td{background:var(--active-bg)!important}
+  tr.row-active td.key-cell{border-left:3px solid var(--active-bar)!important;color:var(--active-bar)}
+
+  tr:hover td.ref-cell,tr:hover td.edit-cell{filter:brightness(.97)}
+
+  /* glossary flash */
+  td.gls-flash{animation:glsFlash 2.2s ease-out forwards}
+  @keyframes glsFlash{0%{background:var(--highlight)!important}100%{}}
+
+  /* ── Empty state ──────────────────── */
+  #empty-state{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:80px 20px;color:var(--text-muted);gap:14px;text-align:center
+  }
+  #empty-state svg{opacity:.25}
+  #empty-state p{font-size:16px}
+  #empty-state small{font-size:12px}
+  .drop-hint{
+    display:flex;align-items:center;gap:8px;padding:12px 20px;
+    border:2px dashed var(--border);border-radius:10px;font-size:13px;color:var(--text-muted)
+  }
+
+  /* ── Toast ────────────────────────── */
+  #toast-container{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:7px;z-index:9999;pointer-events:none}
+  .toast{
+    background:#1e293b;color:#f1f5f9;padding:9px 14px;border-radius:8px;font-size:13px;
+    box-shadow:0 4px 12px rgba(0,0,0,.3);opacity:0;transform:translateY(8px);
+    transition:opacity .18s,transform .18s;pointer-events:auto
+  }
+  .toast.show{opacity:1;transform:translateY(0)}
+  .toast.success{border-left:3px solid #4ade80}
+  .toast.warn   {border-left:3px solid #fbbf24}
+  .toast.error  {border-left:3px solid #f87171}
+
+  tr.hidden-row{display:none}
+  input[type=file]{display:none}
+</style>
+</head>
+<body>
+
+<!-- ── Drag overlay ── -->
+<div id="drag-overlay">
+  <h2>Thả file JSON vào ô muốn load</h2>
+  <div class="drop-zones">
+    <div class="dz" id="dz-1" data-slot="1">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span>File 1</span>
+      <small>Tham chiếu (read-only)</small>
+    </div>
+    <div class="dz" id="dz-2" data-slot="2">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>
+      <span>File 2</span>
+      <small>Chỉnh sửa được</small>
+    </div>
+    <div class="dz" id="dz-g" data-slot="g">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      <span>Glossary</span>
+      <small>{"term":"replacement"}</small>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden file inputs -->
+<input type="file" id="input-file1" accept=".json">
+<input type="file" id="input-file2" accept=".json">
+<input type="file" id="input-glossary" accept=".json">
+
+<!-- ── Toolbar ── -->
+<div id="toolbar">
+
+  <!-- Row 1: file slots + action buttons -->
+  <div class="toolbar-row">
+    <!-- File 1 slot -->
+    <div class="file-slot" id="slot-file1" title="Click hoặc kéo thả để load File 1" onclick="document.getElementById('input-file1').click()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span style="color:var(--text-muted);font-size:11px;flex-shrink:0">F1:</span>
+      <span class="fname" id="name-file1">Chưa load</span>
+      <span class="badge" id="badge-file1" style="display:none"></span>
+    </div>
+
+    <!-- File 2 slot -->
+    <div class="file-slot" id="slot-file2" title="Click hoặc kéo thả để load File 2" onclick="document.getElementById('input-file2').click()" style="border-color:var(--accent)">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/></svg>
+      <span style="color:var(--accent);font-size:11px;flex-shrink:0">F2:</span>
+      <span class="fname" id="name-file2">Chưa load</span>
+      <span class="badge blue" id="badge-file2" style="display:none"></span>
+    </div>
+
+    <!-- Glossary slot -->
+    <div class="file-slot" id="slot-glossary" title="Click hoặc kéo thả để load Glossary" onclick="document.getElementById('input-glossary').click()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      <span style="color:var(--text-muted);font-size:11px;flex-shrink:0">GL:</span>
+      <span class="fname" id="name-glossary">Chưa load</span>
+      <span class="badge green" id="badge-glossary" style="display:none"></span>
+    </div>
+
+    <div class="sep"></div>
+
+    <button class="btn warn" id="btn-apply" disabled onclick="applyGlossary()" title="Áp dụng glossary vào File 2">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+      Apply Glossary
+    </button>
+
+    <button class="btn" id="btn-edit" onclick="toggleEditMode()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Edit: OFF
+    </button>
+
+    <button class="btn" id="btn-save" onclick="saveManual()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Save Temp
+    </button>
+
+    <button class="btn success" id="btn-download" disabled onclick="downloadFile2()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download F2
+    </button>
+
+    <div class="sep"></div>
+
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="search-input" placeholder="Tìm segment / nội dung…" oninput="filterRows(this.value)">
+    <span id="row-count" style="font-size:11px;color:var(--text-muted)"></span>
+  </div>
+
+  <!-- Row 2: restore banner -->
+  <div id="restore-banner">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span id="restore-msg">Tìm thấy phiên làm việc trước</span>
+    <div class="rb-actions">
+      <button class="btn success" onclick="restoreSession()">Tiếp tục</button>
+      <button class="btn danger"  onclick="discardSession()">Bỏ qua</button>
+    </div>
+  </div>
+
+  <!-- Row 3: diff legend + filters (hidden until both files loaded) -->
+  <div class="toolbar-row" id="legend-row">
+    <span style="font-size:11px;color:var(--text-muted);font-weight:600">Trạng thái:</span>
+    <span class="leg leg-ok">      <span class="leg-dot"></span>Đã dịch</span>
+    <span class="leg leg-missing"> <span class="leg-dot"></span>Chưa dịch</span>
+    <span class="leg leg-empty">   <span class="leg-dot"></span>File 2 rỗng</span>
+    <span class="leg leg-extra">   <span class="leg-dot"></span>Chỉ file 2</span>
+    <div class="sep"></div>
+    <span style="font-size:11px;color:var(--text-muted)">Lọc:</span>
+    <span class="filter-chip f-missing" data-f="missing" onclick="toggleFilter('missing',this)" title="Chỉ hiện chưa dịch">Chưa dịch</span>
+    <span class="filter-chip f-empty"   data-f="empty"   onclick="toggleFilter('empty',this)"   title="Chỉ hiện rỗng">Rỗng</span>
+    <span class="filter-chip f-extra"   data-f="extra"   onclick="toggleFilter('extra',this)"   title="Chỉ hiện chỉ file 2">Extra</span>
+    <span class="filter-chip f-ok"      data-f="ok"      onclick="toggleFilter('ok',this)"      title="Chỉ hiện đã dịch">Đã dịch</span>
+    <span class="filter-chip" data-f="all" onclick="clearFilters()" title="Xóa bộ lọc">✕ Tất cả</span>
+  </div>
+
+</div>
+
+<!-- ── Main table ── -->
+<div id="table-wrap">
+  <div id="empty-state">
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    <p>Chưa có dữ liệu</p>
+    <div class="drop-hint">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Kéo & thả file JSON vào đây, hoặc click các ô File 1 / File 2 ở trên
+    </div>
+  </div>
+  <table id="main-table" style="display:none">
+    <colgroup><col class="col-key"><col class="col-file"><col class="col-file"></colgroup>
+    <thead>
+      <tr>
+        <th>Segment Key</th>
+        <th id="th-file1">File 1</th>
+        <th id="th-file2">File 2 (editable)</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+// ── State ────────────────────────────────────────────────
+let file1Data = null, file1Name = '';
+let file2Data = null, file2Name = '';
+let glossaryData = null, glossaryName = '';
+let editMode = false;
+let saveTimer = null;
+let activeRow = null;
+let activeFilters = new Set();   // 'ok'|'missing'|'empty'|'extra'
+const STORAGE_KEY = 'bilara_editor_temp';
+
+// ── File inputs ──────────────────────────────────────────
+document.getElementById('input-file1').addEventListener('change', e => processFile(e.target.files[0], 1, e));
+document.getElementById('input-file2').addEventListener('change', e => processFile(e.target.files[0], 2, e));
+document.getElementById('input-glossary').addEventListener('change', e => processGlossaryFile(e.target.files[0], e));
+
+// ── Drag & Drop ──────────────────────────────────────────
+let dragCounter = 0;
+const overlay = document.getElementById('drag-overlay');
+
+document.addEventListener('dragenter', e => {
+  if (!e.dataTransfer.types.includes('Files')) return;
+  dragCounter++;
+  overlay.classList.add('active');
+});
+document.addEventListener('dragleave', e => {
+  dragCounter--;
+  if (dragCounter <= 0) { dragCounter = 0; overlay.classList.remove('active'); }
+});
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  dragCounter = 0;
+  overlay.classList.remove('active');
+});
+
+document.querySelectorAll('.dz').forEach(dz => {
+  dz.addEventListener('dragenter', e => { e.stopPropagation(); dz.classList.add('over'); });
+  dz.addEventListener('dragleave', e => { e.stopPropagation(); dz.classList.remove('over'); });
+  dz.addEventListener('dragover',  e => { e.preventDefault(); e.stopPropagation(); });
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); e.stopPropagation();
+    dz.classList.remove('over');
+    overlay.classList.remove('active');
+    dragCounter = 0;
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    const slot = dz.dataset.slot;
+    if (slot === 'g') processGlossaryFile(file, null);
+    else              processFile(file, parseInt(slot), null);
+  });
+});
+
+// Also allow drag onto the file slots in toolbar
+['slot-file1','slot-file2','slot-glossary'].forEach(id => {
+  const el = document.getElementById(id);
+  const slot = id === 'slot-file1' ? 1 : id === 'slot-file2' ? 2 : 'g';
+  el.addEventListener('dragover',  e => { e.preventDefault(); el.style.borderColor = 'var(--accent)'; });
+  el.addEventListener('dragleave', e => { el.style.borderColor = ''; });
+  el.addEventListener('drop', e => {
+    e.preventDefault(); e.stopPropagation();
+    el.style.borderColor = '';
+    dragCounter = 0; overlay.classList.remove('active');
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    if (slot === 'g') processGlossaryFile(file, null);
+    else              processFile(file, slot, null);
+  });
+});
+
+// ── Core file processing ─────────────────────────────────
+function processFile(file, slot, inputEvent) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    let data;
+    try { data = JSON.parse(ev.target.result); }
+    catch { showToast('JSON không hợp lệ: ' + file.name, 'error'); return; }
+    if (typeof data !== 'object' || Array.isArray(data)) {
+      showToast('File không đúng format bilara (cần object JSON)', 'error'); return;
+    }
+    const n = Object.keys(data).length;
+    if (slot === 1) {
+      file1Data = data; file1Name = file.name;
+      document.getElementById('name-file1').textContent = file.name;
+      const b = document.getElementById('badge-file1');
+      b.textContent = n + ' seg'; b.style.display = '';
+      document.getElementById('th-file1').textContent = file.name;
+    } else {
+      file2Data = data; file2Name = file.name;
+      document.getElementById('name-file2').textContent = file.name;
+      const b = document.getElementById('badge-file2');
+      b.textContent = n + ' seg'; b.style.display = '';
+      document.getElementById('th-file2').textContent = file.name + ' ✏';
+      document.getElementById('btn-download').disabled = false;
+    }
+    updateApplyBtn();
+    renderTable();
+    showToast('Đã load ' + file.name + ' — ' + n + ' segments', 'success');
+  };
+  reader.readAsText(file);
+  if (inputEvent) inputEvent.target.value = '';
+}
+
+function processGlossaryFile(file, inputEvent) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    let data;
+    try { data = JSON.parse(ev.target.result); }
+    catch { showToast('Glossary JSON không hợp lệ', 'error'); return; }
+    if (Array.isArray(data)) {
+      const obj = {};
+      data.forEach(item => { if (item.source && item.target) obj[item.source] = item.target; });
+      data = obj;
+    }
+    glossaryData = data; glossaryName = file.name;
+    document.getElementById('name-glossary').textContent = file.name;
+    const n = Object.keys(data).length;
+    const b = document.getElementById('badge-glossary');
+    b.textContent = n + ' terms'; b.style.display = '';
+    updateApplyBtn();
+    showToast('Glossary: ' + n + ' terms từ ' + file.name, 'success');
+  };
+  reader.readAsText(file);
+  if (inputEvent) inputEvent.target.value = '';
+}
+
+function updateApplyBtn() {
+  document.getElementById('btn-apply').disabled = !(file2Data && glossaryData);
+  document.getElementById('legend-row').classList.toggle('visible', !!(file1Data && file2Data));
+}
+
+// ── Row status ───────────────────────────────────────────
+function getStatus(key) {
+  const has1 = file1Data && key in file1Data;
+  const has2 = file2Data && key in file2Data;
+  if (!has1 && !has2) return '';
+  if (has1 && !has2) return 'missing';
+  if (!has1 && has2) return 'extra';
+  // both exist
+  const v2 = (file2Data[key] || '').trim();
+  return v2 ? 'ok' : 'empty';
+}
+
+// ── Render table ─────────────────────────────────────────
+function renderTable() {
+  if (!file1Data && !file2Data) return;
+
+  const keys = new Set();
+  if (file1Data) Object.keys(file1Data).forEach(k => keys.add(k));
+  if (file2Data) Object.keys(file2Data).forEach(k => keys.add(k));
+  const sorted = [...keys].sort((a, b) =>
+    a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+  );
+
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  activeRow = null;
+
+  const frag = document.createDocumentFragment();
+  sorted.forEach(key => {
+    const status = getStatus(key);
+    const tr = document.createElement('tr');
+    tr.dataset.key = key;
+    tr.dataset.status = status;
+    if (status) tr.classList.add('row-' + status);
+
+    // Key cell (click = activate; double click = copy key)
+    const tdKey = document.createElement('td');
+    tdKey.className = 'key-cell';
+    tdKey.innerHTML = key + '<span class="copy-hint">⎘</span>';
+    tdKey.addEventListener('click', () => setActiveRow(tr));
+    tdKey.addEventListener('dblclick', () => {
+      navigator.clipboard?.writeText(key).then(() => showToast('Copied: ' + key, ''));
+    });
+    tr.appendChild(tdKey);
+
+    // File 1 cell (read-only)
+    const td1 = document.createElement('td');
+    td1.className = 'ref-cell';
+    td1.textContent = (file1Data && file1Data[key] != null) ? file1Data[key] : '';
+    td1.addEventListener('click', () => setActiveRow(tr));
+    tr.appendChild(td1);
+
+    // File 2 cell (editable textarea)
+    const td2 = document.createElement('td');
+    td2.className = 'edit-cell';
+    const ta = document.createElement('textarea');
+    ta.value = (file2Data && file2Data[key] != null) ? file2Data[key] : '';
+    ta.disabled = !editMode;
+    ta.rows = 1;
+    ta.dataset.key = key;
+    ta.addEventListener('focus', function() {
+      autoResize(this);
+      setActiveRow(tr);
+    });
+    ta.addEventListener('input', function() {
+      autoResize(this);
+      onCellChange(this.dataset.key, this.value);
+      updateRowStatus(tr, this.dataset.key);
+    });
+    ta.addEventListener('keydown', onTextareaKeydown);
+    td2.appendChild(ta);
+    tr.appendChild(td2);
+
+    frag.appendChild(tr);
+  });
+
+  tbody.appendChild(frag);
+
+  requestAnimationFrame(() => {
+    tbody.querySelectorAll('textarea').forEach(autoResize);
+    updateRowCount();
+    applyFilters();
+    updateToolbarHeight();
+  });
+
+  document.getElementById('main-table').style.display = '';
+  document.getElementById('empty-state').style.display = 'none';
+  updateApplyBtn();
+}
+
+function updateRowStatus(tr, key) {
+  const status = getStatus(key);
+  tr.className = '';
+  tr.dataset.status = status;
+  if (status) tr.classList.add('row-' + status);
+}
+
+function autoResize(ta) {
+  ta.style.height = 'auto';
+  ta.style.height = ta.scrollHeight + 'px';
+}
+
+// ── Active row ───────────────────────────────────────────
+function setActiveRow(tr) {
+  if (activeRow) activeRow.classList.remove('row-active');
+  activeRow = tr;
+  if (tr) {
+    tr.classList.add('row-active');
+    tr.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+}
+
+// Keyboard nav: Alt+↑/↓ jump between rows
+function onTextareaKeydown(e) {
+  if (!e.altKey) return;
+  const dir = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0;
+  if (!dir) return;
+  e.preventDefault();
+  const tr = e.target.closest('tr');
+  let next = dir === 1 ? tr.nextElementSibling : tr.previousElementSibling;
+  while (next && next.classList.contains('hidden-row'))
+    next = dir === 1 ? next.nextElementSibling : next.previousElementSibling;
+  if (next) {
+    const ta = next.querySelector('textarea');
+    if (ta) { ta.focus(); setActiveRow(next); }
+    else    { setActiveRow(next); }
+  }
+}
+
+// ── Search / Filter ──────────────────────────────────────
+let currentSearch = '';
+
+function filterRows(q) {
+  currentSearch = q.trim().toLowerCase();
+  applyFilters();
+}
+
+function toggleFilter(f, el) {
+  if (activeFilters.has(f)) activeFilters.delete(f);
+  else activeFilters.add(f);
+  el.classList.toggle('on', activeFilters.has(f));
+  applyFilters();
+}
+
+function clearFilters() {
+  activeFilters.clear();
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('on'));
+  applyFilters();
+}
+
+function applyFilters() {
+  document.querySelectorAll('#tbody tr').forEach(tr => {
+    const key    = tr.dataset.key || '';
+    const status = tr.dataset.status || '';
+    const t1     = tr.cells[1] ? tr.cells[1].textContent.toLowerCase() : '';
+    const t2     = tr.cells[2] ? (tr.cells[2].querySelector('textarea')?.value.toLowerCase() || '') : '';
+    const matchesSearch = !currentSearch ||
+      key.toLowerCase().includes(currentSearch) ||
+      t1.includes(currentSearch) || t2.includes(currentSearch);
+    const matchesFilter = activeFilters.size === 0 || activeFilters.has(status);
+    tr.classList.toggle('hidden-row', !matchesSearch || !matchesFilter);
+  });
+  updateRowCount();
+}
+
+// ── Edit mode ────────────────────────────────────────────
+function toggleEditMode() {
+  editMode = !editMode;
+  const btn = document.getElementById('btn-edit');
+  btn.innerHTML = editMode
+    ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit: ON'
+    : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit: OFF';
+  btn.classList.toggle('active', editMode);
+  document.querySelectorAll('#tbody textarea').forEach(ta => { ta.disabled = !editMode; });
+  showToast(editMode ? 'Edit Mode bật' : 'Edit Mode tắt', editMode ? 'success' : '');
+}
+
+// ── Cell change + autosave ────────────────────────────────
+function onCellChange(key, value) {
+  if (!file2Data) file2Data = {};
+  file2Data[key] = value;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveToLocalStorage, 1000);
+}
+
+// ── Apply Glossary ────────────────────────────────────────
+function applyGlossary() {
+  if (!file2Data || !glossaryData) return;
+  let changedCount = 0;
+  const changedKeys = new Set();
+
+  for (const [term, replacement] of Object.entries(glossaryData)) {
+    if (!term) continue;
+    let re;
+    try { re = new RegExp(escapeRegex(term), 'g'); }
+    catch { continue; }
+    for (const key of Object.keys(file2Data)) {
+      const before = file2Data[key];
+      if (typeof before !== 'string') continue;
+      const after = before.replace(re, replacement);
+      if (after !== before) { file2Data[key] = after; changedCount++; changedKeys.add(key); }
+    }
+  }
+
+  changedKeys.forEach(key => {
+    const tr = document.querySelector(`#tbody tr[data-key="${CSS.escape(key)}"]`);
+    if (!tr) return;
+    const ta = tr.querySelector('textarea');
+    if (ta) { ta.value = file2Data[key]; autoResize(ta); }
+    const td2 = tr.cells[2];
+    if (td2) {
+      td2.classList.remove('gls-flash');
+      void td2.offsetWidth;
+      td2.classList.add('gls-flash');
+    }
+    updateRowStatus(tr, key);
+  });
+
+  saveToLocalStorage();
+  showToast(`Đã thay thế ${changedCount} ô (${changedKeys.size} segment)`, 'success');
+}
+
+function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+// ── Save / Restore ────────────────────────────────────────
+function saveToLocalStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      file1Name, file1Data, file2Name, file2Data,
+      glossaryName, glossaryData, timestamp: Date.now()
+    }));
+  } catch { showToast('Lưu temp thất bại', 'error'); }
+}
+
+function saveManual() {
+  saveToLocalStorage();
+  showToast('Đã lưu vào localStorage', 'success');
+}
+
+function checkRestore() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return;
+  let p;
+  try { p = JSON.parse(raw); } catch { return; }
+  if (!p.timestamp) return;
+  const d = new Date(p.timestamp);
+  const ts = d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+           + ' ' + d.toLocaleDateString('vi-VN');
+  let msg = `Phiên ${ts}`;
+  if (p.file1Name) msg += ' — ' + p.file1Name;
+  if (p.file2Name) msg += ' / ' + p.file2Name;
+  document.getElementById('restore-msg').textContent = msg + ' — tiếp tục?';
+  const banner = document.getElementById('restore-banner');
+  banner.classList.add('visible');
+  banner._payload = p;
+}
+
+function restoreSession() {
+  const p = document.getElementById('restore-banner')._payload;
+  if (!p) return;
+  if (p.file1Data) {
+    file1Data = p.file1Data; file1Name = p.file1Name;
+    document.getElementById('name-file1').textContent = file1Name;
+    const b = document.getElementById('badge-file1');
+    b.textContent = Object.keys(file1Data).length + ' seg'; b.style.display = '';
+    document.getElementById('th-file1').textContent = file1Name;
+  }
+  if (p.file2Data) {
+    file2Data = p.file2Data; file2Name = p.file2Name;
+    document.getElementById('name-file2').textContent = file2Name;
+    const b = document.getElementById('badge-file2');
+    b.textContent = Object.keys(file2Data).length + ' seg'; b.style.display = '';
+    document.getElementById('th-file2').textContent = file2Name + ' ✏';
+    document.getElementById('btn-download').disabled = false;
+  }
+  if (p.glossaryData) {
+    glossaryData = p.glossaryData; glossaryName = p.glossaryName;
+    document.getElementById('name-glossary').textContent = glossaryName;
+    const b = document.getElementById('badge-glossary');
+    b.textContent = Object.keys(glossaryData).length + ' terms'; b.style.display = '';
+  }
+  updateApplyBtn();
+  renderTable();
+  document.getElementById('restore-banner').classList.remove('visible');
+  showToast('Đã khôi phục phiên làm việc', 'success');
+}
+
+function discardSession() {
+  localStorage.removeItem(STORAGE_KEY);
+  document.getElementById('restore-banner').classList.remove('visible');
+  showToast('Đã xóa phiên cũ', '');
+}
+
+// ── Download ──────────────────────────────────────────────
+function downloadFile2() {
+  if (!file2Data) return;
+  const blob = new Blob([JSON.stringify(file2Data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = file2Name || 'bilara-edit.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('Đã tải xuống ' + (file2Name || 'bilara-edit.json'), 'success');
+}
+
+// ── Toast ─────────────────────────────────────────────────
+function showToast(msg, type = '') {
+  const c = document.getElementById('toast-container');
+  const d = document.createElement('div');
+  d.className = 'toast' + (type ? ' ' + type : '');
+  d.textContent = msg;
+  c.appendChild(d);
+  requestAnimationFrame(() => d.classList.add('show'));
+  setTimeout(() => { d.classList.remove('show'); setTimeout(() => d.remove(), 250); }, 3000);
+}
+
+// ── Misc ──────────────────────────────────────────────────
+function updateRowCount() {
+  const all     = document.querySelectorAll('#tbody tr').length;
+  const visible = document.querySelectorAll('#tbody tr:not(.hidden-row)').length;
+  document.getElementById('row-count').textContent =
+    all === visible ? all + ' segs' : visible + ' / ' + all + ' segs';
+}
+
+function updateToolbarHeight() {
+  const h = document.getElementById('toolbar').offsetHeight;
+  document.getElementById('table-wrap').style.height = `calc(100vh - ${h}px)`;
+}
+
+// ── Init ──────────────────────────────────────────────────
+checkRestore();
+window.addEventListener('resize', updateToolbarHeight);
+updateToolbarHeight();
+</script>
+</body>
+</html>

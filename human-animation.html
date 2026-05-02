@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>CSS Human Animation</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: radial-gradient(ellipse at center, #0a0e2a 0%, #000510 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* Ground line */
+  .ground {
+    position: absolute;
+    bottom: 120px;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #1a4aff44, #00cfff66, #1a4aff44, transparent);
+  }
+
+  /* Shadow under feet */
+  .shadow {
+    position: absolute;
+    bottom: 114px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 10px;
+    background: radial-gradient(ellipse, #00cfff33 0%, transparent 70%);
+    animation: shadow-pulse 0.6s ease-in-out infinite alternate;
+  }
+
+  @keyframes shadow-pulse {
+    from { width: 55px; opacity: 0.5; }
+    to   { width: 70px; opacity: 0.9; }
+  }
+
+  /* ── FIGURE wrapper ── */
+  .figure {
+    position: relative;
+    width: 80px;
+    height: 220px;
+    margin-bottom: 130px;
+    animation: body-bob 0.6s ease-in-out infinite alternate;
+    filter: drop-shadow(0 0 8px #00cfff) drop-shadow(0 0 20px #1a4aff88);
+  }
+
+  @keyframes body-bob {
+    from { transform: translateY(0px);  }
+    to   { transform: translateY(-4px); }
+  }
+
+  /* ── HEAD ── */
+  .head {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #b8e8ff, #7ad4ff);
+    border: 2px solid #00cfff;
+  }
+  /* eyes */
+  .head::before, .head::after {
+    content: '';
+    position: absolute;
+    top: 12px;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #001233;
+  }
+  .head::before { left: 7px; }
+  .head::after  { right: 7px; }
+
+  /* ── NECK ── */
+  .neck {
+    position: absolute;
+    top: 34px; left: 50%;
+    transform: translateX(-50%);
+    width: 10px; height: 10px;
+    background: #7ad4ff;
+    border-radius: 2px;
+  }
+
+  /* ── TORSO ── */
+  .torso {
+    position: absolute;
+    top: 42px; left: 50%;
+    transform: translateX(-50%);
+    width: 38px; height: 56px;
+    background: linear-gradient(180deg, #1a6aff, #0a3aaa);
+    border-radius: 6px 6px 4px 4px;
+    border: 1.5px solid #00cfff88;
+    animation: torso-sway 0.6s ease-in-out infinite alternate;
+  }
+
+  @keyframes torso-sway {
+    from { transform: translateX(-50%) rotate(-1deg); }
+    to   { transform: translateX(-50%) rotate(1deg);  }
+  }
+
+  /* ── ARMS ── */
+  .arm {
+    position: absolute;
+    top: 44px;
+    width: 12px;
+    transform-origin: top center;
+  }
+  .arm.left  { left: 6px;  animation: arm-left  0.6s ease-in-out infinite alternate; }
+  .arm.right { right: 6px; animation: arm-right 0.6s ease-in-out infinite alternate; }
+
+  @keyframes arm-left {
+    from { transform: rotate(-30deg); }
+    to   { transform: rotate(30deg);  }
+  }
+  @keyframes arm-right {
+    from { transform: rotate(30deg);  }
+    to   { transform: rotate(-30deg); }
+  }
+
+  .upper-arm {
+    width: 11px; height: 26px;
+    background: #1a6aff;
+    border-radius: 5px;
+    border: 1.5px solid #00cfff66;
+    margin: 0 auto;
+    transform-origin: top center;
+  }
+
+  .lower-arm {
+    width: 10px; height: 22px;
+    background: #0f50cc;
+    border-radius: 4px;
+    border: 1.5px solid #00cfff44;
+    margin: 1px auto 0;
+    transform-origin: top center;
+    animation: elbow-bend 0.6s ease-in-out infinite alternate;
+  }
+  .arm.left  .lower-arm { animation: elbow-bend-l 0.6s ease-in-out infinite alternate; }
+  .arm.right .lower-arm { animation: elbow-bend-r 0.6s ease-in-out infinite alternate; }
+
+  @keyframes elbow-bend-l {
+    from { transform: rotate(15deg); }
+    to   { transform: rotate(-10deg); }
+  }
+  @keyframes elbow-bend-r {
+    from { transform: rotate(-10deg); }
+    to   { transform: rotate(15deg); }
+  }
+
+  .hand {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: #b8e8ff;
+    border: 1.5px solid #00cfff;
+    margin: 1px auto 0;
+  }
+
+  /* ── HIPS ── */
+  .hips {
+    position: absolute;
+    top: 95px; left: 50%;
+    transform: translateX(-50%);
+    width: 40px; height: 12px;
+    background: #0a3aaa;
+    border-radius: 4px;
+    border: 1.5px solid #00cfff55;
+  }
+
+  /* ── LEGS ── */
+  .leg {
+    position: absolute;
+    top: 104px;
+    width: 14px;
+    transform-origin: top center;
+  }
+  .leg.left  { left: 16px; animation: leg-left  0.6s ease-in-out infinite alternate; }
+  .leg.right { right: 16px; animation: leg-right 0.6s ease-in-out infinite alternate; }
+
+  @keyframes leg-left {
+    from { transform: rotate(-28deg); }
+    to   { transform: rotate(28deg);  }
+  }
+  @keyframes leg-right {
+    from { transform: rotate(28deg);  }
+    to   { transform: rotate(-28deg); }
+  }
+
+  .upper-leg {
+    width: 13px; height: 34px;
+    background: linear-gradient(180deg, #0a3aaa, #082888);
+    border-radius: 5px;
+    border: 1.5px solid #00cfff44;
+    margin: 0 auto;
+    transform-origin: top center;
+  }
+
+  .lower-leg {
+    width: 11px; height: 30px;
+    background: #061e6e;
+    border-radius: 4px;
+    border: 1.5px solid #00cfff33;
+    margin: 1px auto 0;
+    transform-origin: top center;
+  }
+  .leg.left  .lower-leg { animation: knee-bend-l 0.6s ease-in-out infinite alternate; }
+  .leg.right .lower-leg { animation: knee-bend-r 0.6s ease-in-out infinite alternate; }
+
+  @keyframes knee-bend-l {
+    from { transform: rotate(10deg); }
+    to   { transform: rotate(-20deg); }
+  }
+  @keyframes knee-bend-r {
+    from { transform: rotate(-20deg); }
+    to   { transform: rotate(10deg); }
+  }
+
+  .foot {
+    width: 17px; height: 8px;
+    background: #b8e8ff;
+    border-radius: 3px 6px 3px 3px;
+    border: 1.5px solid #00cfff;
+    margin: 1px 0 0 -3px;
+  }
+
+  /* ── PARTICLES ── */
+  .particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .dot {
+    position: absolute;
+    border-radius: 50%;
+    background: #00cfff;
+    opacity: 0;
+    animation: float-dot linear infinite;
+  }
+  .dot:nth-child(1)  { width:3px;height:3px; left:10%; animation-duration:4s; animation-delay:0s;    bottom:20%; }
+  .dot:nth-child(2)  { width:2px;height:2px; left:80%; animation-duration:5s; animation-delay:1s;    bottom:30%; }
+  .dot:nth-child(3)  { width:4px;height:4px; left:30%; animation-duration:6s; animation-delay:2s;    bottom:10%; }
+  .dot:nth-child(4)  { width:2px;height:2px; left:60%; animation-duration:4.5s; animation-delay:0.5s; bottom:50%; }
+  .dot:nth-child(5)  { width:3px;height:3px; left:50%; animation-duration:7s; animation-delay:1.5s;  bottom:5%;  }
+  .dot:nth-child(6)  { width:2px;height:2px; left:20%; animation-duration:5.5s; animation-delay:3s;  bottom:70%; }
+
+  @keyframes float-dot {
+    0%   { opacity: 0;   transform: translateY(0); }
+    20%  { opacity: 0.8; }
+    80%  { opacity: 0.4; }
+    100% { opacity: 0;   transform: translateY(-80px); }
+  }
+
+  /* ── LABEL ── */
+  .label {
+    position: absolute;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #00cfff88;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    white-space: nowrap;
+    animation: label-blink 2s ease-in-out infinite;
+  }
+
+  @keyframes label-blink {
+    0%, 100% { opacity: 0.5; }
+    50%       { opacity: 1;   }
+  }
+</style>
+</head>
+<body>
+
+<div class="particles">
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+</div>
+
+<div class="figure">
+  <!-- Head -->
+  <div class="head"></div>
+
+  <!-- Neck -->
+  <div class="neck"></div>
+
+  <!-- Torso -->
+  <div class="torso"></div>
+
+  <!-- Arms -->
+  <div class="arm left">
+    <div class="upper-arm"></div>
+    <div class="lower-arm"></div>
+    <div class="hand"></div>
+  </div>
+  <div class="arm right">
+    <div class="upper-arm"></div>
+    <div class="lower-arm"></div>
+    <div class="hand"></div>
+  </div>
+
+  <!-- Hips -->
+  <div class="hips"></div>
+
+  <!-- Legs -->
+  <div class="leg left">
+    <div class="upper-leg"></div>
+    <div class="lower-leg"></div>
+    <div class="foot"></div>
+  </div>
+  <div class="leg right">
+    <div class="upper-leg"></div>
+    <div class="lower-leg"></div>
+    <div class="foot"></div>
+  </div>
+</div>
+
+<div class="ground"></div>
+<div class="shadow"></div>
+<div class="label">C S S &nbsp; H U M A N</div>
+
+</body>
+</html>
