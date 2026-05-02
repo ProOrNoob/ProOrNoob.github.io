@@ -216,17 +216,47 @@ html.is-welcome .status,
 html.is-welcome #btnBackTop,
 html.is-welcome #readingProgress{display:none !important}
 /* ============================================================
-   Mandala petal-to-center dot animation (welcome screen).
-   8 dots quanh outer ring, chạy về center theo radial line.
+   Cửu Đức Phật welcome animation.
+   - 9 text labels position absolute quanh mandala, cùng góc với 9 dots.
+   - Stagger = 3s/9 = 0.333s áp dụng cho CẢ text và dot cùng --idx →
+     cycle đầu pair-by-pair (text 1 + dot 1, ..., text 9 + dot 9 — tổng
+     2.66s tới pair cuối bắt đầu). Text fade-in `forwards` giữ visible mãi.
+   - Dots loop 3s infinite (vòng xoáy cũ): mỗi dot trong toàn bộ cycle là
+     đang bay từ rìa cánh hoa vào tâm với opacity peak 12% → 70% → 0.
+     Vì stagger × 9 = 3s = cycle duration, mọi dot luôn ở stage khác nhau
+     → spiral wave continuous quanh mandala.
+   - Container chống đụng: 2 label centers cách nhau 2*R*sin(20°) ≈ 0.684R.
+     Desktop R=120 → 82, width 80 → khít. Mobile R=96 → 65.6, width 64.
    ============================================================ */
-.welcome-petal-dot{fill:var(--accent);stroke:none;opacity:0;animation:welcome-petal-flow 3s cubic-bezier(.5,0,.7,1) infinite;animation-delay:var(--delay,0s)}
+.welcome-mandala{position:relative;width:340px;height:340px}
+.welcome-mandala svg{position:absolute;top:50%;left:50%;width:140px;height:140px;transform:translate(-50%,-50%)}
+.welcome-virtues{position:absolute;inset:0;list-style:none;margin:0;padding:0;pointer-events:none}
+.wv-item{position:absolute;left:50%;top:50%;width:80px;text-align:center;line-height:1.18;
+opacity:0;transform:translate(-50%,-50%) translate(calc(sin(var(--angle,0deg)) * 120px),calc(cos(var(--angle,0deg)) * -120px));
+animation:wv-fade-in 0.45s ease-out forwards;animation-delay:calc(var(--idx,0) * 0.333s)}
+.wv-pali{display:block;font-family:var(--serif-pali);font-style:italic;font-weight:400;font-size:10px;line-height:1.18;color:var(--accent);letter-spacing:0.005em;word-break:break-word;hyphens:auto}
+.wv-tr{display:block;font-family:var(--serif-vi);font-size:9px;line-height:1.22;color:var(--ink-3);letter-spacing:0.01em;margin-top:1px}
+@keyframes wv-fade-in{to{opacity:1}}
+.welcome-petal-dot{fill:var(--accent);stroke:none;opacity:0;
+animation:welcome-petal-flow 3s cubic-bezier(.5,0,.7,1) infinite;
+animation-delay:calc(var(--idx,0) * 0.333s)}
 @keyframes welcome-petal-flow{
 0%   {transform:translate(0,0);opacity:0}
 12%  {opacity:0.95}
 70%  {opacity:0.6}
 100% {transform:translate(var(--dx,0),var(--dy,0));opacity:0}
 }
-@media (prefers-reduced-motion:reduce){.welcome-petal-dot{animation:none !important;opacity:0 !important}}
+@media (max-width:500px){
+.welcome-mandala{width:280px;height:280px;margin-bottom:0}
+.welcome-mandala svg{width:108px;height:108px}
+.wv-item{width:64px;transform:translate(-50%,-50%) translate(calc(sin(var(--angle,0deg)) * 96px),calc(cos(var(--angle,0deg)) * -96px))}
+.wv-pali{font-size:9px}
+.wv-tr{font-size:8px}
+}
+@media (prefers-reduced-motion:reduce){
+.wv-item{animation:none !important;opacity:1 !important}
+.welcome-petal-dot{animation:none !important;opacity:0 !important}
+}
 /* Mobile: welcome-help-row default padding-left là 4px (không phải 8px như desktop).
    Override ở block hover-none cũ force 8px → tap → layout shift 4→8 → flicker.
    Khớp lại đúng giá trị mobile để tap không gây giật. */

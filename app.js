@@ -2486,18 +2486,18 @@ applyTitleBookmarkState();
 var heroSub = isEn
 ? 'Reverently saluting the Blessed One, the Worthy One, the Perfectly Self-Awakened.<br>A library of canonical suttas for practitioners and scholars.'
 : 'Cung kính đảnh lễ Đức Thế Tôn, bậc A-la-hán, Chánh Đẳng Giác.<br>Một thư viện kinh điển dành cho người tu học và nghiên cứu Phật pháp.';
-// Petal dots: 8 chấm tại radius=46 quanh center (60,60), animate về (60,60).
-// Stagger delay 3s/8 = 0.375s mỗi dot → wave xoay liên tục.
+// Petal dots: 9 chấm tại radius=46 quanh center (60,60), animate về (60,60).
+// Mỗi dot share `--idx` với text label cùng góc → text+dot xuất hiện đồng thời,
+// dot chạy về tâm rồi tan. One-time (forwards), không loop.
 var R = 46, CX = 60, CY = 60;
 var petalDots = '';
-for (var pd = 0; pd < 8; pd++) {
-var ang = pd * 45 * Math.PI / 180;
+for (var pd = 0; pd < 9; pd++) {
+var ang = pd * 40 * Math.PI / 180;
 var x = (CX + R * Math.sin(ang)).toFixed(1);
 var y = (CY - R * Math.cos(ang)).toFixed(1);
 var dx = (CX - x).toFixed(1);
 var dy = (CY - y).toFixed(1);
-var delay = (pd * 0.375).toFixed(3);
-petalDots += '<circle class="welcome-petal-dot" cx="' + x + '" cy="' + y + '" r="1.6" style="--dx:' + dx + 'px;--dy:' + dy + 'px;--delay:' + delay + 's"/>';
+petalDots += '<circle class="welcome-petal-dot" cx="' + x + '" cy="' + y + '" r="1.6" style="--dx:' + dx + 'px;--dy:' + dy + 'px;--idx:' + pd + '"/>';
 }
 var mandalaSvg = '<svg viewBox="0 0 120 120" fill="none" stroke="currentColor" aria-hidden="true">' +
 '<g class="welcome-ring r1"><circle cx="60" cy="60" r="54" stroke-width=".7" opacity=".55"/><circle cx="60" cy="60" r="54" stroke-width=".7" stroke-dasharray="1 6" opacity=".8"/></g>' +
@@ -2531,6 +2531,38 @@ return '<article class="welcome-verse">' +
 '<p class="welcome-verse-source">' + escapeHtml(v.src) + '</p>' +
 '</article>';
 }).join('');
+// Cửu Đức Phật / Buddha's Nine Virtues — text labels cạnh từng dot ở 9 góc cánh hoa.
+// Mỗi label cùng góc với 1 dot tương ứng → text fade-in stagger, sau đó dot bay từ
+// vị trí radial (cùng góc, radius nhỏ hơn) vào tâm.
+var virtues = [
+{ pali: 'Arahaṃ',
+  tr: isEn ? 'The Worthy One' : 'Ứng Cúng' },
+{ pali: 'Sammāsambuddho',
+  tr: isEn ? 'The Self-Awakened' : 'Chánh Biến Tri' },
+{ pali: 'Vijjā­caraṇa­sampanno',
+  tr: isEn ? 'Knowledge & Conduct' : 'Minh Hạnh Túc' },
+{ pali: 'Sugato',
+  tr: isEn ? 'The Well-Gone' : 'Thiện Thệ' },
+{ pali: 'Lokavidū',
+  tr: isEn ? 'Knower of the World' : 'Thế Gian Giải' },
+{ pali: 'Anuttaro­purisa­damma­sārathi',
+  tr: isEn ? 'Supreme Trainer' : 'Điều Ngự Trượng Phu' },
+{ pali: 'Satthā­deva­manussānaṃ',
+  tr: isEn ? 'Teacher of Gods & Humans' : 'Thiên Nhân Sư' },
+{ pali: 'Buddho',
+  tr: isEn ? 'The Awakened' : 'Phật' },
+{ pali: 'Bhagavā',
+  tr: isEn ? 'The Blessed One' : 'Thế Tôn' }
+];
+var virtuesHtml = '<ol class="welcome-virtues" aria-label="' +
+(isEn ? 'Nine Virtues of the Buddha' : 'Cửu Đức Phật') + '">' +
+virtues.map(function (v, i) {
+var angle = (i * 40);
+return '<li class="wv-item" style="--idx:' + i + ';--angle:' + angle + 'deg">' +
+'<span class="wv-pali">' + escapeHtml(v.pali) + '</span>' +
+'<span class="wv-tr">' + escapeHtml(v.tr) + '</span>' +
+'</li>';
+}).join('') + '</ol>';
 var iconLib  = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><path d="M2 3v10M5 3v10M8 3v10M12 4l3 9M11 13h5"/></svg>';
 var iconCog  = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M3 13l1.4-1.4M11.6 4.4L13 3"/></svg>';
 var iconHelp = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.4-.9 2-1.6 2.4-.7.4-1.1.7-1.1 1.6v.4"/><path d="M12 16.2h.01"/></svg>';
@@ -2547,7 +2579,7 @@ return '<button type="button" class="welcome-help-row" data-action="' + r.action
 }).join('');
 grid.innerHTML =
 '<div class="welcome-screen">' +
-'<div class="welcome-mandala">' + mandalaSvg + '</div>' +
+'<div class="welcome-mandala">' + mandalaSvg + virtuesHtml + '</div>' +
 '<h1 class="welcome-hero-title" data-action="library" tabindex="0" role="button" aria-label="' + (isEn ? 'Open library' : 'Mở thư viện') + '" title="' + (isEn ? 'Open library' : 'Mở thư viện') + '">' + (isEn ? 'The <em>Sutta</em><br>Nikāya' : 'Tạng <em>Kinh</em><br>Nikāya') + '</h1>' +
 '<p class="welcome-hero-sub">' + heroSub + '</p>' +
 '<div class="welcome-hero-langs" role="tablist" aria-label="' + (isEn ? 'Interface language' : 'Ngôn ngữ giao diện') + '">' +

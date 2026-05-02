@@ -25,7 +25,9 @@
       "PowerShell(npm --version)",
       "Bash(cat)",
       "Read(//tmp/**)",
-      "Bash(node -c app.js)"
+      "Bash(node -c app.js)",
+      "Bash(grep -on 'welcome-mandala[^,]*{[^}]*}' styles.css)",
+      "Bash(grep -on 'welcome-screen[^,]*{[^}]*}\\\\|welcome-hero-title[^,]*{[^}]*}\\\\|welcome-hero-sub[^,]*{[^}]*}' styles.css)"
     ]
   }
 }
