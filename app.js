@@ -224,6 +224,26 @@ window.SUTRA_UI_LANG = uiLang;
 var KEY_LAST     = 'lastSutraId';
 var KEY_VIEW     = 'sutra_view_prefs';
 var KEY_ANCHOR_K = function (id) { return 'scroll_anchor_key_' + id; };
+// Multi-tab fix: sessionStorage là per-tab (không share giữa các tab),
+// localStorage shared. Nếu chỉ dùng localStorage, tab B save anchor sẽ đè
+// anchor của tab A → tab A reload bị restore về vị trí của tab B.
+// Solution: write cả 2 (session = nguồn chân lý cho TAB NÀY, local = fallback
+// cho lần đóng/mở lại tab khi session storage mất). Read: session trước, local sau.
+var _ssOk = (function(){ try{ sessionStorage.setItem('__t','1'); sessionStorage.removeItem('__t'); return true; } catch(_){ return false; } })();
+function anchorSet(key, val) {
+storage.set(key, val);
+if (_ssOk) { try { sessionStorage.setItem(key, val); } catch(_){} }
+}
+function anchorGet(key) {
+if (_ssOk) {
+try { var v = sessionStorage.getItem(key); if (v) return v; } catch(_){}
+}
+return storage.get(key);
+}
+function anchorRemove(key) {
+storage.remove(key);
+if (_ssOk) { try { sessionStorage.removeItem(key); } catch(_){} }
+}
 // ── URL hash live sync ─────────────────────────────────────────────
 // Format: #<segPrefix>:<path>  (vd  #dn1:2.3.4) — segment key chuẩn Bilara.
 // segPrefix khác sutta id của file: dn1↔dn01, sn1↔sn1_v1, an10↔an10_v1...
@@ -270,7 +290,7 @@ if (location.hash) history.replaceState(null, '', location.pathname + location.s
 function getAnchorKeyFor(id) {
 var h = _parseAnchorHash();
 if (h && h.sutta === id && h.key) return h.key;
-return storage.get(KEY_ANCHOR_K(id));
+return anchorGet(KEY_ANCHOR_K(id));
 }
 var WIDE_STORAGE_KEY = 'sutra_layout_wide';
 var isWide = storage.get(WIDE_STORAGE_KEY) === '1';
@@ -1372,7 +1392,7 @@ _saveAnchorDebounced.cancel();
 if (topKey && currentSutraId) {
 _progScrollUntil = Date.now() + 1500;  // 1500ms cover smooth scroll + reflow trên low-end Android
 firstVisibleKey = topKey;
-storage.set(KEY_ANCHOR_K(currentSutraId), topKey);
+anchorSet(KEY_ANCHOR_K(currentSutraId), topKey);
 }
 action();
 if (!topKey || !currentSutraId) return;
@@ -1395,19 +1415,35 @@ scrollRoot.scrollTop = targetY;
 if (_saveAnchorDebounced && _saveAnchorDebounced.cancel) _saveAnchorDebounced.cancel();
 });
 }
+var _retrySaveTimer = 0;
+function _scheduleRetrySave(after) {
+// Single timer — coalesce multiple suppress-skip retries vào 1 lần fire sau cùng.
+if (_retrySaveTimer) clearTimeout(_retrySaveTimer);
+_retrySaveTimer = setTimeout(function () {
+_retrySaveTimer = 0;
+saveScrollAnchorNow();
+}, Math.max(50, after));
+}
 function saveScrollAnchorNow() {
 if (!currentSutraId) return;
-if (Date.now() < _progScrollUntil) {
-if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] skip — programmatic scroll window');
+var now = Date.now();
+if (now < _progScrollUntil) {
+// CRITICAL bug fix: nếu user scroll trong cửa sổ programmatic-scroll rồi DỪNG,
+// debounced save fire 1 lần và bị skip ở đây → không lần save nào nữa cho đến scroll
+// tiếp theo → anchor stale (vd: anchor 27.5 nhưng vị trí thực 3.1).
+// Schedule retry sau khi window hết để bắt vị trí cuối user dừng.
+if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] skip — programmatic scroll window, retry in', _progScrollUntil - now);
+_scheduleRetrySave(_progScrollUntil - now + 50);
 return;
 }
 if (isRendering) {
-if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] skip — isRendering=true');
+if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] skip — isRendering=true, retry in 150');
+_scheduleRetrySave(150);
 return;
 }
 var scrollRoot = getScrollRoot();
 if (!scrollRoot || scrollRoot.scrollTop === 0) {
-storage.remove(KEY_ANCHOR_K(currentSutraId));
+anchorRemove(KEY_ANCHOR_K(currentSutraId));
 _clearAnchorHash();
 if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] cleared (scrollTop=0) for', currentSutraId);
 return;
@@ -1420,7 +1456,7 @@ if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] skip — no top key computab
 return;
 }
 firstVisibleKey = topKey; // sync cache để updateDynamicTitles nhất quán
-storage.set(KEY_ANCHOR_K(currentSutraId), topKey);
+anchorSet(KEY_ANCHOR_K(currentSutraId), topKey);
 _writeAnchorHash(topKey);
 if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE]', currentSutraId, '→', topKey, 'scrollTop=' + scrollRoot.scrollTop);
 }
@@ -1466,10 +1502,12 @@ var row = scrollRoot.querySelector('.sutra-row[data-key="' + safeKey + '"]');
 if (window.DEBUG_ANCHOR) console.log('[ANCHOR RESTORE] DOM row found:', !!row);
 if (!row) return false;
 var scrollTarget = row.closest('.sutra-row-wrap') || row;
-// Suppress save-on-scroll trong toàn bộ correction window — tránh scroll listener fire
+// Suppress save-on-scroll trong correction window — tránh scroll listener fire
 // giữa correction steps rồi save anchor ở vị trí trung gian (chưa settle).
-// 1500ms khớp với window dùng ở chunk materialize/preserveTopAndSave.
-_progScrollUntil = Date.now() + 1500;
+// 700ms = 500ms settle-correction (last setTimeout) + 200ms buffer. KHÔNG dài hơn
+// để khi user scroll ngay sau restore, save không bị skip quá lâu (kết hợp với
+// retry-on-suppress trong saveScrollAnchorNow đã đủ an toàn).
+_progScrollUntil = Date.now() + 700;
 function scrollToSegmentTop(label) {
 var rootRect = scrollRoot.getBoundingClientRect();
 var tgtRect  = scrollTarget.getBoundingClientRect();
@@ -1684,7 +1722,7 @@ doneCalled = true;
 suppressBackTop = false;
 toggleBackTop(false);
 if (currentSutraId) {
-storage.remove(KEY_ANCHOR_K(currentSutraId));
+anchorRemove(KEY_ANCHOR_K(currentSutraId));
 }
 };
 // Safety timeout 2s — đảm bảo done() chạy ngay cả khi scrollend không fire
@@ -3417,7 +3455,7 @@ var mem = (performance && performance.memory) ? performance.memory : null;
 var lsKey = currentSutraId ? ('scroll_anchor_key_' + currentSutraId) : '';
 var lsRaw = null;
 try { lsRaw = lsKey ? localStorage.getItem(lsKey) : null; } catch(e) {}
-var anchorKey = currentSutraId ? storage.get(KEY_ANCHOR_K(currentSutraId)) : null;
+var anchorKey = currentSutraId ? anchorGet(KEY_ANCHOR_K(currentSutraId)) : null;
 var allAnchors = [];
 try {
 for (var lsi = 0; lsi < localStorage.length; lsi++) {
