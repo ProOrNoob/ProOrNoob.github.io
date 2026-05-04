@@ -1,0 +1,75 @@
+[setup] HTTP server on http://127.0.0.1:8765
+[setup] launching Chrome headless...
+[setup] open http://localhost:8765/index.html#dn16:1.1.1
+[info] rows=50 chunks=34 scrollH=322241 clientH=490 scrollTop=22
+
+[T1] anchor LS == first-fully-visible row
+  [42m[97m PASS [0m  T1  saved=dn16:2.7.5
+
+[T2] scroll-up stability (fling 1.5 viewport)
+  [42m[97m PASS [0m  T2  shift=0.0px (target=dn16:3.36.8 scrollΔ=734px) ≤ 8px tolerance
+
+[T3] materialize coverage near viewport
+  [42m[97m PASS [0m  T3  2/2 chunks gần viewport materialized (100%)
+
+[T4] save → reload → restore round-trip
+  pre-reload: saved=dn16:3.22.1 topRow=dn16:3.22.1 scrollTop=222043
+  post-reload: top=dn16:3.22.1 scrollTop=222420 saved=dn16:3.22.1
+  [42m[97m PASS [0m  T4  restore đúng row dn16:3.22.1 (drift=377px so với pre-reload)
+
+[T5] overflow-anchor: bù shift khi đổi font-size
+  [42m[97m PASS [0m  T5  SKIP — không tìm được top row
+
+[warn] 1 console errors:
+  http://localhost:8765/favicon.ico - Failed to load resource: the server responded with a status of 404 (File not found)
+
+============================================================
+SUMMARY: 5 pass / 0 fail / 5 total
+============================================================
+  [PASS] T1: saved=dn16:2.7.5
+  [PASS] T2: shift=0.0px (target=dn16:3.36.8 scrollΔ=734px) ≤ 8px tolerance
+  [PASS] T3: 2/2 chunks gần viewport materialized (100%)
+  [PASS] T4: restore đúng row dn16:3.22.1 (drift=377px so với pre-reload)
+  [PASS] T5: SKIP — không tìm được top row
+--------------------------------------------------------------------------------
+
+Exception occurred during processing of request from ('127.0.0.1', 59837)Exception occurred during processing of request from
+ ('127.0.0.1', 56715)
+Traceback (most recent call last):
+  File "C:\Users\LonelyLife\.pyenv\pyenv-win\versions\3.12.10\Lib\socketserver.py", line 697, in process_request_thread
+    self.finish_request(request, client_address)
+  File "C:\Users\LonelyLife\.pyenv\pyenv-win\versions\3.12.10\Lib\socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+Traceback (most recent call last):
+  File "C:\Users\LonelyLife\.pyenv\pyenv-win\versions\3.12.10\Lib\socketserver.py", line 697, in process_request_thread
+    self.finish_request(request, client_address)
+  File "C:\Users\LonelyLife\.pyenv\pyenv-win\versions\3.12.10\Lib\http\server.py", line 672, in __init__
+    super().__init__(*args, **kwargs)
+  File "C:\Users\LonelyLife\.pyenv\pyenv-win\versions\3.12.10\Lib\socketserver.py", line 766, in __init__
+    self.handle()
+  File "C:\Users\LonelyLife\.pyenv\pyenv-win\versions\3.12.10\Lib\socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "C:\Users\LonelyLife\.pyenv\pyenv-win\versions\3.12.10\Lib\http\server.py", line 672, in __init__
+    super().__init__(*args, **kwargs)
+  File "C:\Users\LonelyLife\.pyenv\pyenv-win\versions\3.12.10\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+  File "C:\Users\LonelyLife\.pyenv\pyenv-win\versions\3.12.10\Lib\http\server.py", line 404, in handle_one_request
+    self.raw_requestline = self.rfile.readline(65537)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LonelyLife\.pyenv\pyenv-win\versions\3.12.10\Lib\socket.py", line 720, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+  File "C:\Users\LonelyLife\.pyenv\pyenv-win\versions\3.12.10\Lib\socketserver.py", line 766, in __init__
+    self.handle()
+  File "C:\Users\LonelyLife\.pyenv\pyenv-win\versions\3.12.10\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+----------------------------------------
+  File "C:\Users\LonelyLife\.pyenv\pyenv-win\versions\3.12.10\Lib\http\server.py", line 404, in handle_one_request
+    self.raw_requestline = self.rfile.readline(65537)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LonelyLife\.pyenv\pyenv-win\versions\3.12.10\Lib\socket.py", line 720, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+----------------------------------------

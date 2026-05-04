@@ -27,7 +27,15 @@
       "Read(//tmp/**)",
       "Bash(node -c app.js)",
       "Bash(grep -on 'welcome-mandala[^,]*{[^}]*}' styles.css)",
-      "Bash(grep -on 'welcome-screen[^,]*{[^}]*}\\\\|welcome-hero-title[^,]*{[^}]*}\\\\|welcome-hero-sub[^,]*{[^}]*}' styles.css)"
+      "Bash(grep -on 'welcome-screen[^,]*{[^}]*}\\\\|welcome-hero-title[^,]*{[^}]*}\\\\|welcome-hero-sub[^,]*{[^}]*}' styles.css)",
+      "mcp__Claude_in_Chrome__list_connected_browsers",
+      "Bash(pip install *)",
+      "Bash(python -c \"import selenium; print\\(selenium.__version__\\)\")",
+      "Bash(python test.py)",
+      "Bash(tasklist)",
+      "Bash(python -u test.py)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(PYTHONIOENCODING=utf-8 python -u test.py)"
     ]
   }
 }

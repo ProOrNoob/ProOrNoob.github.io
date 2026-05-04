@@ -2208,7 +2208,13 @@ function _legacyCopy(text) {
 try {
 var ta = document.createElement('textarea');
 ta.value = text;
+// readonly + contenteditable=false: ngăn iOS Safari / Chrome Android bật bàn phím ảo
+// khi gọi ta.select() — fallback path này hay fire khi clipboard API chặn (insecure
+// context / permission denied), bàn phím bật lên giữa lúc copy gây giật + che toast.
+ta.setAttribute('readonly', '');
+ta.setAttribute('aria-hidden', 'true');
 ta.style.position = 'fixed'; ta.style.left = '-9999px';
+ta.style.fontSize = '16px'; // tránh iOS auto-zoom nếu lỡ focus
 document.body.appendChild(ta);
 ta.select();
 var ok = document.execCommand('copy');
@@ -2744,7 +2750,15 @@ var idx = parseInt(entries[i].target.getAttribute('data-chunk-idx'), 10);
 if (Number.isFinite(idx) && virtChunks[idx]) materializeChunk(virtChunks[idx]);
 }
 }
-}, { root: scrollEl, rootMargin: '100% 0px 100% 0px', threshold: 0 });
+// Top margin 200% (cao hơn 100% trước đây): khi user scroll lên (đặc biệt fling-scroll
+// trên mobile), chunks phía trên cần materialize SỚM khi vẫn còn fully-above viewport
+// để compensation logic trong materializeChunk (chỉ fire khi oldChunkBottom <= scrollTop)
+// kịp adjust scrollTop trước khi chunk lọt vào viewport. Nếu chunk straddle viewport top
+// lúc materialize, height thật ≠ EST_ROW_H placeholder → content shift, user mất vị trí
+// đang đọc. Bottom giữ 100% — scroll xuống không bị shift (chunks below grow chỉ đẩy
+// content phía dưới chúng, không ảnh hưởng row user đang đọc ở phía trên).
+// Hysteresis với dematerialize observer (300%) vẫn dư 100% buffer.
+}, { root: scrollEl, rootMargin: '200% 0px 100% 0px', threshold: 0 });
 virtDemObs = new IntersectionObserver(function (entries) {
 for (var i = 0; i < entries.length; i++) {
 if (!entries[i].isIntersecting) {
@@ -2942,7 +2956,15 @@ try {
 var anchorKey = getAnchorKeyFor(id);
 var anchorIdx = (anchorKey && keyToRowIdx[anchorKey] != null) ? keyToRowIdx[anchorKey] : 0;
 var anchorChunkIdx = Math.floor(anchorIdx / CHUNK_SIZE);
-var lo = Math.max(0, anchorChunkIdx - 1);
+// CRITICAL: materialize TẤT CẢ chunks từ 0 → anchorChunkIdx (không chỉ ±1).
+// Lý do: chunks ở giữa nếu còn placeholder (EST_ROW_H estimate ≠ real height)
+// → getBoundingClientRect() của anchorChunk trả về vị trí SAI (placeholder shorter
+// than real → rawY underestimated) → scrollTop set sai → restore landed wrong row.
+// Sau khi chunks materialize sau đó (qua materialize observer), layout shift, user
+// thấy nội dung KHÁC vị trí ban đầu, save listener fire ghi đè anchor key sai.
+// Cost RAM: với DN16 (~50 rows×34 chunks) materialize hết = ~17K DOM nodes ~30MB,
+// chấp nhận được. Dematerialize observer (300%) sẽ dọn chunks xa viewport sau đó.
+var lo = 0;
 var hi = Math.min(virtChunks.length - 1, anchorChunkIdx + 1);
 for (var eci = lo; eci <= hi; eci++) materializeChunk(virtChunks[eci]);
 // Sync pre-scroll: đưa viewport về vùng đã materialize TRƯỚC khi browser paint.
