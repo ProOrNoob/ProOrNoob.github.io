@@ -1344,18 +1344,19 @@ function setupAnchorObserver() {
 if (anchorObserver) { anchorObserver.disconnect(); anchorObserver = null; }
 var scrollRoot = getScrollRoot();
 if (!scrollRoot) return;
-anchorObserver = new IntersectionObserver(function (entries) {
-var topmost = null;
-for (var i = 0; i < entries.length; i++) {
-var entry = entries[i];
-if (!entry.isIntersecting) continue;
-if (!topmost || entry.boundingClientRect.top < topmost.boundingClientRect.top) topmost = entry;
-}
-if (topmost) {
-firstVisibleKey = topmost.target.getAttribute('data-key') || '';
+// IO `entries` chỉ chứa rows có intersection state CHANGED, không phải tất cả rows
+// đang intersect. Pick `min(boundingClientRect.top)` từ batch sẽ chọn nhầm row đang
+// SCROLL RA KHỎI TOP (top âm rất lớn vì đa phần đã trôi lên trên viewport) làm
+// firstVisibleKey → save anchor lệch lên, restore bị "nhảy lên trên".
+// Fix: dùng IO làm trigger thuần; key thật compute bằng DOM scan strict
+// (computeTopVisibleKey — first row có top >= viewport top), throttle để tránh
+// burst-fire khi nhiều rows đổi state cùng lúc trong fast-scroll.
+var _ioRescan = throttle(function () {
+var k = computeTopVisibleKey();
+if (k) firstVisibleKey = k;
 updateDynamicTitles();
-}
-}, { root: scrollRoot, rootMargin: '0px 0px -80% 0px', threshold: 0 });
+}, 80);
+anchorObserver = new IntersectionObserver(_ioRescan, { root: scrollRoot, rootMargin: '0px 0px -80% 0px', threshold: 0 });
 scrollRoot.querySelectorAll('.sutra-row').forEach(function (r) { anchorObserver.observe(r); });
 }
 function computeTopVisibleKey() {
