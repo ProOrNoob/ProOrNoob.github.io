@@ -35,7 +35,18 @@
       "Bash(tasklist)",
       "Bash(python -u test.py)",
       "Bash(echo \"EXIT=$?\")",
-      "Bash(PYTHONIOENCODING=utf-8 python -u test.py)"
+      "Bash(PYTHONIOENCODING=utf-8 python -u test.py)",
+      "Bash(PYTHONIOENCODING=utf-8 python audit.py)",
+      "Bash(PYTHONIOENCODING=utf-8 python survey.py)",
+      "Bash(PYTHONIOENCODING=utf-8 python split.py)",
+      "Bash(PYTHONIOENCODING=utf-8 python diag.py)",
+      "Bash(grep -n \"src=\\\\\".*\\\\\\\\.js\\\\\"\" index.html)",
+      "Bash(mv 01-utils-state.js utils-state.js)",
+      "Bash(mv 02-text-cache.js text-cache.js)",
+      "Bash(mv 03-ui-panels.js ui-panels.js)",
+      "Bash(mv 04-zoom.js zoom.js)",
+      "Bash(mv 05-anchor.js anchor.js)",
+      "Bash(PYTHONIOENCODING=utf-8 python rebuild.py)"
     ]
   }
 }

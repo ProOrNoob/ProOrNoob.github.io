@@ -252,7 +252,10 @@ try:
     WebDriverWait(driver, 15).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, f'.sutra-row[data-key^="{SUTTA_ID}:"]'))
     )
-    time.sleep(3)  # đợi anchor restore + corrections (rAF + 100ms + 500ms + buffer)
+    # Đợi anchor restore + correction setTimeout 500ms + isRendering 500ms +
+    # eager materialize chunks 0..anchor (DN16: ~22 chunks sync, có thể vài trăm ms).
+    # Tăng wait lên 5s cho an toàn — nếu T4 vẫn fail thì là logic bug, không phải timing.
+    time.sleep(5)
     post = driver.execute_script("""
         const root = document.getElementById('sutraGrid');
         const rRect = root.getBoundingClientRect();
