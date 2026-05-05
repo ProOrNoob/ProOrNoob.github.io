@@ -75,22 +75,23 @@ body.js-ready #ss-toggle { border-color: #2d7c39; background: var(--panel); }
   text-transform: uppercase; color: var(--ink-3);
 }
 #ss-panel h4:first-child { margin-top: 0; }
-#ss-panel label {
-  display: flex; align-items: center; gap: 8px;
-  padding: 4px 0; cursor: pointer;
+#ss-panel .ss-pills {
+  display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px;
 }
-#ss-panel label input[type=checkbox] { accent-color: var(--accent); }
+#ss-panel .ss-pill {
+  flex: 1; min-width: 60px;
+  padding: 6px 10px;
+  background: var(--bg-2); border: 1px solid var(--rule); color: var(--ink-3);
+  font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  cursor: pointer; border-radius: 3px;
+  transition: background .12s, color .12s, border-color .12s;
+}
+#ss-panel .ss-pill.active {
+  background: var(--accent); color: var(--bg); border-color: var(--accent);
+}
 #ss-panel .ss-row {
   display: flex; align-items: center; gap: 10px; padding: 4px 0;
 }
 #ss-panel .ss-row input[type=range] { flex: 1; accent-color: var(--accent); }
-#ss-panel .ss-row .ss-val { width: 36px; text-align: right; color: var(--accent); }
-#ss-panel button {
-  width: 100%; padding: 6px 8px; margin-top: 4px;
-  background: var(--bg-2); border: 1px solid var(--rule); color: var(--ink-2);
-  font-family: inherit; font-size: 11px; cursor: pointer; border-radius: 3px;
-  letter-spacing: 0.08em; text-transform: uppercase;
-}
-#ss-panel button.active {
-  background: var(--accent); color: var(--bg); border-color: var(--accent);
-}
+#ss-panel .ss-row .ss-val { width: 42px; text-align: right; color: var(--accent); font-size: 11px; }

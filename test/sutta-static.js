@@ -1,7 +1,7 @@
 /* ============================================================
    sutta-static.js
    Settings panel for pre-rendered static sutta pages.
-   All toggles map to CSS classes / CSS variables — NO re-render of rows.
+   Pure click handlers + CSS class toggle. NO re-render of rows.
    ============================================================ */
 (function () {
   'use strict';
@@ -18,7 +18,6 @@
       return;
     }
 
-    // Visible marker: turn ⚙ button green so user can confirm JS loaded.
     body.classList.add('js-ready');
 
     // ── panel show/hide ──
@@ -32,34 +31,38 @@
       panel.classList.remove('open');
     });
 
-    // ── set initial checkbox states from current grid/card classes ──
-    function syncInitialState() {
-      var cbs = panel.querySelectorAll('input[type=checkbox][data-checked-when]');
-      cbs.forEach(function (cb) {
-        var cls = cb.getAttribute('data-toggle-grid') || cb.getAttribute('data-toggle-card');
-        var target = cb.hasAttribute('data-toggle-grid') ? grid : card;
-        var has = target.classList.contains(cls);
-        var checkedWhen = cb.getAttribute('data-checked-when');
-        cb.checked = checkedWhen === 'on' ? has : !has;
-      });
-    }
-    syncInitialState();
-
-    // ── event delegation: catch checkbox change anywhere in panel ──
-    panel.addEventListener('change', function (e) {
-      var t = e.target;
-      if (!t || t.tagName !== 'INPUT' || t.type !== 'checkbox') return;
-      var clsGrid = t.getAttribute('data-toggle-grid');
-      var clsCard = t.getAttribute('data-toggle-card');
-      if (!clsGrid && !clsCard) return;
+    // ── helpers ──
+    function isActiveFor(btn) {
+      var clsGrid = btn.getAttribute('data-toggle-grid');
+      var clsCard = btn.getAttribute('data-toggle-card');
+      if (!clsGrid && !clsCard) return false;
       var cls = clsGrid || clsCard;
       var target = clsGrid ? grid : card;
-      var checkedWhen = t.getAttribute('data-checked-when');
-      var want = checkedWhen === 'on' ? t.checked : !t.checked;
-      target.classList.toggle(cls, want);
+      var has = target.classList.contains(cls);
+      var checkedWhen = btn.getAttribute('data-checked-when') || 'off';
+      return checkedWhen === 'on' ? has : !has;
+    }
+
+    function syncPillState(btn) {
+      btn.classList.toggle('active', isActiveFor(btn));
+    }
+
+    // Init: set .active state on every pill from current grid/card classes
+    panel.querySelectorAll('.ss-pill[data-toggle-grid], .ss-pill[data-toggle-card]').forEach(syncPillState);
+
+    // ── click delegation: any pill toggles its target class ──
+    panel.addEventListener('click', function (e) {
+      var btn = e.target.closest && e.target.closest('.ss-pill[data-toggle-grid], .ss-pill[data-toggle-card]');
+      if (!btn) return;
+      var clsGrid = btn.getAttribute('data-toggle-grid');
+      var clsCard = btn.getAttribute('data-toggle-card');
+      var cls = clsGrid || clsCard;
+      var target = clsGrid ? grid : card;
+      target.classList.toggle(cls);
+      syncPillState(btn);
     });
 
-    // ── dark mode ──
+    // ── dark mode (separate — uses html data-theme, not card/grid class) ──
     var darkBtn = document.getElementById('ss-dark');
     if (darkBtn) {
       var applyDark = function (on) {

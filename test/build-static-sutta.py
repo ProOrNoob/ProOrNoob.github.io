@@ -134,7 +134,7 @@ def build_html(sutta_id: str) -> str:
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{htmlmod.escape(sutta_id)} — static</title>
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="sutta-static.css?v=2">
+<link rel="stylesheet" href="sutta-static.css?v=3">
 </head>
 <body>
 
@@ -151,20 +151,28 @@ def build_html(sutta_id: str) -> str:
 <button id="ss-toggle" type="button" aria-label="Settings">⚙</button>
 <div id="ss-panel">
   <h4>Ngôn ngữ</h4>
-  <label><input type="checkbox" data-toggle-grid="hide-pali" data-checked-when="off"> Pāli</label>
-  <label><input type="checkbox" data-toggle-grid="hide-eng"  data-checked-when="off"> English</label>
-  <label><input type="checkbox" data-toggle-grid="hide-vie"  data-checked-when="off"> Tiếng Việt</label>
+  <div class="ss-pills">
+    <button type="button" class="ss-pill" data-toggle-grid="hide-pali" data-checked-when="off">Pāli</button>
+    <button type="button" class="ss-pill" data-toggle-grid="hide-eng"  data-checked-when="off">English</button>
+    <button type="button" class="ss-pill" data-toggle-grid="hide-vie"  data-checked-when="off">Tiếng Việt</button>
+  </div>
 
   <h4>Hiển thị</h4>
-  <label><input type="checkbox" data-toggle-grid="hide-seg-key"     data-checked-when="off"> Mã đoạn</label>
-  <label><input type="checkbox" data-toggle-grid="hide-col-header"  data-checked-when="off"> Tiêu đề cột</label>
+  <div class="ss-pills">
+    <button type="button" class="ss-pill" data-toggle-grid="hide-seg-key"    data-checked-when="off">Mã đoạn</button>
+    <button type="button" class="ss-pill" data-toggle-grid="hide-col-header" data-checked-when="off">Tiêu đề cột</button>
+  </div>
 
   <h4>Bố cục</h4>
-  <label><input type="checkbox" data-toggle-card="stack"      data-checked-when="on"> Xếp dọc (stack)</label>
-  <label><input type="checkbox" data-toggle-card="grid-3cols" data-checked-when="on"> 3 cột</label>
+  <div class="ss-pills">
+    <button type="button" class="ss-pill" data-toggle-card="stack"      data-checked-when="on">Xếp dọc</button>
+    <button type="button" class="ss-pill" data-toggle-card="grid-3cols" data-checked-when="on">3 cột</button>
+  </div>
 
   <h4>Giao diện</h4>
-  <button id="ss-dark" type="button">Dark mode</button>
+  <div class="ss-pills">
+    <button type="button" class="ss-pill" id="ss-dark">Dark mode</button>
+  </div>
 
   <h4>Cỡ chữ</h4>
   <div class="ss-row">
@@ -179,7 +187,7 @@ def build_html(sutta_id: str) -> str:
   </div>
 </div>
 
-<script src="sutta-static.js?v=2" defer></script>
+<script src="sutta-static.js?v=3" defer></script>
 
 </body>
 </html>
