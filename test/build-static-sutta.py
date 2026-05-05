@@ -124,9 +124,8 @@ def build_html(sutta_id: str) -> str:
     title_pli = pli.get(f"{sutta_id.split('_')[0]}.1:0.2") or sutta_id
     title_vi = vie.get(f"{sutta_id.split('_')[0]}.1:0.2") or sutta_id
 
-    # Override layout via separate sutta-static.css (loaded AFTER styles.css).
-    # Settings logic in sutta-static.js.
-    # Keep .card wrapper for selectors like `.card:not(.stack) #sutraGrid:not(...)`.
+    # Reuse styles.css classes (.panel, .set-sec, .set-pills, .pill, .slider-row).
+    # Minimal layout override inline (so document scrolls naturally instead of fullscreen flex).
     return f"""<!doctype html>
 <html lang="vi">
 <head>
@@ -134,9 +133,42 @@ def build_html(sutta_id: str) -> str:
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{htmlmod.escape(sutta_id)} — static</title>
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="sutta-static.css?v=3">
+<style>
+  /* Static page: let document body scroll naturally instead of app.js' fullscreen flex layout */
+  html, body {{ height: auto !important; overflow: auto !important; overscroll-behavior: auto !important; }}
+  body {{ display: block !important; }}
+  .card {{ height: auto !important; overflow: visible !important; display: block !important; max-width: none !important; }}
+  /* Skip layout/paint for off-screen rows — without this, slider/font changes
+     trigger reflow on all ~5000 rows (heavy lag on long suttas). */
+  .sutra-row-wrap {{ content-visibility: auto; contain-intrinsic-size: auto 200px; }}
+  #sutraGrid {{
+    flex: none !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 32px 64px !important;
+  }}
+  .static-header {{ max-width: 1200px; margin: 0 auto; padding: 24px 32px 16px; text-align: center; }}
+  .static-header h1 {{ font-size: 24px; margin: 0 0 8px; font-family: var(--serif-vi); font-weight: 400; }}
+  .static-header .meta {{ color: var(--ink-3); font-style: italic; font-size: 13px; font-family: var(--serif-vi); }}
+
+  /* Floating gear button (no toolbar in static page) — visual JS-ready indicator via border color */
+  #btnSettings {{
+    position: fixed; top: 12px; right: 12px; z-index: 1000;
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--bg-2); border: 2px solid red; color: var(--ink-2);
+    font-size: 18px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    display: flex; align-items: center; justify-content: center; padding: 0;
+  }}
+  body.js-ready #btnSettings {{ border-color: #2d7c39; background: var(--panel); }}
+
+  /* Position the existing #settingsPanel for static page (app.js positions it dynamically; we hard-code) */
+  #settingsPanel {{ top: 60px !important; right: 12px !important; left: auto !important; bottom: auto !important; }}
+</style>
 </head>
-<body>
+<body data-sutta-id="{htmlmod.escape(sutta_id)}">
 
 <div class="card">
 <header class="static-header">
@@ -148,46 +180,67 @@ def build_html(sutta_id: str) -> str:
 </div>
 </div>
 
-<button id="ss-toggle" type="button" aria-label="Settings">⚙</button>
-<div id="ss-panel">
-  <h4>Ngôn ngữ</h4>
-  <div class="ss-pills">
-    <button type="button" class="ss-pill" data-toggle-grid="hide-pali" data-checked-when="off">Pāli</button>
-    <button type="button" class="ss-pill" data-toggle-grid="hide-eng"  data-checked-when="off">English</button>
-    <button type="button" class="ss-pill" data-toggle-grid="hide-vie"  data-checked-when="off">Tiếng Việt</button>
-  </div>
+<button id="btnSettings" type="button" aria-label="Tuỳ chỉnh">⚙</button>
 
-  <h4>Hiển thị</h4>
-  <div class="ss-pills">
-    <button type="button" class="ss-pill" data-toggle-grid="hide-seg-key"    data-checked-when="off">Mã đoạn</button>
-    <button type="button" class="ss-pill" data-toggle-grid="hide-col-header" data-checked-when="off">Tiêu đề cột</button>
-  </div>
-
-  <h4>Bố cục</h4>
-  <div class="ss-pills">
-    <button type="button" class="ss-pill" data-toggle-card="stack"      data-checked-when="on">Xếp dọc</button>
-    <button type="button" class="ss-pill" data-toggle-card="grid-3cols" data-checked-when="on">3 cột</button>
-  </div>
-
-  <h4>Giao diện</h4>
-  <div class="ss-pills">
-    <button type="button" class="ss-pill" id="ss-dark">Dark mode</button>
-  </div>
-
-  <h4>Cỡ chữ</h4>
-  <div class="ss-row">
-    <input type="range" id="ss-font" min="0.7" max="1.6" step="0.05" value="1">
-    <span class="ss-val" id="ss-font-val">1.00</span>
-  </div>
-
-  <h4>Giãn dòng</h4>
-  <div class="ss-row">
-    <input type="range" id="ss-lh" min="1.3" max="2.2" step="0.05" value="1.75">
-    <span class="ss-val" id="ss-lh-val">1.75</span>
+<div id="settingsPanel" class="panel" aria-hidden="true">
+  <div class="set-panel-body">
+    <div class="set-sec">
+      <div class="set-sec-hd"><span class="set-sec-title">Ngôn ngữ</span><span class="set-sec-sub">Hiện / ẩn cột</span></div>
+      <div class="set-sec-body">
+        <div class="set-pills cols-3">
+          <button type="button" class="pill active" data-toggle-grid="hide-pali" data-checked-when="off">Pāli</button>
+          <button type="button" class="pill active" data-toggle-grid="hide-eng"  data-checked-when="off">English</button>
+          <button type="button" class="pill active" data-toggle-grid="hide-vie"  data-checked-when="off">Việt</button>
+        </div>
+      </div>
+    </div>
+    <div class="set-sec">
+      <div class="set-sec-hd"><span class="set-sec-title">Hiển thị</span></div>
+      <div class="set-sec-body">
+        <div class="set-pills cols-2">
+          <button type="button" class="pill active" data-toggle-grid="hide-seg-key"    data-checked-when="off"><span class="pill-icon">#</span> Segment</button>
+          <button type="button" class="pill active" data-toggle-grid="hide-col-header" data-checked-when="off"><span class="pill-icon">▦</span> Label</button>
+        </div>
+      </div>
+    </div>
+    <div class="set-sec">
+      <div class="set-sec-hd"><span class="set-sec-title">Bố cục</span><span class="set-sec-sub">Cách hiển thị</span></div>
+      <div class="set-sec-body">
+        <div class="set-pills cols-2">
+          <button type="button" class="pill" data-toggle-card="stack"      data-checked-when="on"><span class="pill-icon">☰</span> Xếp dọc</button>
+          <button type="button" class="pill" data-toggle-card="grid-3cols" data-checked-when="on"><span class="pill-icon">⫴</span> 3 cột</button>
+        </div>
+      </div>
+    </div>
+    <div class="set-sec">
+      <div class="set-sec-hd"><span class="set-sec-title">Giao diện</span></div>
+      <div class="set-sec-body">
+        <div class="set-pills cols-1">
+          <button type="button" class="pill" id="btnDarkMode">Dark mode</button>
+        </div>
+      </div>
+    </div>
+    <div class="set-sec">
+      <div class="set-sec-hd"><span class="set-sec-title">Hiển thị</span></div>
+      <div class="set-sec-body">
+        <div class="slider-row">
+          <span class="set-mini-label">Cỡ chữ</span>
+          <input type="range" class="sutra-slider" id="sliderZoom" min="80" max="160" step="5" value="100">
+          <span class="slider-value-badge" id="zoomValueBadge">100%</span>
+          <button type="button" class="slider-reset-btn" id="btnZoomReset" title="Reset">↺</button>
+        </div>
+        <div class="slider-row">
+          <span class="set-mini-label">Giãn dòng</span>
+          <input type="range" class="sutra-slider" id="sliderLineHeight" min="130" max="260" step="5" value="175">
+          <span class="slider-value-badge" id="lineHeightValueBadge">1.75</span>
+          <button type="button" class="slider-reset-btn" id="btnLineHeightReset" title="Reset">↺</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
-<script src="sutta-static.js?v=3" defer></script>
+<script src="sutta-static.js?v=4" defer></script>
 
 </body>
 </html>
