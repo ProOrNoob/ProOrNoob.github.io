@@ -46,7 +46,12 @@
       "Bash(mv 03-ui-panels.js ui-panels.js)",
       "Bash(mv 04-zoom.js zoom.js)",
       "Bash(mv 05-anchor.js anchor.js)",
-      "Bash(PYTHONIOENCODING=utf-8 python rebuild.py)"
+      "Bash(PYTHONIOENCODING=utf-8 python rebuild.py)",
+      "Bash(node --check C:/ProOrNoob.github.io/app.js)",
+      "PowerShell(node --check C:\\\\ProOrNoob.github.io\\\\app.js)",
+      "PowerShell(if \\($?\\) { \"OK\" })",
+      "Bash(python.exe -c \"src=open\\(r'C:/ProOrNoob.github.io/app.js'\\).read\\(\\); print\\('o=',src.count\\('{'\\),'c=',src.count\\('}'\\),'p_o=',src.count\\('\\('\\),'p_c=',src.count\\('\\)'\\)\\)\")",
+      "Bash(awk 'NR==3 || NR==30 || NR==38 || NR==47 || NR==68 || NR==171 || NR==203 || NR==245 || NR==295 || NR==329 || NR==330 || NR==400 || NR==516 || NR==576 || NR==577 || NR==763 || NR==788 || NR==1201 || NR==1275 || NR==1753 || NR==1935 || NR==2168 || NR==2341 || NR==3030 || NR==3420 || NR==3633 || NR==3674' C:/ProOrNoob.github.io/app.js)"
     ]
   }
 }

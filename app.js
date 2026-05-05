@@ -210,12 +210,8 @@ var showPali = true, showEng = true, showVie = true;
 var isRendering = false;
 var renderToken = 0;
 var lastSingleLangMode = null;
-var cachedRows = [];
-// Virtual scroll state
-var virtChunks = [];    // [{div, rowStart, rowEnd, materialized, measuredH}]
-var virtAllRows = [];   // row data array (cho TTS + anchor khi chunk chưa materialize)
-var virtMatObs = null;
-var virtDemObs = null;
+var cachedRows = [];   // [rowEl] indexed by row index, used by TTS highlight
+var virtAllRows = [];  // row data array (kept name for TTS API compat)
 var LANG_STORAGE_KEY = 'sutra_ui_lang';
 var uiLang = storage.get(LANG_STORAGE_KEY) === 'en' ? 'en' : 'vi';
 window.SUTRA_UI_LANG = uiLang;
@@ -398,118 +394,19 @@ if (paragraphBreak && bufSegCount >= PARAGRAPH_BREAK_LEN) flush();
 flush(); return out;
 }
 /* ============================================================
-DOM mode cache — Phương án B: Cache cây DOM theo (suttaId, mode).
-Khi user toggle giữa multi ↔ single (hoặc giữa các ngôn ngữ single),
-detach chunk DIVs hiện tại, attach chunks đã cache → swap ~10ms thay vì rebuild ~150ms.
-Lần đầu mỗi mode vẫn full build; lần 2+ instant.
+Mode change → re-render. Sau khi bỏ virt chunks (full DOM render,
+content-visibility:auto), rebuild ~50ms là đủ nhanh, không cần DOM cache.
+Debounce 180ms để gộp các toggle liên tục.
 ============================================================ */
-var DOM_MODE_CACHE = new Map();           // 'id|mode' → snapshot
-// Adaptive cache size: bài DN dài ~3000 segments → ~60 chunks × DOM materialized → có thể nuốt
-// hàng chục MB RAM nếu giữ 6 snapshot trên phone cấu hình thấp. Scale theo navigator.deviceMemory.
-var DOM_MODE_CACHE_MAX = (function () {
-var mem = navigator.deviceMemory;
-if (mem && mem < 2) return 2;       // 1GB phones: chỉ giữ 2 mode gần nhất
-if (mem && mem < 4) return 3;       // 2GB phones: 3 mode
-return 6;                           // 4GB+ hoặc unknown: full cache (~1.5 sutta × 4 mode)
-})();
-function _dmCacheKey(id, mode) { return id + '|' + (mode || 'multi'); }
-function _dmSnapshotCurrent() {
-if (!currentSutraId || !virtChunks || !virtChunks.length) return null;
-return {
-chunks: virtChunks.slice(),
-rows: virtAllRows,
-cachedRows: cachedRows.slice(),
-keyToRowIdx: keyToRowIdx,
-vaggaMarkers: vaggaMarkers,
-suttaMarkers: suttaMarkers,
-isAN: isAN, isSN: isSN,
-fallbackTitle: fallbackTitle,
-scrollTop: grid ? grid.scrollTop : 0,
-scrollKey: firstVisibleKey
-};
-}
-// Cleanup chunk DOM khỏi snapshot khi evict — tránh memory leak từ materialized chunks
-// giữ tham chiếu DOM tree (~50 chunks × ~50 rows × 10 nodes/row = thousands of nodes/snapshot).
-function _dmReleaseSnap(snap) {
-if (!snap || !snap.chunks) return;
-for (var ci = 0; ci < snap.chunks.length; ci++) {
-var c = snap.chunks[ci];
-if (c && c.div && c.materialized) {
-while (c.div.firstChild) c.div.removeChild(c.div.firstChild);
-c.materialized = false;
-}
-}
-}
-function _dmSaveCurrent() {
-if (!currentSutraId) return;
-var mode = lastSingleLangMode || 'multi';
-var snap = _dmSnapshotCurrent();
-if (!snap) return;
-var k = _dmCacheKey(currentSutraId, mode);
-DOM_MODE_CACHE.delete(k); DOM_MODE_CACHE.set(k, snap);
-while (DOM_MODE_CACHE.size > DOM_MODE_CACHE_MAX) {
-var oldestKey = DOM_MODE_CACHE.keys().next().value;
-var evicted = DOM_MODE_CACHE.get(oldestKey);
-_dmReleaseSnap(evicted);
-DOM_MODE_CACHE.delete(oldestKey);
-}
-}
-function _dmInvalidateForSutta(id) {
-if (!id) return;
-var keys = [];
-DOM_MODE_CACHE.forEach(function (_v, k) { if (k.indexOf(id + '|') === 0) keys.push(k); });
-keys.forEach(function (k) { _dmReleaseSnap(DOM_MODE_CACHE.get(k)); DOM_MODE_CACHE.delete(k); });
-}
-function _dmTryRestore(targetMode) {
-if (!currentSutraId || !grid) return false;
-var k = _dmCacheKey(currentSutraId, targetMode);
-var snap = DOM_MODE_CACHE.get(k);
-if (!snap) return false;
-// Lưu state hiện tại trước khi swap (lần sau quay lại sẽ instant)
-_dmSaveCurrent();
-// Touch LRU cho entry sắp dùng
-DOM_MODE_CACHE.delete(k); DOM_MODE_CACHE.set(k, snap);
-// Tear down observers cũ
-if (anchorObserver) { anchorObserver.disconnect(); anchorObserver = null; }
-teardownChunkObservers();
-// Detach divs hiện tại — chúng đã được snap khác giữ reference
-while (grid.firstChild) grid.removeChild(grid.firstChild);
-// Restore module state
-virtChunks = snap.chunks;
-virtAllRows = snap.rows;
-cachedRows = snap.cachedRows;
-keyToRowIdx = snap.keyToRowIdx;
-vaggaMarkers = snap.vaggaMarkers;
-suttaMarkers = snap.suttaMarkers;
-isAN = snap.isAN; isSN = snap.isSN;
-fallbackTitle = snap.fallbackTitle;
-lastAppliedVaggaIdx = -2; lastAppliedSuttaIdx = -2;
-// Re-attach chunk DIVs
-var frag = document.createDocumentFragment();
-for (var i = 0; i < snap.chunks.length; i++) frag.appendChild(snap.chunks[i].div);
-grid.appendChild(frag);
-applyVisibility();
-// Re-setup observers (chunk obs trigger materialize cho chunks visible)
-setupChunkObservers();
-setupAnchorObserver();
-// Restore scroll
-if (typeof snap.scrollTop === 'number') grid.scrollTop = snap.scrollTop;
-firstVisibleKey = snap.scrollKey || null;
-lastSingleLangMode = targetMode;
-return true;
-}
 var _modeRerenderTimer = null;
 function maybeRerenderIfModeChanged() {
 var mode = getSingleVisibleLang();
 if (mode === lastSingleLangMode) return;
-// Debounce: gộp các toggle liên tục lại để tránh rerender chồng chất.
 clearTimeout(_modeRerenderTimer);
 _modeRerenderTimer = setTimeout(function () {
 _modeRerenderTimer = null;
 var modeNow = getSingleVisibleLang();
 if (modeNow === lastSingleLangMode) return;
-// Cache hit → swap DOM ~10ms thay vì rebuild ~150ms
-if (_dmTryRestore(modeNow)) return;
 if (currentSutraId) renderSutra(currentSutraId);
 }, 180);
 }
@@ -1389,198 +1286,94 @@ return rows[j].getAttribute('data-key') || null;
 }
 return null;
 }
-var _progScrollUntil = 0; // timestamp sau đó scroll save resume
-function preserveTopAndSave(action) {
-var topKey = computeTopVisibleKey();
-// Cancel mọi pending debounce save để không overwrite topKey mình sắp save
-if (typeof _saveAnchorDebounced !== 'undefined' && _saveAnchorDebounced && _saveAnchorDebounced.cancel) {
-_saveAnchorDebounced.cancel();
+/* ============================================================
+Anchor save/restore — đường đi DUY NHẤT.
+- Track: anchorObserver + computeTopVisibleKey cập nhật firstVisibleKey
+- Save:  saveScrollAnchorNow ghi firstVisibleKey vào storage + URL hash
+- Restore: tìm row by key → 1 lần scrollIntoView (full DOM render → height đúng,
+  không cần multi-pass correction)
+- Toggle: preserveTopAndSave save → action → rAF → scrollIntoView
+============================================================ */
+function _findRowIdxByKey(key) {
+if (!key) return -1;
+if (keyToRowIdx && keyToRowIdx[key] != null) return keyToRowIdx[key];
+// Scope fallback: sn22.5:1.3 → match bất kỳ key có scope sn22.5:1.x
+// (segment key trong multi mode đôi khi không tồn tại trong single-merged mode)
+var m = String(key).match(/^(.+):(\d+)/);
+if (!m) return -1;
+var scope = m[1] + ':' + m[2];
+for (var i = 0; i < virtAllRows.length; i++) {
+var k = String(virtAllRows[i].key || '');
+var mk = k.match(/^(.+):(\d+)/);
+if (mk && (mk[1] + ':' + mk[2]) === scope) return i;
 }
+return -1;
+}
+function _scrollRowIntoView(rowEl) {
+if (!rowEl) return false;
+var target = rowEl.closest('.sutra-row-wrap') || rowEl;
+target.scrollIntoView({ block: 'start', behavior: 'instant' });
+return true;
+}
+function preserveTopAndSave(action) {
+var topKey = firstVisibleKey || computeTopVisibleKey();
 if (topKey && currentSutraId) {
-_progScrollUntil = Date.now() + 1500;  // 1500ms cover smooth scroll + reflow trên low-end Android
 firstVisibleKey = topKey;
 anchorSet(KEY_ANCHOR_K(currentSutraId), topKey);
+_writeAnchorHash(topKey);
 }
 action();
-if (!topKey || !currentSutraId) return;
+if (!topKey) return;
 requestAnimationFrame(function () {
-var scrollRoot = getScrollRoot();
-if (!scrollRoot) return;
-var safeKey = safeCssEscape(topKey);
-var row = scrollRoot.querySelector('.sutra-row[data-key="' + safeKey + '"]');
-if (!row) return;
-var tgt = row.closest('.sutra-row-wrap') || row;
-var rootRect = scrollRoot.getBoundingClientRect();
-var tgtRect = tgt.getBoundingClientRect();
-var y = tgtRect.top - rootRect.top + scrollRoot.scrollTop;
-var max = Math.max(0, scrollRoot.scrollHeight - scrollRoot.clientHeight);
-var targetY = Math.max(0, Math.min(y, max));
-if (Math.abs(targetY - scrollRoot.scrollTop) > 1) {
-_progScrollUntil = Date.now() + 1500;
-scrollRoot.scrollTop = targetY;
-}
-if (_saveAnchorDebounced && _saveAnchorDebounced.cancel) _saveAnchorDebounced.cancel();
+var idx = _findRowIdxByKey(topKey);
+if (idx < 0) return;
+var safeKey = safeCssEscape(virtAllRows[idx].key);
+var row = grid && grid.querySelector('.sutra-row[data-key="' + safeKey + '"]');
+_scrollRowIntoView(row);
 });
-}
-var _retrySaveTimer = 0;
-function _scheduleRetrySave(after) {
-// Single timer — coalesce multiple suppress-skip retries vào 1 lần fire sau cùng.
-if (_retrySaveTimer) clearTimeout(_retrySaveTimer);
-_retrySaveTimer = setTimeout(function () {
-_retrySaveTimer = 0;
-saveScrollAnchorNow();
-}, Math.max(50, after));
 }
 function saveScrollAnchorNow() {
 if (!currentSutraId) return;
-var now = Date.now();
-if (now < _progScrollUntil) {
-// CRITICAL bug fix: nếu user scroll trong cửa sổ programmatic-scroll rồi DỪNG,
-// debounced save fire 1 lần và bị skip ở đây → không lần save nào nữa cho đến scroll
-// tiếp theo → anchor stale (vd: anchor 27.5 nhưng vị trí thực 3.1).
-// Schedule retry sau khi window hết để bắt vị trí cuối user dừng.
-if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] skip — programmatic scroll window, retry in', _progScrollUntil - now);
-_scheduleRetrySave(_progScrollUntil - now + 50);
-return;
-}
-if (isRendering) {
-if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] skip — isRendering=true, retry in 150');
-_scheduleRetrySave(150);
-return;
-}
 var scrollRoot = getScrollRoot();
 if (!scrollRoot || scrollRoot.scrollTop === 0) {
 anchorRemove(KEY_ANCHOR_K(currentSutraId));
 _clearAnchorHash();
-if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] cleared (scrollTop=0) for', currentSutraId);
 return;
 }
-// Ưu tiên cache từ IntersectionObserver (O(1)) — chỉ scan DOM khi cache trống.
-// Trên file lớn (hàng nghìn rows), DOM scan + getBoundingClientRect loop là bottleneck chính.
 var topKey = firstVisibleKey || computeTopVisibleKey();
-if (!topKey) {
-if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE] skip — no top key computable');
-return;
-}
-firstVisibleKey = topKey; // sync cache để updateDynamicTitles nhất quán
+if (!topKey) return;
+firstVisibleKey = topKey;
 anchorSet(KEY_ANCHOR_K(currentSutraId), topKey);
 _writeAnchorHash(topKey);
-if (window.DEBUG_ANCHOR) console.log('[ANCHOR SAVE]', currentSutraId, '→', topKey, 'scrollTop=' + scrollRoot.scrollTop);
 }
 function restoreScrollByAnchor(id) {
 var scrollRoot = getScrollRoot();
 if (!scrollRoot) return false;
-try {
 var key = getAnchorKeyFor(id);
-if (window.DEBUG_ANCHOR) console.log('[ANCHOR RESTORE] id=' + id + ' key=' + key);
 if (!key) return false;
-var foundIdx = -1;
-for (var j = 0; j < virtAllRows.length; j++) {
-if (String(virtAllRows[j].key || '') === key) { foundIdx = j; break; }
-}
-if (foundIdx < 0) {
-var savedScopeMatch = String(key).match(/^(.+):(\d+)/);
-if (savedScopeMatch) {
-var savedScope = savedScopeMatch[1] + ':' + savedScopeMatch[2];
-for (var sk = 0; sk < virtAllRows.length; sk++) {
-var curKey = String(virtAllRows[sk].key || '');
-var m = curKey.match(/^(.+):(\d+)/);
-if (m && (m[1] + ':' + m[2]) === savedScope) {
-foundIdx = sk;
-if (window.DEBUG_ANCHOR) console.log('[ANCHOR RESTORE] fallback matched scope "' + savedScope + '" at idx=' + sk + ' key=' + curKey);
-break;
-}
-}
-}
-}
-if (window.DEBUG_ANCHOR) console.log('[ANCHOR RESTORE] foundIdx=' + foundIdx + ' in virtAllRows.length=' + virtAllRows.length);
-if (foundIdx < 0) return false;
-// Chỉ materialize chunk chứa anchor (eager-around-anchor đã render ±1 chunks).
-// IntersectionObserver sẽ tự materialize neighbors khi user scroll. Tránh render
-// hàng nghìn row sync khi anchor ở cuối file dài.
-ensureRowRendered(foundIdx);
-if (window.DEBUG_ANCHOR) {
-var matCnt = 0;
-for (var mc = 0; mc < virtChunks.length; mc++) if (virtChunks[mc].materialized) matCnt++;
-console.log('[ANCHOR RESTORE] chunks materialized after ensureRowRendered: ' + matCnt + '/' + virtChunks.length);
-}
-var safeKey = safeCssEscape(key);
+var idx = _findRowIdxByKey(key);
+if (idx < 0) return false;
+var safeKey = safeCssEscape(virtAllRows[idx].key);
 var row = scrollRoot.querySelector('.sutra-row[data-key="' + safeKey + '"]');
-if (window.DEBUG_ANCHOR) console.log('[ANCHOR RESTORE] DOM row found:', !!row);
 if (!row) return false;
-var scrollTarget = row.closest('.sutra-row-wrap') || row;
-// Suppress save-on-scroll trong correction window — tránh scroll listener fire
-// giữa correction steps rồi save anchor ở vị trí trung gian (chưa settle).
-// 700ms = 500ms settle-correction (last setTimeout) + 200ms buffer. KHÔNG dài hơn
-// để khi user scroll ngay sau restore, save không bị skip quá lâu (kết hợp với
-// retry-on-suppress trong saveScrollAnchorNow đã đủ an toàn).
-_progScrollUntil = Date.now() + 700;
-function scrollToSegmentTop(label) {
-var rootRect = scrollRoot.getBoundingClientRect();
-var tgtRect  = scrollTarget.getBoundingClientRect();
-var y = tgtRect.top - rootRect.top + scrollRoot.scrollTop;
-var max = Math.max(0, scrollRoot.scrollHeight - scrollRoot.clientHeight);
-y = Math.max(0, Math.min(y, max));
-var oldTop = scrollRoot.scrollTop;
-if (Math.abs(y - oldTop) > 1) scrollRoot.scrollTop = y;
-if (window.DEBUG_ANCHOR) {
-console.log('[ANCHOR RESTORE ' + label + '] tgt.top=' + tgtRect.top.toFixed(0) +
-' root.top=' + rootRect.top.toFixed(0) +
-' relTop=' + (tgtRect.top - rootRect.top).toFixed(0) +
-' targetY=' + y.toFixed(0) + ' oldScrollTop=' + oldTop + ' → newScrollTop=' + scrollRoot.scrollTop);
-}
-}
-scrollToSegmentTop('initial');
+_scrollRowIntoView(row);
 toggleBackTop(scrollRoot.scrollTop > 0);
-requestAnimationFrame(function () { requestAnimationFrame(function () {
-scrollToSegmentTop('rAF-correction');
-setTimeout(function () { scrollToSegmentTop('timeout-correction'); }, 100);
-// Mobile Chrome: address bar collapse/expand transition ~300-500ms khi quay lại tab.
-// 100ms-correction có thể chạy giữa lúc layout còn đang shift → vị trí lệch.
-// Thêm settle-correction ở 500ms để bắt cuối transition.
-setTimeout(function () { scrollToSegmentTop('settle-correction'); }, 500);
-}); });
 return true;
-} catch(e) {
-if (window.DEBUG_ANCHOR) console.error('[ANCHOR RESTORE] error:', e);
-return false;
-}
 }
 window.addEventListener('pagehide', function (e) {
-// Force fresh DOM scan — IO cache có thể stale nếu user vừa scroll xong rời trang ngay.
-// Anchor đúng được lưu ở đây phục vụ lần load LẦN SAU (renderSutra → restoreScrollByAnchor),
-// KHÔNG dùng cho tab-return (DOM ở memory thì browser tự giữ scrollTop).
 firstVisibleKey = null;
 saveScrollAnchorNow();
-// Chỉ teardown observers khi page thật sự unload. Nếu vào BFCache (e.persisted=true),
-// DOM được giữ nguyên → observers vẫn hữu ích khi pageshow restore.
-if (!e.persisted) {
-if (anchorObserver) { anchorObserver.disconnect(); anchorObserver = null; }
-teardownChunkObservers();
-}
+if (!e.persisted && anchorObserver) { anchorObserver.disconnect(); anchorObserver = null; }
 });
 window.addEventListener('pageshow', function (e) {
-// BFCache restore: DOM + scrollTop được browser giữ nguyên, KHÔNG forced re-anchor.
-// (Trước đây block visibilitychange→visible forced restore là nguyên nhân scroll
-// "nhảy" trên mobile Chrome — IO cache có lệch 1 segment thì restore kéo sai chỗ.
-// Giờ trust browser giữ scrollTop; chỉ re-setup observers nếu pagehide đã teardown.)
 if (!e.persisted || !currentSutraId) return;
 if (!anchorObserver) setupAnchorObserver();
-try { setupChunkObservers(); } catch(_) {}
 });
 document.addEventListener('visibilitychange', function () {
 if (document.visibilityState === 'hidden') {
-// Force fresh DOM scan + bypass _progScrollUntil — user-action (rời tab),
-// nếu skip / dùng cache stale thì anchor lưu là vị trí cũ → khi reload restore sai.
 firstVisibleKey = null;
-var prevProg = _progScrollUntil;
-_progScrollUntil = 0;
-try { saveScrollAnchorNow(); } finally { _progScrollUntil = prevProg; }
+saveScrollAnchorNow();
 }
-// visibilitychange → visible: KHÔNG forced re-anchor.
-// Browser đã giữ nguyên scrollTop của DOM in-memory. Forced re-restore với cache có
-// thể stale 1 segment → kéo scroll sang chỗ sai → "nhảy" rõ trên mobile Chrome.
-// Tin tưởng browser. Drift IO backlog (nếu có) thường <vài px, ko đáng đánh đổi.
 });
 var suppressBackTop = false;
 var _backTopPendingState = null;
@@ -1610,7 +1403,6 @@ try { btnBackTop.blur(); } catch(_) {}
 }
 // Throttle save (leading-edge) + debounce (trailing-edge) cho final stable top sau khi user dừng scroll.
 // `pagehide` + `visibilitychange` đã đảm bảo save lúc rời trang nên debounce ngắn là đủ.
-// Skip nếu _progScrollUntil > now (suppress window cho programmatic scroll).
 var _saveAnchorThrottled = throttle(saveScrollAnchorNow, 250);
 var _saveAnchorDebounced = debounce(saveScrollAnchorNow, 200);
 var _backTopThrottled = throttle(function (v) { toggleBackTop(v); }, 120);
@@ -2668,138 +2460,10 @@ if (btnUiLang) btnUiLang.click();
 });
 });
 }
-function materializeChunk(chunkInfo) {
-if (!chunkInfo || chunkInfo.materialized) return;
-// Capture chunk bottom TRƯỚC khi materialize. Nếu chunk nằm hoàn toàn TRÊN viewport
-// và height thực ≠ EST_ROW_H placeholder → content dưới shift → user thấy giật.
-// Skip compensation trong programmatic scroll window (anchor restore, eager pre-scroll...)
-// để không đè lên scroll adjustments của các code path đó.
-var scroller = scrollEl;
-var needsCompensation = false;
-var oldChunkBottom = 0;
-if (scroller && chunkInfo.div.parentNode === scroller && Date.now() >= _progScrollUntil) {
-var preRect = chunkInfo.div.getBoundingClientRect();
-var preRootRect = scroller.getBoundingClientRect();
-oldChunkBottom = preRect.bottom - preRootRect.top + scroller.scrollTop;
-if (oldChunkBottom <= scroller.scrollTop) needsCompensation = true;
-}
-var frag = document.createDocumentFragment();
-for (var i = chunkInfo.rowStart; i < chunkInfo.rowEnd; i++) {
-var rowData = virtAllRows[i];
-if (!rowData) continue;
-var wrap = createRow(rowData);
-frag.appendChild(wrap);
-var innerRow = wrap.querySelector ? wrap.querySelector('.sutra-row') : wrap;
-cachedRows[i] = innerRow || wrap;
-}
-chunkInfo.div.appendChild(frag);
-chunkInfo.div.style.minHeight = '';
-chunkInfo.materialized = true;
-if (anchorObserver) {
-var newRows = chunkInfo.div.querySelectorAll('.sutra-row');
-for (var k = 0; k < newRows.length; k++) anchorObserver.observe(newRows[k]);
-}
-if (needsCompensation && scroller) {
-var newChunkRect = chunkInfo.div.getBoundingClientRect();
-var newRootRect  = scroller.getBoundingClientRect();
-var newChunkBottom = newChunkRect.bottom - newRootRect.top + scroller.scrollTop;
-var delta = newChunkBottom - oldChunkBottom;
-if (Math.abs(delta) > 0.5) scroller.scrollTop += delta;
-}
-}
-function dematerializeChunk(chunkInfo) {
-if (!chunkInfo || !chunkInfo.materialized) return;
-if (anchorObserver) {
-var oldRows = chunkInfo.div.querySelectorAll('.sutra-row');
-for (var k = 0; k < oldRows.length; k++) anchorObserver.unobserve(oldRows[k]);
-}
-// LUÔN re-measure trước khi dematerialize. Nếu chỉ set một lần (như cũ), giá trị stale
-// khi user đổi zoom/line-height/dark-mode/font sau khi chunk đã được dematerialize 1 lần
-// → placeholder height sai → scroll position drift sau nhiều lần dematerialize.
-var realH = chunkInfo.div.offsetHeight;
-if (realH > 0) chunkInfo.measuredH = realH;
-else if (!chunkInfo.measuredH) chunkInfo.measuredH = (chunkInfo.rowEnd - chunkInfo.rowStart) * 120;
-// Compensate scroll: nếu chunk này nằm TRƯỚC viewport hiện tại, sau khi shrink/grow
-// (do measuredH khác height thật) sẽ đẩy content phía dưới trượt lên/xuống.
-// `overflow-anchor: none` (đặt trên #sutraGrid trong CSS) khiến browser KHÔNG tự bù.
-// Mirror logic của materializeChunk — đo bottom trước/sau, adjust scrollTop.
-var scroller = scrollEl;
-var needsCompensation = false;
-var oldChunkBottom = 0;
-if (scroller && chunkInfo.div.parentNode === scroller && Date.now() >= _progScrollUntil) {
-var preRect = chunkInfo.div.getBoundingClientRect();
-var preRootRect = scroller.getBoundingClientRect();
-oldChunkBottom = preRect.bottom - preRootRect.top + scroller.scrollTop;
-if (oldChunkBottom <= scroller.scrollTop) needsCompensation = true;
-}
-while (chunkInfo.div.firstChild) chunkInfo.div.removeChild(chunkInfo.div.firstChild);
-chunkInfo.div.style.minHeight = chunkInfo.measuredH + 'px';
-chunkInfo.materialized = false;
-for (var i = chunkInfo.rowStart; i < chunkInfo.rowEnd; i++) {
-cachedRows[i] = null;
-}
-if (needsCompensation && scroller) {
-var newChunkRect = chunkInfo.div.getBoundingClientRect();
-var newRootRect  = scroller.getBoundingClientRect();
-var newChunkBottom = newChunkRect.bottom - newRootRect.top + scroller.scrollTop;
-var delta = newChunkBottom - oldChunkBottom;
-if (Math.abs(delta) > 0.5) scroller.scrollTop += delta;
-}
-}
-function teardownChunkObservers() {
-if (virtMatObs) { virtMatObs.disconnect(); virtMatObs = null; }
-if (virtDemObs) { virtDemObs.disconnect(); virtDemObs = null; }
-}
-function setupChunkObservers() {
-teardownChunkObservers();
-if (!scrollEl || !virtChunks.length) return;
-virtMatObs = new IntersectionObserver(function (entries) {
-for (var i = 0; i < entries.length; i++) {
-if (entries[i].isIntersecting) {
-var idx = parseInt(entries[i].target.getAttribute('data-chunk-idx'), 10);
-if (Number.isFinite(idx) && virtChunks[idx]) materializeChunk(virtChunks[idx]);
-}
-}
-// Top margin 200% (cao hơn 100% trước đây): khi user scroll lên (đặc biệt fling-scroll
-// trên mobile), chunks phía trên cần materialize SỚM khi vẫn còn fully-above viewport
-// để compensation logic trong materializeChunk (chỉ fire khi oldChunkBottom <= scrollTop)
-// kịp adjust scrollTop trước khi chunk lọt vào viewport. Nếu chunk straddle viewport top
-// lúc materialize, height thật ≠ EST_ROW_H placeholder → content shift, user mất vị trí
-// đang đọc. Bottom giữ 100% — scroll xuống không bị shift (chunks below grow chỉ đẩy
-// content phía dưới chúng, không ảnh hưởng row user đang đọc ở phía trên).
-// Hysteresis với dematerialize observer (300%) vẫn dư 100% buffer.
-}, { root: scrollEl, rootMargin: '200% 0px 100% 0px', threshold: 0 });
-virtDemObs = new IntersectionObserver(function (entries) {
-for (var i = 0; i < entries.length; i++) {
-if (!entries[i].isIntersecting) {
-var idx = parseInt(entries[i].target.getAttribute('data-chunk-idx'), 10);
-if (Number.isFinite(idx) && virtChunks[idx]) dematerializeChunk(virtChunks[idx]);
-}
-}
-}, { root: scrollEl, rootMargin: '300% 0px 300% 0px', threshold: 0 });
-for (var k = 0; k < virtChunks.length; k++) {
-virtMatObs.observe(virtChunks[k].div);
-virtDemObs.observe(virtChunks[k].div);
-}
-}
-function ensureRowRendered(rowIdx) {
-for (var k = 0; k < virtChunks.length; k++) {
-var c = virtChunks[k];
-if (rowIdx >= c.rowStart && rowIdx < c.rowEnd) {
-if (!c.materialized) materializeChunk(c);
-return;
-}
-}
-}
 async function renderSutra(id) {
 if (!id || !grid) return;
-// Khi đổi sutta → drop cache mode của sutta cũ để tiết kiệm memory.
-// (Mode swap chỉ có ý nghĩa trong cùng 1 sutta.)
-if (currentSutraId && currentSutraId !== id) _dmInvalidateForSutta(currentSutraId);
 resetTts(true, false);
 if (anchorObserver) { anchorObserver.disconnect(); anchorObserver = null; }
-teardownChunkObservers();
-virtChunks = [];
 virtAllRows = [];
 firstVisibleKey = null;
 cachedRows = [];
@@ -2936,88 +2600,36 @@ var rowsForView = viewData.rows;
 grid.innerHTML = '';
 cachedRows = [];
 applyVisibility();
-var CHUNK_SIZE = 50;
-// Heuristic chiều cao placeholder. Over-estimate tốt hơn under-estimate
-// (tránh scrollbar nhảy khi chunk materialize từ 120 → ~200 trong layout thật).
-var EST_ROW_H = singleLang ? 130 : (card && card.classList.contains('stack') ? 220 : 180);
-virtChunks = [];
 virtAllRows = rowsForView;
 keyToRowIdx = viewData.keyToRowIdx;
 vaggaMarkers = viewData.vaggaMarkers;
 suttaMarkers = viewData.suttaMarkers;
 lastAppliedVaggaIdx = -2;
 lastAppliedSuttaIdx = -2;
-var placeFrag = document.createDocumentFragment();
-for (var ci = 0; ci < rowsForView.length; ci += CHUNK_SIZE) {
-var ce = Math.min(ci + CHUNK_SIZE, rowsForView.length);
-var cdiv = document.createElement('div');
-cdiv.className = 'row-chunk';
-cdiv.setAttribute('data-chunk-idx', String(virtChunks.length));
-cdiv.style.minHeight = ((ce - ci) * EST_ROW_H) + 'px';
-virtChunks.push({ div: cdiv, rowStart: ci, rowEnd: ce, materialized: false, measuredH: 0 });
-placeFrag.appendChild(cdiv);
+// Render TẤT CẢ rows trong 1 lần — không còn chunk virt.
+// CSS content-visibility:auto trên .sutra-row-wrap để browser bỏ qua layout/paint
+// cho row off-screen. DOM tree đầy đủ → getBoundingClientRect chính xác → anchor
+// restore chỉ cần 1 lần scrollIntoView.
+var rowsFrag = document.createDocumentFragment();
+for (var ri = 0; ri < rowsForView.length; ri++) {
+var rowData = rowsForView[ri];
+if (!rowData) continue;
+var wrap = createRow(rowData);
+rowsFrag.appendChild(wrap);
+var innerRow = wrap.querySelector ? wrap.querySelector('.sutra-row') : wrap;
+cachedRows[ri] = innerRow || wrap;
 }
-grid.appendChild(placeFrag);
-/* Eager materialize vài chunks quanh anchor NGAY trong tick đồng bộ này,
-TRƯỚC khi browser paint → hết flash đen. Anchor restore ở RAF kế tiếp
-sẽ scroll đúng vị trí vì chunk chứa anchor đã render sẵn. */
-(function eagerAroundAnchor() {
-try {
-var anchorKey = getAnchorKeyFor(id);
-var anchorIdx = (anchorKey && keyToRowIdx[anchorKey] != null) ? keyToRowIdx[anchorKey] : 0;
-var anchorChunkIdx = Math.floor(anchorIdx / CHUNK_SIZE);
-// CRITICAL: materialize TẤT CẢ chunks từ 0 → anchorChunkIdx (không chỉ ±1).
-// Lý do: chunks ở giữa nếu còn placeholder (EST_ROW_H estimate ≠ real height)
-// → getBoundingClientRect() của anchorChunk trả về vị trí SAI (placeholder shorter
-// than real → rawY underestimated) → scrollTop set sai → restore landed wrong row.
-// Sau khi chunks materialize sau đó (qua materialize observer), layout shift, user
-// thấy nội dung KHÁC vị trí ban đầu, save listener fire ghi đè anchor key sai.
-// Cost RAM: với DN16 (~50 rows×34 chunks) materialize hết = ~17K DOM nodes ~30MB,
-// chấp nhận được. Dematerialize observer (300%) sẽ dọn chunks xa viewport sau đó.
-var lo = 0;
-var hi = Math.min(virtChunks.length - 1, anchorChunkIdx + 1);
-for (var eci = lo; eci <= hi; eci++) materializeChunk(virtChunks[eci]);
-// Sync pre-scroll: đưa viewport về vùng đã materialize TRƯỚC khi browser paint.
-// Không có dòng này → frame paint đầu tiên ở scrollTop=0 nơi chunk 0 là placeholder rỗng,
-// dark mode thấy body bg (#0b0c0e) → flash đen cho bài dài có anchor xa.
-var scroller = getScrollRoot() || scrollEl;
-// Skip eager pre-scroll khi page ngắn — không scrollable. Tránh set scrollTop về
-// giá trị nhỏ rồi RAF correction phải revert về 0, gây flash.
-var maxScrollY = scroller ? Math.max(0, scroller.scrollHeight - scroller.clientHeight) : 0;
-if (anchorChunkIdx > 0 && scroller && virtChunks[anchorChunkIdx] && virtChunks[anchorChunkIdx].div && maxScrollY > 10) {
-// `offsetTop` reference đến nearest positioned ancestor (.card có position:relative),
-// KHÔNG phải scroller. Dùng getBoundingClientRect math để lấy đúng vị trí trong scroller,
-// rồi clamp [0, maxScrollTop] để tránh over-scroll khi anchor chunk nằm cuối bài.
-var chunkRect = virtChunks[anchorChunkIdx].div.getBoundingClientRect();
-var rootRect  = scroller.getBoundingClientRect();
-var rawY = (chunkRect.top - rootRect.top) + scroller.scrollTop;
-var maxY = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
-var targetY = Math.max(0, Math.min(rawY, maxY));
-scroller.scrollTop = targetY;
-if (window.DEBUG_ANCHOR) {
-console.log('[EAGER-FIX]', 'anchorKey=', anchorKey, 'anchorIdx=', anchorIdx,
-'chunkIdx=', anchorChunkIdx, 'rawY=', rawY.toFixed(0),
-'maxY=', maxY.toFixed(0), 'targetY=', targetY.toFixed(0),
-'→ actual=', scroller.scrollTop);
-}
-}
-} catch (e) { /* ignore */ }
-})();
+grid.appendChild(rowsFrag);
 requestAnimationFrame(function () {
 if (token !== renderToken) { isRendering = false; return; }
-setupChunkObservers();
 grid.setAttribute('aria-busy', 'false');
-requestAnimationFrame(function () {
-updateVisibleCols(); restoreScrollByAnchor(id);
-setupAnchorObserver(); updateNavButtons();
-// Snapshot mode hiện tại vào DOM_MODE_CACHE → lần sau toggle về mode này sẽ instant
-try { _dmSaveCurrent(); } catch (_) {}
+updateVisibleCols();
+restoreScrollByAnchor(id);
+setupAnchorObserver();
+updateNavButtons();
 try { updateReadingProgress(); } catch (_) {}
-setTimeout(function () {
 isRendering = false;
 setTtsUiState('idle');
-}, 500);
-});
 scheduleNextPreload(id);
 });
 }
@@ -3342,7 +2954,6 @@ for (var k = 0; k < reading.length; k++) reading[k].classList.remove('reading');
 function highlightRowAt(index) {
 clearRowHighlight();
 if (index < 0 || index >= virtAllRows.length) return;
-ensureRowRendered(index);
 var row = cachedRows[index];
 if (!row) return;
 row.classList.add('reading');
@@ -3502,12 +3113,6 @@ allAnchors.push(k.replace('scroll_anchor_key_', '') + ' → ' + localStorage.get
 }
 }
 } catch(e) {}
-var matChunks = 0, totalChunks = virtChunks ? virtChunks.length : 0;
-if (virtChunks) {
-for (var vc = 0; vc < virtChunks.length; vc++) {
-if (virtChunks[vc].materialized) matChunks++;
-}
-}
 var anchorIdx = -1;
 if (anchorKey && virtAllRows) {
 for (var ai = 0; ai < virtAllRows.length; ai++) {
@@ -3515,18 +3120,13 @@ if (String(virtAllRows[ai].key || '') === anchorKey) { anchorIdx = ai; break; }
 }
 }
 var lines = [
-'--- OLD VERSION (appold.js) ---',
 'Sutta: ' + (currentSutraId || '-'),
 'Langs: ' + (showPali?'P':'') + (showEng?'E':'') + (showVie?'V':''),
 '',
 '── DOM ──',
 'Total elements:   ' + allDom,
 'Row wraps:        ' + wraps.length,
-'',
-'── Virtual scroll ──',
-'Total chunks:     ' + totalChunks,
-'Materialized:     ' + matChunks + ' / ' + totalChunks,
-'virtAllRows len:  ' + (virtAllRows ? virtAllRows.length : 0),
+'Rows in data:     ' + (virtAllRows ? virtAllRows.length : 0),
 '',
 '── Anchor ──',
 'localStorage key: ' + (lsKey || '-'),
@@ -3534,8 +3134,7 @@ var lines = [
 'via storage.get:  ' + (anchorKey === null ? '(null)' : '"' + anchorKey + '"'),
 'Match raw?        ' + (lsRaw === anchorKey ? '✓ yes' : '✗ DIFFERENT!'),
 'Current top key:  ' + (firstVisibleKey || '-'),
-'Saved idx:        ' + (anchorIdx >= 0 ? anchorIdx : 'not-found in virtAllRows'),
-'Match chunk:      ' + (anchorIdx >= 0 ? Math.floor(anchorIdx / 50) : '-'),
+'Saved idx:        ' + (anchorIdx >= 0 ? anchorIdx : 'not-found in rows'),
 '',
 '── ALL anchors in storage ──',
 ].concat(allAnchors.length ? allAnchors : ['(none)']).concat([
