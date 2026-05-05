@@ -9,6 +9,7 @@ Test plan:
   T3. Materialize coverage: chunks gần viewport (≤150% buffer) đều materialized
   T4. Round-trip save/restore: scroll → save → reload → vị trí khớp
   T5. overflow-anchor effect: scrollTop tự bù khi font-size đổi (chunks resize)
+  T6. Back-to-top: smooth-scroll lên 0 không bị chunk compensation cắt giữa chừng
 
 Test trên DN16 (sutta dài nhất, dễ trigger bug nhất).
 """
@@ -334,6 +335,60 @@ try:
             record("T5", True, msg + " ⚠ vừa phải (≤30px)")
         else:
             record("T5", False, msg + " > 30px → anchoring chưa hoạt động")
+
+    # ─────────────────────────────────────────────────────────
+    # T6: back-to-top — smooth-scroll lên 0 không bị materializeChunk cắt giữa chừng
+    # ─────────────────────────────────────────────────────────
+    print("\n[T6] back-to-top: smooth-scroll → scrollTop=0")
+    res = driver.execute_async_script("""
+        const cb = arguments[arguments.length - 1];
+        const root = document.getElementById('sutraGrid');
+        const btn = document.getElementById('btnBackTop');
+        if (!btn) return cb({skip: 'btnBackTop không tồn tại'});
+        const max = root.scrollHeight - root.clientHeight;
+        if (max < 3000) return cb({skip: 'sutra ngắn không cần back-to-top'});
+        // Scroll xuống ~80% rồi đợi settle.
+        root.scrollTop = Math.floor(max * 0.8);
+        setTimeout(() => {
+          const startTop = root.scrollTop;
+          // Sample scrollTop liên tục để phát hiện "khựng giữa chừng" (scrollTop dừng > 0).
+          const samples = [];
+          let lastChange = Date.now();
+          let lastTop = startTop;
+          const interval = setInterval(() => {
+            const st = root.scrollTop;
+            samples.push(st);
+            if (st !== lastTop) { lastChange = Date.now(); lastTop = st; }
+          }, 50);
+          // Click back-to-top.
+          btn.click();
+          // Đợi đủ lâu cho smooth-scroll + safety timeout 2s + buffer.
+          setTimeout(() => {
+            clearInterval(interval);
+            const finalTop = root.scrollTop;
+            // Detect "khựng giữa chừng": scroll dừng > 100px trước khi tới 0.
+            const stuckAt = (finalTop > 100) ? finalTop : 0;
+            // Min scrollTop trong quá trình — nếu finalTop > minTop thì có hiện tượng "bounce back" do compensation.
+            const minTop = Math.min.apply(null, samples);
+            cb({
+              startTop, finalTop, minTop, stuckAt,
+              sampleCount: samples.length,
+              lastChangeMsAgo: Date.now() - lastChange
+            });
+          }, 3500);
+        }, 1800);
+    """)
+    if res.get('skip'):
+        record("T6", True, f"SKIP — {res['skip']}")
+    else:
+        msg = (f"start={res['startTop']} → final={res['finalTop']} "
+               f"(min={res['minTop']}, samples={res['sampleCount']})")
+        if res['finalTop'] == 0:
+            record("T6", True, msg + " → tới đỉnh OK")
+        elif res['finalTop'] <= 5:
+            record("T6", True, msg + " ⚠ gần đỉnh (≤5px sai số)")
+        else:
+            record("T6", False, msg + f" → KHỰNG ở {res['stuckAt']}px, không lên 0")
 
     # ─────────────────────────────────────────────────────────
     # Console error capture

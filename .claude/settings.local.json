@@ -46,7 +46,8 @@
       "Bash(mv 03-ui-panels.js ui-panels.js)",
       "Bash(mv 04-zoom.js zoom.js)",
       "Bash(mv 05-anchor.js anchor.js)",
-      "Bash(PYTHONIOENCODING=utf-8 python rebuild.py)"
+      "Bash(PYTHONIOENCODING=utf-8 python rebuild.py)",
+      "Bash(python -c \"import selenium; print\\('selenium', selenium.__version__\\)\")"
     ]
   }
 }

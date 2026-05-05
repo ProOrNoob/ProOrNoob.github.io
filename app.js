@@ -1721,12 +1721,17 @@ window.addEventListener('resize', updateReadingProgress);
 if (btnBackTop && scrollEl) btnBackTop.onclick = function () {
 suppressBackTop = true;
 toggleBackTop(false);
+// Khoá chunk compensation suốt quá trình smooth-scroll. Nếu không, materializeChunk
+// trên các chunk phía trên viewport sẽ gán `scrollTop += delta` giữa chừng, browser
+// xem đó là user-input và HUỶ smooth-scroll → click bị khựng không lên tới top.
+_progScrollUntil = Date.now() + 2000;
 scrollEl.scrollTo({ top: 0, behavior: 'smooth' });
 var doneCalled = false;
 var done = function () {
 if (doneCalled) return;
 doneCalled = true;
 suppressBackTop = false;
+_progScrollUntil = 0;
 toggleBackTop(false);
 if (currentSutraId) {
 anchorRemove(KEY_ANCHOR_K(currentSutraId));
