@@ -49,22 +49,58 @@ Lazy load packs
 ============================================================ */
 var LOADED_PACKS = new Set();
 var PACK_PROMISES = new Map();
+// Mobile fix: <script> tag có thể "treo" mãi mãi (không fire onload/onerror) khi:
+//  - SW cũ từ deploy trước intercept request rồi không trả lời.
+//  - HTTP cache mobile trả response dở dang sau network drop.
+//  - bfcache / connection migration ăn mất event.
+// Timeout đảm bảo loadMerged luôn settled → renderSutra không kẹt aria-busy forever.
+var PACK_LOAD_TIMEOUT_MS = 15000;
 function loadPackIfNeeded(pack) {
 if (!pack) return Promise.resolve();
 if (LOADED_PACKS.has(pack)) return Promise.resolve();
 if (PACK_PROMISES.has(pack)) return PACK_PROMISES.get(pack);
 var p = new Promise((res, rej) => {
+var settled = false;
+var s = null;
+var tid = null;
+var cleanup = function () {
+if (tid) { clearTimeout(tid); tid = null; }
+if (s) { try { s.onload = s.onerror = null; if (s.parentNode) s.parentNode.removeChild(s); } catch(_){} s = null; }
+PACK_PROMISES.delete(pack);
+};
 try {
-var s = document.createElement('script');
+s = document.createElement('script');
 s.src = pack + '.js'; s.async = true;
-s.onload = () => { LOADED_PACKS.add(pack); PACK_PROMISES.delete(pack); res(); };
-s.onerror = (e) => { PACK_PROMISES.delete(pack); rej(e); };
+s.onload = () => { if (settled) return; settled = true; LOADED_PACKS.add(pack); cleanup(); res(); };
+s.onerror = (e) => { if (settled) return; settled = true; cleanup(); rej(e || new Error('load fail: ' + pack)); };
+tid = setTimeout(function () {
+if (settled) return; settled = true; cleanup();
+rej(new Error('pack load timeout: ' + pack));
+}, PACK_LOAD_TIMEOUT_MS);
 document.body.appendChild(s);
-} catch (e) { PACK_PROMISES.delete(pack); rej(e); }
+} catch (e) { settled = true; cleanup(); rej(e); }
 });
 PACK_PROMISES.set(pack, p);
 return p;
 }
+// Self-heal: unregister bất kỳ Service Worker cũ nào còn sót lại từ deploy trước.
+// Site hiện tại KHÔNG đăng ký SW, nhưng visitor cũ có thể còn SW phantom intercept
+// request → gây "treo loading vĩnh viễn, phải xoá cache mới load lại". Chạy 1 lần
+// khi page load, idempotent nếu không có SW nào.
+(function purgeStaleServiceWorkers() {
+try {
+if (!('serviceWorker' in navigator)) return;
+navigator.serviceWorker.getRegistrations().then(function (regs) {
+if (!regs || !regs.length) return;
+regs.forEach(function (r) { try { r.unregister(); } catch(_){} });
+if (window.caches && caches.keys) {
+caches.keys().then(function (keys) {
+keys.forEach(function (k) { try { caches.delete(k); } catch(_){} });
+}).catch(function(){});
+}
+}).catch(function(){});
+} catch(_){}
+})();
 /* ============================================================
 Bilara loader
 ============================================================ */
@@ -2821,11 +2857,13 @@ isRendering = false;
 return;
 }
 currentSutraId = id;
-storage.set(KEY_LAST, id);
 syncTileToCurrentSutta();
 highlightActiveInMenu();
 updateNavButtons();
 if (!merged || !merged.rows || !merged.rows.length) {
+// Không lưu KEY_LAST khi fail — tránh reload kẹt loop vào id hỏng
+// (mobile thường gặp khi pack timeout do SW cũ / cache dở dang).
+if (storage.get(KEY_LAST) === id) storage.remove(KEY_LAST);
 if (titleEl) titleEl.textContent = uiLang === 'en' ? 'Sutta data not found' : 'Không tìm thấy dữ liệu bài kinh';
 if (subtitleEl) subtitleEl.textContent = (uiLang === 'en' ? 'ID: ' : 'Mã bài: ') + id;
 grid.innerHTML = '<div style="max-width:520px;margin:48px auto;padding:24px;text-align:center;font-family:var(--serif-vi);color:var(--ink-3);font-style:italic;border:1px dashed var(--rule);border-radius:6px">'
@@ -2836,6 +2874,7 @@ grid.innerHTML = '<div style="max-width:520px;margin:48px auto;padding:24px;text
 isRendering = false;
 grid.setAttribute('aria-busy', 'false'); setTtsUiState('idle'); return;
 }
+storage.set(KEY_LAST, id);
 var titleFromBilara    = (pickTextForUiLangSuffix(merged, id, ':0.2') || '').trim();
 var subtitleFromBilara = (pickTextForUiLangSuffix(merged, id, ':0.1') || '').trim();
 var meta = findMetaById(id) || {};
